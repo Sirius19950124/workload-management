@@ -19,6 +19,8 @@ from app.models import (
     WorkloadTherapist, WorkloadTreatmentCategory,
     WorkloadTreatmentItem, WorkloadRecord, WorkloadSettings
 )
+from app.api.achievement_bp import update_therapist_stats, check_and_award_achievements
+from app.api.achievement_bp import update_therapist_stats, check_and_award_achievements
 from datetime import date, datetime, timedelta
 
 workload_bp = Blueprint('workload', __name__, url_prefix='/api')
@@ -654,13 +656,25 @@ def create_record():
     if created_records:
         db.session.commit()
 
+        # 触发成就检查（获取所有涉及的治疗师）
+        therapist_ids = set(r.therapist_id for r in created_records)
+        new_achievements_by_therapist = {}
+        for tid in therapist_ids:
+            update_therapist_stats(tid)
+            new_achievements = check_and_award_achievements(tid)
+            if new_achievements:
+                new_achievements_by_therapist[tid] = new_achievements
+    else:
+        new_achievements_by_therapist = {}
+
     return jsonify({
         'success': True,
         'message': f'成功创建 {len(created_records)} 条记录',
         'data': {
             'records': [r.to_dict() for r in created_records],
             'total': len(created_records),
-            'errors': errors if errors else None
+            'errors': errors if errors else None,
+            'new_achievements': new_achievements_by_therapist
         }
     }), 201
 

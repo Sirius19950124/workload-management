@@ -562,6 +562,102 @@
         .recent-section .badge:hover {
             opacity: 0.8;
         }
+
+        /* 成就系统样式 */
+        .achievement-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            margin-bottom: 20px;
+        }
+
+        .achievement-card {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 2px solid #fbbf24;
+        }
+
+        .achievement-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(251, 191, 36, 0.3);
+        }
+
+        .achievement-card.locked {
+            background: #f3f4f6;
+            border-color: #d1d5db;
+            opacity: 0.7;
+        }
+
+        .achievement-icon {
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+        }
+
+        .achievement-name {
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 0.9rem;
+        }
+
+        .achievement-desc {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        .level-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .level-badge.level-1 { background: #fef3c7; color: #92400e; }
+        .level-badge.level-2 { background: #e5e7eb; color: #374151; }
+        .level-badge.level-3 { background: #fde68a; color: #92400e; }
+        .level-badge.level-4 { background: #dbeafe; color: #1e40af; }
+        .level-badge.level-5 { background: #ede9fe; color: #5b21b6; }
+        .level-badge.level-6 { background: #fce7f3; color: #9d174d; }
+        .level-badge.level-7 { background: #cffafe; color: #0e7490; }
+        .level-badge.level-8 { background: linear-gradient(135deg, #fde68a, #fbbf24); color: #78350f; }
+        .level-badge.level-9 { background: linear-gradient(135deg, #a78bfa, #7c3aed); color: white; }
+
+        .streak-fire {
+            animation: fire-pulse 0.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes fire-pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.1); }
+        }
+
+        .achievement-unlocked-animation {
+            animation: achievement-pop 0.5s ease-out;
+        }
+
+        @keyframes achievement-pop {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .progress-ring {
+            width: 60px;
+            height: 60px;
+        }
+
+        .progress-ring-circle {
+            transition: stroke-dashoffset 0.35s;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
     </style>
 </head>
 <body>
@@ -671,6 +767,40 @@
                                 <div id="monthRanking">
                                     <div class="text-center text-muted py-3">暂无数据</div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 成就系统（可折叠） -->
+            <div class="ranking-collapse mb-4">
+                <div class="ranking-toggle" data-toggle="collapse" data-target="#achievementContent">
+                    <span><i class="fas fa-award text-purple mr-2" style="color: #8b5cf6;"></i><strong>成就系统</strong> <small class="text-muted ml-2">点击展开/收起</small></span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="collapse" id="achievementContent">
+                    <div class="ranking-content">
+                        <!-- 成就排行榜 -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h6 class="mb-3"><i class="fas fa-crown text-warning mr-2"></i>等级排行榜</h6>
+                                <div id="levelLeaderboard">
+                                    <div class="text-center text-muted py-3">加载中...</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="mb-3"><i class="fas fa-fire text-danger mr-2"></i>连续打卡榜</h6>
+                                <div id="streakLeaderboard">
+                                    <div class="text-center text-muted py-3">加载中...</div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 成就徽章展示 -->
+                        <div class="mt-3">
+                            <h6 class="mb-3"><i class="fas fa-medal text-info mr-2"></i>成就徽章</h6>
+                            <div class="row" id="achievementBadges">
+                                <div class="text-center text-muted py-3 col-12">加载中...</div>
                             </div>
                         </div>
                     </div>
@@ -1792,6 +1922,7 @@
             loadCategories();
             loadDashboard();
             loadRecentUsed();
+            initAchievements();  // 初始化成就系统
 
             // 初始添加5行 - 移至 checkAllDataLoaded() 中执行，确保数据加载完成
 
@@ -1852,6 +1983,133 @@
                     renderRanking('#monthRanking', res.data.ranking, true);
                 }
             });
+        }
+
+        // ===================== 成就系统函数 =====================
+
+        // 加载等级排行榜
+        function loadLevelLeaderboard() {
+            $.get('/api/achievements/leaderboard/level?limit=5', function(res) {
+                if (res.success && res.data.leaderboard.length > 0) {
+                    let html = '';
+                    res.data.leaderboard.forEach((item, index) => {
+                        const rankClass = index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : 'normal';
+                        html += `
+                            <div class="ranking-item">
+                                <div class="rank ${rankClass}">${index + 1}</div>
+                                <div class="flex-grow-1">
+                                    <div class="font-weight-bold">
+                                        <span class="level-badge level-${item.level}">${item.level_badge} Lv.${item.level}</span>
+                                        ${item.therapist_name}
+                                    </div>
+                                    <small class="text-muted">积分: ${item.total_points} | 成就: ${item.achievements_count}</small>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    $('#levelLeaderboard').html(html);
+                } else {
+                    $('#levelLeaderboard').html('<div class="text-center text-muted py-3">暂无数据</div>');
+                }
+            }).fail(function() {
+                $('#levelLeaderboard').html('<div class="text-center text-muted py-3">加载失败</div>');
+            });
+        }
+
+        // 加载连续打卡排行榜
+        function loadStreakLeaderboard() {
+            $.get('/api/achievements/leaderboard/streak?limit=5', function(res) {
+                if (res.success && res.data.leaderboard.length > 0) {
+                    let html = '';
+                    res.data.leaderboard.forEach((item, index) => {
+                        const rankClass = index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : 'normal';
+                        const fireEmoji = item.current_streak >= 7 ? '🔥' : item.current_streak >= 3 ? '⚡' : '💪';
+                        html += `
+                            <div class="ranking-item">
+                                <div class="rank ${rankClass}">${index + 1}</div>
+                                <div class="flex-grow-1">
+                                    <div class="font-weight-bold">
+                                        <span class="streak-fire">${fireEmoji}</span> ${item.therapist_name}
+                                    </div>
+                                    <small class="text-muted">连续: ${item.current_streak}天 | 最长: ${item.longest_streak}天</small>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    $('#streakLeaderboard').html(html);
+                } else {
+                    $('#streakLeaderboard').html('<div class="text-center text-muted py-3">暂无数据</div>');
+                }
+            }).fail(function() {
+                $('#streakLeaderboard').html('<div class="text-center text-muted py-3">加载失败</div>');
+            });
+        }
+
+        // 加载成就徽章展示
+        function loadAchievementBadges() {
+            $.get('/api/achievements/', function(res) {
+                if (res.success) {
+                    const achievements = res.data.achievements;
+                    let html = '';
+
+                    // 只展示前12个成就
+                    const displayAchievements = achievements.slice(0, 12);
+                    displayAchievements.forEach(ach => {
+                        html += `
+                            <div class="col-md-2 col-sm-4 col-6 mb-3">
+                                <div class="achievement-card">
+                                    <div class="achievement-icon">${ach.icon}</div>
+                                    <div class="achievement-name">${ach.name}</div>
+                                    <div class="achievement-desc">${ach.description}</div>
+                                    ${ach.points_reward > 0 ? `<small class="text-success">+${ach.points_reward}积分</small>` : ''}
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    if (achievements.length > 12) {
+                        html += `
+                            <div class="col-12 text-center mt-2">
+                                <small class="text-muted">还有 ${achievements.length - 12} 个成就等待解锁...</small>
+                            </div>
+                        `;
+                    }
+
+                    $('#achievementBadges').html(html || '<div class="col-12 text-center text-muted py-3">暂无成就</div>');
+                }
+            }).fail(function() {
+                $('#achievementBadges').html('<div class="col-12 text-center text-muted py-3">加载失败</div>');
+            });
+        }
+
+        // 初始化成就系统
+        function initAchievements() {
+            // 初始化默认成就
+            $.post('/api/achievements/init', function(res) {
+                if (res.success) {
+                    // 加载排行榜和徽章
+                    loadLevelLeaderboard();
+                    loadStreakLeaderboard();
+                    loadAchievementBadges();
+                }
+            }).always(function() {
+                // 即使初始化失败也尝试加载
+                loadLevelLeaderboard();
+                loadStreakLeaderboard();
+                loadAchievementBadges();
+            });
+        }
+
+        // 显示成就解锁提示
+        function showAchievementNotification(newAchievements) {
+            if (!newAchievements || Object.keys(newAchievements).length === 0) return;
+
+            let message = '🎉 恭喜解锁新成就！\n\n';
+            Object.values(newAchievements).flat().forEach(ach => {
+                message += `${ach.icon} ${ach.name}\n`;
+            });
+
+            showToast(message, 'success');
         }
 
         // 渲染排行榜

@@ -247,6 +247,214 @@ class WorkloadSettings(db.Model):
         return f'<WorkloadSettings {self.setting_key}={self.setting_value}>'
 
 
+# ===================== 成就徽章系统 =====================
+
+class Achievement(db.Model):
+    """成就定义表"""
+    __tablename__ = 'achievements'
+
+    id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(50), unique=True, nullable=False, comment='成就代码')
+    name = db.Column(db.String(100), nullable=False, comment='成就名称')
+    description = db.Column(db.String(200), comment='成就描述')
+    icon = db.Column(db.String(50), default='🏆', comment='图标/emoji')
+    category = db.Column(db.String(50), default='general', comment='类别: count/skill/streak/special')
+    condition_type = db.Column(db.String(50), nullable=False, comment='条件类型: total_sessions/total_workload/streak_days/category_sessions')
+    condition_value = db.Column(db.Integer, default=0, comment='条件阈值')
+    condition_extra = db.Column(db.String(100), comment='额外条件(如类别ID)')
+    points_reward = db.Column(db.Integer, default=0, comment='奖励积分')
+    rarity = db.Column(db.String(20), default='common', comment='稀有度: common/rare/epic/legendary')
+    sort_order = db.Column(db.Integer, default=0, comment='排序顺序')
+    is_active = db.Column(db.Boolean, default=True, comment='是否启用')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # 关联
+    therapist_achievements = db.relationship('TherapistAchievement', backref='achievement_rel', lazy='dynamic')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'code': self.code,
+            'name': self.name,
+            'description': self.description,
+            'icon': self.icon,
+            'category': self.category,
+            'condition_type': self.condition_type,
+            'condition_value': self.condition_value,
+            'points_reward': self.points_reward,
+            'rarity': self.rarity,
+            'is_active': self.is_active
+        }
+
+    def __repr__(self):
+        return f'<Achievement {self.code}: {self.name}>'
+
+
+class TherapistAchievement(db.Model):
+    """治疗师已获得的成就"""
+    __tablename__ = 'therapist_achievements'
+
+    id = db.Column(db.Integer, primary_key=True)
+    therapist_id = db.Column(db.Integer, db.ForeignKey('workload_therapists.id'), nullable=False)
+    achievement_id = db.Column(db.Integer, db.ForeignKey('achievements.id'), nullable=False)
+    unlocked_at = db.Column(db.DateTime, default=datetime.utcnow, comment='解锁时间')
+    progress = db.Column(db.Integer, default=0, comment='进度(用于部分成就)')
+
+    # 关联
+    therapist = db.relationship('WorkloadTherapist', backref='achievements_rel')
+    achievement = db.relationship('Achievement')
+
+    # 唯一约束
+    __table_args__ = (
+        db.UniqueConstraint('therapist_id', 'achievement_id', name='uq_therapist_achievement'),
+    )
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'therapist_id': self.therapist_id,
+            'achievement_id': self.achievement_id,
+            'achievement': self.achievement.to_dict() if self.achievement else None,
+            'unlocked_at': self.unlocked_at.isoformat() if self.unlocked_at else None,
+            'progress': self.progress
+        }
+
+    def __repr__(self):
+        return f'<TherapistAchievement therapist={self.therapist_id} achievement={self.achievement_id}>'
+
+
+class TherapistStats(db.Model):
+    """治疗师统计数据（游戏化）"""
+    __tablename__ = 'therapist_stats'
+
+    id = db.Column(db.Integer, primary_key=True)
+    therapist_id = db.Column(db.Integer, db.ForeignKey('workload_therapists.id'), unique=True, nullable=False)
+
+    # 累计统计
+    total_sessions = db.Column(db.Integer, default=0, comment='累计治疗人次')
+    total_workload = db.Column(db.Float, default=0, comment='累计加权工作量')
+    total_points = db.Column(db.Integer, default=0, comment='累计积分')
+
+    # 等级系统
+    current_level = db.Column(db.Integer, default=1, comment='当前等级')
+    level_progress = db.Column(db.Float, default=0, comment='当前等级进度(0-100)')
+
+    # 连续打卡
+    current_streak = db.Column(db.Integer, default=0, comment='当前连续天数')
+    longest_streak = db.Column(db.Integer, default=0, comment='最长连续天数')
+    last_record_date = db.Column(db.Date, comment='最后登记日期')
+
+    # 成就统计
+    achievements_count = db.Column(db.Integer, default=0, comment='已获得成就数')
+
+    # 时间戳
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # 关联
+    therapist = db.relationship('WorkloadTherapist', backref='stats_rel')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'therapist_id': self.therapist_id,
+            'total_sessions': self.total_sessions,
+            'total_workload': self.total_workload,
+            'total_points': self.total_points,
+            'current_level': self.current_level,
+            'level_progress': self.level_progress,
+            'current_streak': self.current_streak,
+            'longest_streak': self.longest_streak,
+            'achievements_count': self.achievements_count,
+            'last_record_date': self.last_record_date.isoformat() if self.last_record_date else None
+        }
+
+    def calculate_level(self):
+        """根据总积分计算等级"""
+        points = self.total_points
+        if points < 500:
+            return 1, (points / 500) * 100
+        elif points < 1500:
+            return 2, ((points - 500) / 1000) * 100
+        elif points < 3000:
+            return 3, ((points - 1500) / 1500) * 100
+        elif points < 5000:
+            return 4, ((points - 3000) / 2000) * 100
+        elif points < 8000:
+            return 5, ((points - 5000) / 3000) * 100
+        elif points < 12000:
+            return 6, ((points - 8000) / 4000) * 100
+        elif points < 18000:
+            return 7, ((points - 12000) / 6000) * 100
+        elif points < 25000:
+            return 8, ((points - 18000) / 7000) * 100
+        else:
+            return 9, 100
+
+    @staticmethod
+    def get_level_name(level):
+        """获取等级名称"""
+        level_names = {
+            1: '初级治疗师',
+            2: '中级治疗师',
+            3: '高级治疗师',
+            4: '资深治疗师',
+            5: '专家治疗师',
+            6: '副主任技师',
+            7: '主任技师',
+            8: '康复大师',
+            9: '传奇治疗师'
+        }
+        return level_names.get(level, '未知等级')
+
+    @staticmethod
+    def get_level_badge(level):
+        """获取等级徽章"""
+        badges = {
+            1: '🥉',
+            2: '🥈',
+            3: '🥇',
+            4: '💎',
+            5: '👑',
+            6: '🌟',
+            7: '💫',
+            8: '🏆',
+            9: '🏅'
+        }
+        return badges.get(level, '⭐')
+
+    def __repr__(self):
+        return f'<TherapistStats therapist={self.therapist_id} level={self.current_level} points={self.total_points}>'
+
+
+# 默认成就定义
+DEFAULT_ACHIEVEMENTS = [
+    # 数量成就 - 治疗人次
+    {'code': 'first_10', 'name': '初露锋芒', 'description': '累计完成10次治疗', 'icon': '🌱', 'category': 'count', 'condition_type': 'total_sessions', 'condition_value': 10, 'points_reward': 10, 'rarity': 'common'},
+    {'code': 'first_50', 'name': '渐入佳境', 'description': '累计完成50次治疗', 'icon': '🌿', 'category': 'count', 'condition_type': 'total_sessions', 'condition_value': 50, 'points_reward': 30, 'rarity': 'common'},
+    {'code': 'first_100', 'name': '技艺精进', 'description': '累计完成100次治疗', 'icon': '⭐', 'category': 'count', 'condition_type': 'total_sessions', 'condition_value': 100, 'points_reward': 50, 'rarity': 'common'},
+    {'code': 'first_500', 'name': '炉火纯青', 'description': '累计完成500次治疗', 'icon': '🌟', 'category': 'count', 'condition_type': 'total_sessions', 'condition_value': 500, 'points_reward': 100, 'rarity': 'rare'},
+    {'code': 'first_1000', 'name': '康复大师', 'description': '累计完成1000次治疗', 'icon': '💫', 'category': 'count', 'condition_type': 'total_sessions', 'condition_value': 1000, 'points_reward': 200, 'rarity': 'epic'},
+    {'code': 'first_5000', 'name': '传奇治疗师', 'description': '累计完成5000次治疗', 'icon': '🏆', 'category': 'count', 'condition_type': 'total_sessions', 'condition_value': 5000, 'points_reward': 500, 'rarity': 'legendary'},
+
+    # 数量成就 - 工作量
+    {'code': 'workload_100', 'name': '勤奋之星', 'description': '累计工作量达到100', 'icon': '💪', 'category': 'count', 'condition_type': 'total_workload', 'condition_value': 100, 'points_reward': 20, 'rarity': 'common'},
+    {'code': 'workload_500', 'name': '努力标兵', 'description': '累计工作量达到500', 'icon': '🔥', 'category': 'count', 'condition_type': 'total_workload', 'condition_value': 500, 'points_reward': 50, 'rarity': 'common'},
+    {'code': 'workload_1000', 'name': '劳动模范', 'description': '累计工作量达到1000', 'icon': '👑', 'category': 'count', 'condition_type': 'total_workload', 'condition_value': 1000, 'points_reward': 100, 'rarity': 'rare'},
+    {'code': 'workload_5000', 'name': '工作狂人', 'description': '累计工作量达到5000', 'icon': '💎', 'category': 'count', 'condition_type': 'total_workload', 'condition_value': 5000, 'points_reward': 300, 'rarity': 'epic'},
+
+    # 连续打卡成就
+    {'code': 'streak_3', 'name': '三天成习', 'description': '连续3天有治疗记录', 'icon': '🎯', 'category': 'streak', 'condition_type': 'streak_days', 'condition_value': 3, 'points_reward': 10, 'rarity': 'common'},
+    {'code': 'streak_7', 'name': '周周坚持', 'description': '连续7天有治疗记录', 'icon': '🔥', 'category': 'streak', 'condition_type': 'streak_days', 'condition_value': 7, 'points_reward': 30, 'rarity': 'common'},
+    {'code': 'streak_14', 'name': '坚持达人', 'description': '连续14天有治疗记录', 'icon': '💪', 'category': 'streak', 'condition_type': 'streak_days', 'condition_value': 14, 'points_reward': 60, 'rarity': 'rare'},
+    {'code': 'streak_30', 'name': '敬业之星', 'description': '连续30天有治疗记录', 'icon': '⭐', 'category': 'streak', 'condition_type': 'streak_days', 'condition_value': 30, 'points_reward': 100, 'rarity': 'epic'},
+    {'code': 'streak_60', 'name': '劳模称号', 'description': '连续60天有治疗记录', 'icon': '🏅', 'category': 'streak', 'condition_type': 'streak_days', 'condition_value': 60, 'points_reward': 200, 'rarity': 'legendary'},
+
+    # 单日成就
+    {'code': 'daily_50', 'name': '高效能者', 'description': '单日工作量达到50', 'icon': '⚡', 'category': 'special', 'condition_type': 'daily_workload', 'condition_value': 50, 'points_reward': 30, 'rarity': 'rare'},
+    {'code': 'daily_100', 'name': '爆发之星', 'description': '单日工作量达到100', 'icon': '💥', 'category': 'special', 'condition_type': 'daily_workload', 'condition_value': 100, 'points_reward': 80, 'rarity': 'epic'},
+]
+
+
 # 默认设置常量
 DEFAULT_SETTINGS = {
     'allow_past_date': {

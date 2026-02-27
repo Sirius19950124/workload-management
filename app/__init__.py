@@ -63,9 +63,11 @@ def create_app():
     # 注册蓝图
     from .api.workload_bp import workload_bp
     from .api.workload_excel_bp import workload_excel_bp
+    from .api.achievement_bp import achievement_bp
 
     app.register_blueprint(workload_bp)
     app.register_blueprint(workload_excel_bp)
+    app.register_blueprint(achievement_bp)
 
     # PC端首页路由
     @app.route('/')
