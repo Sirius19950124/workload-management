@@ -984,6 +984,11 @@
                                     <a class="nav-link" data-toggle="pill" href="#settingsCategories">类别管理</a>
                                 </li>
                                 <li class="nav-item">
+                                    <a class="nav-link" data-toggle="pill" href="#settingsEntry">
+                                        <i class="fas fa-edit mr-1"></i>录入设置
+                                    </a>
+                                </li>
+                                <li class="nav-item">
                                     <a class="nav-link" data-toggle="pill" href="#settingsBackup">
                                         <i class="fas fa-database mr-1"></i>数据备份
                                     </a>
@@ -1067,6 +1072,59 @@
                                         </tbody>
                                     </table>
                                 </div>
+                                <!-- 录入设置 -->
+                                <div class="tab-pane fade" id="settingsEntry">
+                                    <div class="d-flex justify-content-between mb-3">
+                                        <h6><i class="fas fa-edit mr-1"></i>录入设置</h6>
+                                    </div>
+
+                                    <!-- 过往日期设置 -->
+                                    <div class="card mb-3">
+                                        <div class="card-header bg-light">
+                                            <i class="fas fa-calendar-alt mr-1"></i>过往日期录入
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="form-group">
+                                                <div class="custom-control custom-switch">
+                                                    <input type="checkbox" class="custom-control-input" id="allowPastDate"
+                                                           onchange="updateSetting('allow_past_date', this.checked)">
+                                                    <label class="custom-control-label" for="allowPastDate">
+                                                        允许录入过往日期的记录
+                                                    </label>
+                                                </div>
+                                                <small class="text-muted">
+                                                    启用后，用户可以在录入时选择过去的日期（适用于补录遗漏的记录）
+                                                </small>
+                                            </div>
+
+                                            <div class="form-group mt-3" id="pastDateDaysGroup" style="display:none;">
+                                                <label for="pastDateMaxDays">允许的最大过往天数</label>
+                                                <div class="input-group" style="max-width: 200px;">
+                                                    <input type="number" class="form-control" id="pastDateMaxDays"
+                                                           min="1" max="30" value="7"
+                                                           onchange="updateSetting('past_date_max_days', this.value)">
+                                                    <div class="input-group-append">
+                                                        <span class="input-group-text">天</span>
+                                                    </div>
+                                                </div>
+                                                <small class="text-muted">
+                                                    从今天起，允许录入的最大过往天数（1-30天）
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 设置说明 -->
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        <strong>设置说明：</strong>
+                                        <ul class="mb-0 mt-2">
+                                            <li><strong>过往日期录入</strong>：开启后，用户可以选择过去的日期进行录入，方便补录遗漏的记录</li>
+                                            <li><strong>最大过往天数</strong>：限制可以补录的最大天数，防止录入过于久远的数据</li>
+                                            <li>设置更改后立即生效，无需重启系统</li>
+                                        </ul>
+                                    </div>
+                                </div>
                                 <!-- 数据备份设置 -->
                                 <div class="tab-pane fade" id="settingsBackup">
                                     <div class="d-flex justify-content-between mb-3">
@@ -1145,6 +1203,39 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
                     <button type="button" class="btn btn-primary" onclick="saveTherapist()">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 治疗类别模态框 -->
+    <div class="modal fade" id="categoryModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">治疗类别信息</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="categoryId">
+                    <div class="form-group">
+                        <label>名称 *</label>
+                        <input type="text" class="form-control" id="categoryName" required placeholder="如：仪器治疗、手法治疗">
+                    </div>
+                    <div class="form-group">
+                        <label>描述</label>
+                        <textarea class="form-control" id="categoryDescription" rows="2" placeholder="可选，描述该类别的用途"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>排序</label>
+                        <input type="number" class="form-control" id="categorySortOrder" value="0" min="0">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="saveCategory()">保存</button>
                 </div>
             </div>
         </div>
@@ -1573,6 +1664,62 @@
                 } catch(e) {
                     console.log('Pinyin test error:', e);
                 }
+            }
+        });
+
+        // ==================== 录入设置管理 ====================
+        // 加载录入设置
+        async function loadEntrySettings() {
+            try {
+                const res = await fetch('/api/settings');
+                const data = await res.json();
+                if (data.success) {
+                    const settings = data.data.settings || {};
+                    settings.forEach(s => {
+                        if (s.key === 'allow_past_date') {
+                            document.getElementById('allowPastDate').checked = s.value;
+                            document.getElementById('pastDateDaysGroup').style.display = s.value ? 'block' : 'none';
+                        } else if (s.key === 'past_date_max_days') {
+                            document.getElementById('pastDateMaxDays').value = s.value || 7;
+                        }
+                    });
+                }
+            } catch (err) {
+                console.error('加载设置失败', err);
+            }
+        }
+
+        // 更新设置
+        async function updateSetting(key, value) {
+            try {
+                const res = await fetch(`/api/settings/${key}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ value: value })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('设置已保存', 'success');
+
+                    // 显示/隐藏天数设置
+                    if (key === 'allow_past_date') {
+                        document.getElementById('pastDateDaysGroup').style.display = value ? 'block' : 'none';
+                    }
+                } else {
+                    showToast(data.error || '保存失败', 'error');
+                    // 恢复之前的状态
+                    loadEntrySettings();
+                }
+            } catch (err) {
+                showToast('网络错误', 'error');
+                loadEntrySettings();
+            }
+        }
+
+        // 监听设置标签页切换
+        $('a[data-toggle="pill"]').on('shown.bs.tab', function(e) {
+            if (e.target.getAttribute('href') === '#settingsEntry') {
+                loadEntrySettings();
             }
         });
 
@@ -2638,9 +2785,18 @@
         // 保存治疗师
         function saveTherapist() {
             const id = $('#therapistId').val();
+            const name = $('#therapistName').val().trim();
+            const employeeId = $('#therapistEmployeeId').val().trim();
+
+            // 前端验证
+            if (!name) {
+                showToast('请输入治疗师姓名', 'error');
+                return;
+            }
+
             const data = {
-                name: $('#therapistName').val(),
-                employee_id: $('#therapistEmployeeId').val()
+                name: name,
+                employee_id: employeeId || null
             };
 
             const url = id ? `/api/therapists/${id}` : '/api/therapists';
@@ -2659,6 +2815,15 @@
                     } else {
                         showToast('保存失败：' + res.error, 'error');
                     }
+                },
+                error: function(xhr, status, error) {
+                    // 处理服务器错误
+                    let errorMsg = '服务器错误，请稍后重试';
+                    if (xhr.responseJSON && xhr.responseJSON.error) {
+                        errorMsg = xhr.responseJSON.error;
+                    }
+                    showToast('保存失败：' + errorMsg, 'error');
+                    console.error('保存治疗师失败:', xhr.status, error);
                 }
             });
         }
@@ -2754,12 +2919,72 @@
 
         // 显示类别模态框
         function showCategoryModal() {
-            showToast('类别管理功能开发中...', 'info');
+            $('#categoryId').val('');
+            $('#categoryName').val('');
+            $('#categoryDescription').val('');
+            $('#categorySortOrder').val(0);
+            $('#categoryModal .modal-title').text('添加治疗类别');
+            $('#categoryModal').modal('show');
         }
 
         // 编辑类别
         function editCategory(id) {
-            showToast('类别管理功能开发中...', 'info');
+            const category = categories.find(c => c.id === id);
+            if (!category) {
+                showToast('类别不存在', 'error');
+                return;
+            }
+            $('#categoryId').val(category.id);
+            $('#categoryName').val(category.name);
+            $('#categoryDescription').val(category.description || '');
+            $('#categorySortOrder').val(category.sort_order || 0);
+            $('#categoryModal .modal-title').text('编辑治疗类别');
+            $('#categoryModal').modal('show');
+        }
+
+        // 保存类别
+        function saveCategory() {
+            const id = $('#categoryId').val();
+            const name = $('#categoryName').val().trim();
+            const description = $('#categoryDescription').val().trim();
+            const sortOrder = parseInt($('#categorySortOrder').val()) || 0;
+
+            if (!name) {
+                showToast('请输入类别名称', 'error');
+                return;
+            }
+
+            const data = {
+                name: name,
+                description: description,
+                sort_order: sortOrder
+            };
+
+            const url = id ? `/api/categories/${id}` : '/api/categories';
+            const method = id ? 'PUT' : 'POST';
+
+            $.ajax({
+                url: url,
+                method: method,
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function(res) {
+                    if (res.success) {
+                        showToast('类别信息已保存', 'success');
+                        $('#categoryModal').modal('hide');
+                        loadCategories();
+                    } else {
+                        showToast('保存失败：' + res.error, 'error');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    let errorMsg = '服务器错误，请稍后重试';
+                    if (xhr.responseJSON && xhr.responseJSON.error) {
+                        errorMsg = xhr.responseJSON.error;
+                    }
+                    showToast('保存失败：' + errorMsg, 'error');
+                }
+            });
         }
 
         // 删除类别

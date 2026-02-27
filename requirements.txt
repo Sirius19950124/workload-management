@@ -1,13 +1,7 @@
-# 康复科治疗师工作量管理系统 - 依赖包
-
-# Web框架
-Flask==2.3.3
-Werkzeug==2.3.7
-
-# 数据库
-Flask-SQLAlchemy==3.1.1
-SQLAlchemy==2.0.23
-
-# Excel处理
-pandas==2.1.4
-openpyxl==3.1.2
+Flask>=2.0.0,<3.0.0
+Werkzeug>=2.0.0,<3.0.0
+Flask-SQLAlchemy>=3.0.0,<4.0.0
+SQLAlchemy>=1.4.0,<2.0.0
+pandas>=1.5.0,<2.1.0
+openpyxl>=3.0.0,<4.0.0
+waitress>=2.0.0,<3.0.0

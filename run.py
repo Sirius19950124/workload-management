@@ -8,7 +8,7 @@ import sys
 import os
 
 # 设置控制台编码
-if sys.platform == 'win32':
+if sys.platform == 'win32' and sys.stdout is not None:
     sys.stdout.reconfigure(encoding='utf-8')
 
 from app import create_app

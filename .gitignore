@@ -23,3 +23,15 @@ screenshots/
 
 # Logs
 *.log
+
+# Build artifacts
+build/
+dist/
+release/
+*.spec
+*.egg-info/
+.eggs/
+
+# OS
+.DS_Store
+Thumbs.db

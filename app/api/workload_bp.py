@@ -17,9 +17,9 @@ from sqlalchemy import extract, func
 from app import db
 from app.models import (
     WorkloadTherapist, WorkloadTreatmentCategory,
-    WorkloadTreatmentItem, WorkloadRecord
+    WorkloadTreatmentItem, WorkloadRecord, WorkloadSettings
 )
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 workload_bp = Blueprint('workload', __name__, url_prefix='/api')
 
@@ -51,58 +51,94 @@ def get_therapists():
 @workload_bp.route('/therapists', methods=['POST'])
 def create_therapist():
     """创建治疗师"""
-    data = request.get_json()
+    try:
+        data = request.get_json()
 
-    if not data or not data.get('name'):
-        return jsonify({'success': False, 'error': '治疗师姓名不能为空'}), 400
+        if not data or not data.get('name'):
+            return jsonify({'success': False, 'error': '治疗师姓名不能为空'}), 400
 
-    if WorkloadTherapist.query.filter_by(name=data['name']).first():
-        return jsonify({'success': False, 'error': '该治疗师已存在'}), 400
+        # 检查姓名是否已存在
+        if WorkloadTherapist.query.filter_by(name=data['name']).first():
+            return jsonify({'success': False, 'error': '该治疗师姓名已存在'}), 400
 
-    therapist = WorkloadTherapist(
-        name=data['name'],
-        employee_id=data.get('employee_id'),
-        department=data.get('department', '康复科'),
-        sort_order=data.get('sort_order', 0)
-    )
+        # 处理工号：空字符串转为 None，避免唯一约束冲突
+        employee_id = data.get('employee_id')
+        if employee_id is not None:
+            employee_id = employee_id.strip() if employee_id.strip() else None
 
-    db.session.add(therapist)
-    db.session.commit()
+        # 检查工号是否已存在（仅当工号不为空时）
+        if employee_id and WorkloadTherapist.query.filter_by(employee_id=employee_id).first():
+            return jsonify({'success': False, 'error': f'工号 "{employee_id}" 已被使用，请使用其他工号'}), 400
 
-    return jsonify({
-        'success': True,
-        'message': '治疗师创建成功',
-        'data': therapist.to_dict()
-    }), 201
+        therapist = WorkloadTherapist(
+            name=data['name'],
+            employee_id=employee_id,
+            department=data.get('department', '康复科'),
+            sort_order=data.get('sort_order', 0)
+        )
+
+        db.session.add(therapist)
+        db.session.commit()
+
+        return jsonify({
+            'success': True,
+            'message': '治疗师创建成功',
+            'data': therapist.to_dict()
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': f'创建失败: {str(e)}'}), 500
 
 
 @workload_bp.route('/therapists/<int:therapist_id>', methods=['PUT'])
 def update_therapist(therapist_id):
     """更新治疗师"""
-    therapist = WorkloadTherapist.query.get(therapist_id)
-    if not therapist:
-        return jsonify({'success': False, 'error': '治疗师不存在'}), 404
+    try:
+        therapist = WorkloadTherapist.query.get(therapist_id)
+        if not therapist:
+            return jsonify({'success': False, 'error': '治疗师不存在'}), 404
 
-    data = request.get_json()
+        data = request.get_json()
 
-    if data.get('name'):
-        therapist.name = data['name']
-    if 'employee_id' in data:
-        therapist.employee_id = data['employee_id']
-    if 'department' in data:
-        therapist.department = data['department']
-    if 'is_active' in data:
-        therapist.is_active = data['is_active']
-    if 'sort_order' in data:
-        therapist.sort_order = data['sort_order']
+        # 检查姓名是否与其他治疗师重复
+        if data.get('name') and data['name'] != therapist.name:
+            existing = WorkloadTherapist.query.filter_by(name=data['name']).first()
+            if existing:
+                return jsonify({'success': False, 'error': '该治疗师姓名已存在'}), 400
+            therapist.name = data['name']
 
-    db.session.commit()
+        # 处理工号更新
+        if 'employee_id' in data:
+            new_employee_id = data['employee_id']
+            if new_employee_id is not None:
+                new_employee_id = new_employee_id.strip() if new_employee_id.strip() else None
 
-    return jsonify({
-        'success': True,
-        'message': '治疗师更新成功',
-        'data': therapist.to_dict()
-    })
+            # 检查工号是否与其他治疗师重复
+            if new_employee_id and new_employee_id != therapist.employee_id:
+                existing = WorkloadTherapist.query.filter_by(employee_id=new_employee_id).first()
+                if existing:
+                    return jsonify({'success': False, 'error': f'工号 "{new_employee_id}" 已被使用，请使用其他工号'}), 400
+            therapist.employee_id = new_employee_id
+
+        if 'department' in data:
+            therapist.department = data['department']
+        if 'is_active' in data:
+            therapist.is_active = data['is_active']
+        if 'sort_order' in data:
+            therapist.sort_order = data['sort_order']
+
+        db.session.commit()
+
+        return jsonify({
+            'success': True,
+            'message': '治疗师更新成功',
+            'data': therapist.to_dict()
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': f'更新失败: {str(e)}'}), 500
 
 
 @workload_bp.route('/therapists/<int:therapist_id>', methods=['DELETE'])
@@ -524,6 +560,29 @@ def get_records():
     })
 
 
+def parse_record_date(date_value):
+    """解析记录日期，支持字符串和date对象"""
+    if date_value is None:
+        return date.today()
+
+    if isinstance(date_value, date):
+        return date_value
+
+    if isinstance(date_value, str):
+        try:
+            # 支持 YYYY-MM-DD 格式
+            return datetime.strptime(date_value, '%Y-%m-%d').date()
+        except ValueError:
+            pass
+        try:
+            # 支持 YYYY/MM/DD 格式
+            return datetime.strptime(date_value, '%Y/%m/%d').date()
+        except ValueError:
+            pass
+
+    return date.today()
+
+
 @workload_bp.route('/records', methods=['POST'])
 def create_record():
     """创建工作量记录（支持批量）"""
@@ -532,12 +591,18 @@ def create_record():
     if not data:
         return jsonify({'success': False, 'error': '请求数据不能为空'}), 400
 
+    # 获取设置：是否允许过往日期
+    allow_past_date = WorkloadSettings.get_value('allow_past_date', False)
+    past_date_max_days = WorkloadSettings.get_value('past_date_max_days', 7)
+
     # 支持批量创建
     records_data = data if isinstance(data, list) else [data]
     created_records = []
+    errors = []
 
-    for record_data in records_data:
+    for idx, record_data in enumerate(records_data):
         if not record_data.get('therapist_id') or not record_data.get('treatment_item_id'):
+            errors.append(f'第{idx+1}条: 缺少治疗师或治疗项目')
             continue
 
         therapist_id = record_data['therapist_id']
@@ -546,14 +611,34 @@ def create_record():
         # 获取治疗项目
         treatment_item = WorkloadTreatmentItem.query.get(treatment_item_id)
         if not treatment_item:
+            errors.append(f'第{idx+1}条: 治疗项目不存在')
             continue
+
+        # 解析日期
+        record_date = parse_record_date(record_data.get('record_date'))
+
+        # 检查日期限制
+        today = date.today()
+        if record_date > today:
+            errors.append(f'第{idx+1}条: 不能录入未来日期')
+            continue
+
+        if record_date < today and not allow_past_date:
+            errors.append(f'第{idx+1}条: 系统设置不允许录入过往日期')
+            continue
+
+        if record_date < today:
+            days_diff = (today - record_date).days
+            if days_diff > past_date_max_days:
+                errors.append(f'第{idx+1}条: 只能录入过去{past_date_max_days}天内的记录')
+                continue
 
         # 使用传入的权重或默认权重
         weight = record_data.get('weight_coefficient', treatment_item.weight_coefficient)
         sessions = record_data.get('session_count', 1)
 
         record = WorkloadRecord(
-            record_date=record_data.get('record_date', date.today()) if isinstance(record_data.get('record_date'), date) else date.today(),
+            record_date=record_date,
             therapist_id=therapist_id,
             patient_info=record_data.get('patient_info'),
             treatment_item_id=treatment_item_id,
@@ -566,14 +651,16 @@ def create_record():
         db.session.add(record)
         created_records.append(record)
 
-    db.session.commit()
+    if created_records:
+        db.session.commit()
 
     return jsonify({
         'success': True,
         'message': f'成功创建 {len(created_records)} 条记录',
         'data': {
             'records': [r.to_dict() for r in created_records],
-            'total': len(created_records)
+            'total': len(created_records),
+            'errors': errors if errors else None
         }
     }), 201
 
@@ -1453,3 +1540,149 @@ def lookup_item():
             'success': False,
             'error': '未找到治疗项目'
         })
+
+
+# ============================================================================
+# 系统设置 API
+# ============================================================================
+
+# 默认设置
+DEFAULT_SETTINGS = {
+    'allow_past_date': {
+        'value': False,
+        'type': 'bool',
+        'description': '允许录入过往日期的记录'
+    },
+    'past_date_max_days': {
+        'value': 7,
+        'type': 'int',
+        'description': '允许录入的最大过往天数（从今天起）'
+    }
+}
+
+
+def init_default_settings():
+    """初始化默认设置"""
+    for key, config in DEFAULT_SETTINGS.items():
+        existing = WorkloadSettings.query.filter_by(setting_key=key).first()
+        if not existing:
+            setting = WorkloadSettings(
+                setting_key=key,
+                setting_value=str(config['value']) if config['type'] != 'bool' else ('true' if config['value'] else 'false'),
+                setting_type=config['type'],
+                description=config['description']
+            )
+            db.session.add(setting)
+    db.session.commit()
+
+
+@workload_bp.route('/settings', methods=['GET'])
+def get_settings():
+    """获取所有系统设置"""
+    # 确保默认设置已初始化
+    init_default_settings()
+
+    settings = WorkloadSettings.query.all()
+    return jsonify({
+        'success': True,
+        'data': {
+            'settings': [s.to_dict() for s in settings]
+        }
+    })
+
+
+@workload_bp.route('/settings/<key>', methods=['GET'])
+def get_setting(key):
+    """获取单个设置"""
+    setting = WorkloadSettings.query.filter_by(setting_key=key).first()
+    if setting:
+        return jsonify({
+            'success': True,
+            'data': setting.to_dict()
+        })
+    else:
+        # 返回默认值
+        if key in DEFAULT_SETTINGS:
+            return jsonify({
+                'success': True,
+                'data': {
+                    'key': key,
+                    'value': DEFAULT_SETTINGS[key]['value'],
+                    'type': DEFAULT_SETTINGS[key]['type'],
+                    'description': DEFAULT_SETTINGS[key]['description']
+                }
+            })
+        return jsonify({'success': False, 'error': '设置项不存在'}), 404
+
+
+@workload_bp.route('/settings', methods=['PUT'])
+def update_settings():
+    """批量更新设置"""
+    data = request.get_json()
+    if not data:
+        return jsonify({'success': False, 'error': '请求数据不能为空'}), 400
+
+    updated = []
+    for key, value in data.items():
+        if key not in DEFAULT_SETTINGS:
+            continue
+
+        setting = WorkloadSettings.query.filter_by(setting_key=key).first()
+        if not setting:
+            # 创建新设置
+            setting = WorkloadSettings(
+                setting_key=key,
+                setting_type=DEFAULT_SETTINGS[key]['type'],
+                description=DEFAULT_SETTINGS[key]['description']
+            )
+            db.session.add(setting)
+
+        # 转换值为字符串
+        if DEFAULT_SETTINGS[key]['type'] == 'bool':
+            setting.setting_value = 'true' if value else 'false'
+        else:
+            setting.setting_value = str(value)
+
+        updated.append(key)
+
+    db.session.commit()
+
+    return jsonify({
+        'success': True,
+        'message': f'已更新 {len(updated)} 个设置',
+        'data': {'updated': updated}
+    })
+
+
+@workload_bp.route('/settings/<key>', methods=['PUT'])
+def update_setting(key):
+    """更新单个设置"""
+    if key not in DEFAULT_SETTINGS:
+        return jsonify({'success': False, 'error': '无效的设置项'}), 400
+
+    data = request.get_json()
+    if not data or 'value' not in data:
+        return jsonify({'success': False, 'error': '请提供设置值'}), 400
+
+    setting = WorkloadSettings.query.filter_by(setting_key=key).first()
+    if not setting:
+        setting = WorkloadSettings(
+            setting_key=key,
+            setting_type=DEFAULT_SETTINGS[key]['type'],
+            description=DEFAULT_SETTINGS[key]['description']
+        )
+        db.session.add(setting)
+
+    # 转换值为字符串
+    if DEFAULT_SETTINGS[key]['type'] == 'bool':
+        setting.setting_value = 'true' if data['value'] else 'false'
+    else:
+        setting.setting_value = str(data['value'])
+
+    db.session.commit()
+
+    return jsonify({
+        'success': True,
+        'message': '设置已更新',
+        'data': setting.to_dict()
+    })

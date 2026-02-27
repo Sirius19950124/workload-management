@@ -162,3 +162,101 @@ class WorkloadRecord(db.Model):
 
     def __repr__(self):
         return f'<WorkloadRecord {self.record_date} {self.therapist_rel.name if self.therapist_rel else "?"} - {self.weighted_workload}>'
+
+
+class WorkloadSettings(db.Model):
+    """系统设置表"""
+    __tablename__ = 'workload_settings'
+
+    id = db.Column(db.Integer, primary_key=True)
+    setting_key = db.Column(db.String(50), unique=True, nullable=False, comment='设置键')
+    setting_value = db.Column(db.Text, comment='设置值')
+    setting_type = db.Column(db.String(20), default='string', comment='值类型: string, int, float, bool, json')
+    description = db.Column(db.String(200), comment='设置说明')
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'key': self.setting_key,
+            'value': self.get_typed_value(),
+            'type': self.setting_type,
+            'description': self.description
+        }
+
+    def get_typed_value(self):
+        """根据类型返回转换后的值"""
+        if self.setting_value is None:
+            return None
+
+        if self.setting_type == 'int':
+            return int(self.setting_value)
+        elif self.setting_type == 'float':
+            return float(self.setting_value)
+        elif self.setting_type == 'bool':
+            return self.setting_value.lower() in ('true', '1', 'yes')
+        elif self.setting_type == 'json':
+            import json
+            try:
+                return json.loads(self.setting_value)
+            except:
+                return self.setting_value
+        else:
+            return self.setting_value
+
+    @staticmethod
+    def get_value(key, default=None):
+        """获取设置值"""
+        setting = WorkloadSettings.query.filter_by(setting_key=key).first()
+        if setting:
+            return setting.get_typed_value()
+        return default
+
+    @staticmethod
+    def set_value(key, value, setting_type='string', description=None):
+        """设置值"""
+        setting = WorkloadSettings.query.filter_by(setting_key=key).first()
+
+        # 转换值为字符串存储
+        if setting_type == 'bool':
+            str_value = 'true' if value else 'false'
+        elif setting_type == 'json':
+            import json
+            str_value = json.dumps(value, ensure_ascii=False)
+        else:
+            str_value = str(value)
+
+        if setting:
+            setting.setting_value = str_value
+            setting.setting_type = setting_type
+            if description:
+                setting.description = description
+        else:
+            setting = WorkloadSettings(
+                setting_key=key,
+                setting_value=str_value,
+                setting_type=setting_type,
+                description=description
+            )
+            db.session.add(setting)
+
+        db.session.commit()
+        return setting
+
+    def __repr__(self):
+        return f'<WorkloadSettings {self.setting_key}={self.setting_value}>'
+
+
+# 默认设置常量
+DEFAULT_SETTINGS = {
+    'allow_past_date': {
+        'value': False,
+        'type': 'bool',
+        'description': '允许录入过往日期的记录'
+    },
+    'past_date_max_days': {
+        'value': 7,
+        'type': 'int',
+        'description': '允许录入的最大过往天数（从今天起）'
+    }
+}
