@@ -370,7 +370,7 @@ class TherapistStats(db.Model):
 
     def calculate_level(self):
         """根据总积分计算等级"""
-        points = self.total_points
+        points = self.total_points or 0
         if points < 500:
             return 1, (points / 500) * 100
         elif points < 1500:

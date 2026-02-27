@@ -6,6 +6,10 @@
 
 import sys
 import os
+import io
+
+# 设置标准输出为UTF-8编码
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
 # 添加项目根目录到路径
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -28,9 +32,9 @@ def migrate():
 
             # 创建表
             db.create_all()
-            print("   ✓ 表创建成功")
+            print("   [OK] 表创建成功")
         except Exception as e:
-            print(f"   ✗ 表创建失败: {e}")
+            print(f"   [FAIL] 表创建失败: {e}")
             return False
 
         # 初始化默认成就
@@ -38,16 +42,16 @@ def migrate():
         try:
             existing_count = Achievement.query.count()
             if existing_count > 0:
-                print(f"   ✓ 已存在 {existing_count} 个成就，跳过初始化")
+                print(f"   [OK] 已存在 {existing_count} 个成就，跳过初始化")
             else:
                 for ach_data in DEFAULT_ACHIEVEMENTS:
                     achievement = Achievement(**ach_data)
                     db.session.add(achievement)
                 db.session.commit()
-                print(f"   ✓ 成功创建 {len(DEFAULT_ACHIEVEMENTS)} 个默认成就")
+                print(f"   [OK] 成功创建 {len(DEFAULT_ACHIEVEMENTS)} 个默认成就")
         except Exception as e:
             db.session.rollback()
-            print(f"   ✗ 成就初始化失败: {e}")
+            print(f"   [FAIL] 成就初始化失败: {e}")
             return False
 
         # 为现有治疗师创建统计数据
@@ -88,9 +92,10 @@ def migrate():
                         else:
                             break
                     stats.current_streak = streak
-                    stats.longest_streak = max(stats.longest_streak, streak)
+                    stats.longest_streak = max(stats.longest_streak or 0, streak)
 
-                # 计算等级
+                # 计算等级（确保 total_points 不为 None）
+                stats.total_points = stats.total_points or 0
                 level, progress = stats.calculate_level()
                 stats.current_level = level
                 stats.level_progress = progress
@@ -99,13 +104,13 @@ def migrate():
                 created += 1
 
             db.session.commit()
-            print(f"   ✓ 成功创建 {created} 个治疗师统计记录")
+            print(f"   [OK] 成功创建 {created} 个治疗师统计记录")
         except Exception as e:
             db.session.rollback()
-            print(f"   ✗ 统计数据初始化失败: {e}")
+            print(f"   [FAIL] 统计数据初始化失败: {e}")
             return False
 
-        print("\n迁移完成！")
+        print("\n迁移完成!")
         print("=" * 50)
         print("新增表:")
         print("  - achievements (成就定义表)")
