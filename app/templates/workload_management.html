@@ -511,10 +511,18 @@
             border-radius: 12px;
             margin-bottom: 15px;
         }
+        /* IE11 兼容：gap 回退 */
+        .action-bar > * {
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
 
         .action-bar .btn-group {
             display: flex;
             gap: 8px;
+        }
+        .action-bar .btn-group > * + * {
+            margin-left: 8px;
         }
 
         /* 底部统计优化 */
@@ -528,12 +536,21 @@
             border-radius: 12px;
             border-left: 4px solid #10b981;
             margin-top: 15px;
+            background: #f0fdf4\9; /* IE9 回退 */
+        }
+        /* IE11 兼容：gap 回退 */
+        .entry-stats > * {
+            margin-right: 20px;
+            margin-bottom: 10px;
         }
 
         .entry-stats .stat-item {
             display: flex;
             align-items: center;
             gap: 8px;
+        }
+        .entry-stats .stat-item > * + * {
+            margin-left: 8px;
         }
 
         .entry-stats .stat-value {
@@ -551,6 +568,11 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 8px;
+        }
+        /* IE11 兼容：gap 回退 */
+        .recent-section > * {
+            margin-right: 8px;
+            margin-bottom: 5px;
         }
 
         .recent-section .badge {
@@ -618,6 +640,10 @@
             font-weight: 600;
             font-size: 0.85rem;
         }
+        /* IE11 兼容：gap 回退 */
+        .level-badge > * + * {
+            margin-left: 5px;
+        }
 
         .level-badge.level-1 { background: #fef3c7; color: #92400e; }
         .level-badge.level-2 { background: #e5e7eb; color: #374151; }
@@ -626,8 +652,8 @@
         .level-badge.level-5 { background: #ede9fe; color: #5b21b6; }
         .level-badge.level-6 { background: #fce7f3; color: #9d174d; }
         .level-badge.level-7 { background: #cffafe; color: #0e7490; }
-        .level-badge.level-8 { background: linear-gradient(135deg, #fde68a, #fbbf24); color: #78350f; }
-        .level-badge.level-9 { background: linear-gradient(135deg, #a78bfa, #7c3aed); color: white; }
+        .level-badge.level-8 { background: linear-gradient(135deg, #fde68a, #fbbf24); color: #78350f; background: #fde68a\9; /* IE9 回退 */ }
+        .level-badge.level-9 { background: linear-gradient(135deg, #a78bfa, #7c3aed); color: white; background: #a78bfa\9; /* IE9 回退 */ }
 
         /* 治疗师个人成就徽章 */
         .therapist-badges {
@@ -636,6 +662,11 @@
             flex-wrap: wrap;
             gap: 3px;
             align-items: center;
+        }
+        /* IE11 兼容：gap 回退 */
+        .therapist-badges > * {
+            margin-right: 3px;
+            margin-bottom: 3px;
         }
 
         .achievement-mini-badge {
@@ -1158,7 +1189,11 @@
                                     </select>
                                 </div>
                                 <div class="col-md-2">
-                                    <label class="small text-muted mb-1">快捷选择</label>
+                                    <label class="small text-muted mb-1">患者姓名</label>
+                                    <input type="text" class="form-control" id="filterPatient" placeholder="输入患者姓名">
+                                </div>
+                                <div class="col-md-1">
+                                    <label class="small text-muted mb-1">快捷</label>
                                     <select class="form-control" id="quickDateRange" onchange="applyQuickDateRange()">
                                         <option value="">自定义</option>
                                         <option value="today">今天</option>
@@ -1170,10 +1205,10 @@
                                         <option value="thisYear">今年</option>
                                     </select>
                                 </div>
-                                <div class="col-md-2">
+                                <div class="col-md-1">
                                     <label class="small text-muted mb-1">&nbsp;</label>
                                     <button class="btn btn-primary btn-block" onclick="loadRecords()">
-                                        <i class="fas fa-search mr-1"></i>查询
+                                        <i class="fas fa-search"></i>
                                     </button>
                                 </div>
                             </div>
@@ -2023,6 +2058,59 @@
                 '博': 'bo', '思': 'si', '雨': 'yu', '泽': 'ze', '航': 'hang', '轩': 'xuan', '豪': 'hao',
                 '然': 'ran', '一': 'yi', '二': 'er', '三': 'san', '四': 'si', '五': 'wu', '六': 'liu',
                 '七': 'qi', '八': 'ba', '九': 'jiu', '十': 'shi', '百': 'bai', '千': 'qian', '万': 'wan',
+
+                // 更多常用名字用字（A-Z排序）
+                '阿': 'a', '爱': 'ai', '安': 'an', '艾': 'ai', '昂': 'ang',
+                '宝': 'bao', '贝': 'bei', '碧': 'bi', '彬': 'bin', '冰': 'bing', '波': 'bo', '邦': 'bang',
+                '才': 'cai', '昌': 'chang', '畅': 'chang', '朝': 'chao', '臣': 'chen', '成': 'cheng', '承': 'cheng',
+                '初': 'chu', '春': 'chun', '纯': 'chun', '聪': 'cong', '翠': 'cui', '存': 'cun',
+                '大': 'da', '代': 'dai', '丹': 'dan', '道': 'dao', '登': 'deng', '迪': 'di', '帝': 'di',
+                '东': 'dong', '栋': 'dong', '端': 'duan', '多': 'duo',
+                '恩': 'en', '儿': 'er',
+                '法': 'fa', '帆': 'fan', '菲': 'fei', '飞': 'fei', '丰': 'feng', '枫': 'feng', '凤': 'feng', '福': 'fu',
+                '功': 'gong', '冠': 'guan', '光': 'guang', '贵': 'gui', '国': 'guo',
+                '海': 'hai', '晗': 'han', '瀚': 'han', '行': 'hang', '昊': 'hao', '和': 'he', '河': 'he', '贺': 'he',
+                '恒': 'heng', '弘': 'hong', '宏': 'hong', '洪': 'hong', '鸿': 'hong', '虎': 'hu', '花': 'hua',
+                '化': 'hua', '怀': 'huai', '欢': 'huan', '环': 'huan', '焕': 'huan', '皇': 'huang', '辉': 'hui',
+                '会': 'hui', '惠': 'hui', '佳': 'jia', '嘉': 'jia', '坚': 'jian', '俭': 'jian', '江': 'jiang',
+                '姜': 'jiang', '将': 'jiang', '金': 'jin', '进': 'jin', '晋': 'jin', '京': 'jing', '晶': 'jing',
+                '敬': 'jing', '静': 'jing', '靖': 'jing', '君': 'jun', '骏': 'jun',
+                '开': 'kai', '楷': 'kai', '科': 'ke', '可': 'ke', '克': 'ke', '坤': 'kun',
+                '兰': 'lan', '岚': 'lan', '蓝': 'lan', '朗': 'lang', '浪': 'lang', '乐': 'le', '雷': 'lei',
+                '力': 'li', '立': 'li', '礼': 'li', '丽': 'li', '利': 'li', '连': 'lian', '良': 'liang',
+                '亮': 'liang', '林': 'lin', '霖': 'lin', '灵': 'ling', '龙': 'long', '禄': 'lu', '路': 'lu',
+                '伦': 'lun', '洛': 'luo',
+                '曼': 'man', '茂': 'mao', '梦': 'meng', '孟': 'meng', '民': 'min', '铭': 'ming', '命': 'ming',
+                '穆': 'mu',
+                '南': 'nan', '能': 'neng', '年': 'nian', '宁': 'ning',
+                '欧': 'ou',
+                '培': 'pei', '朋': 'peng', '平': 'ping', '萍': 'ping', '普': 'pu',
+                '奇': 'qi', '琪': 'qi', '启': 'qi', '气': 'qi', '千': 'qian', '谦': 'qian', '前': 'qian',
+                '强': 'qiang', '桥': 'qiao', '勤': 'qin', '清': 'qing', '庆': 'qing', '秋': 'qiu', '球': 'qiu',
+                '曲': 'qu', '权': 'quan', '泉': 'quan', '群': 'qun',
+                '然': 'ran', '仁': 'ren', '日': 'ri', '荣': 'rong', '容': 'rong', '儒': 'ru', '瑞': 'rui', '润': 'run',
+                '若': 'ruo',
+                '莎': 'sha', '山': 'shan', '善': 'shan', '尚': 'shang', '绍': 'shao', '申': 'shen', '生': 'sheng',
+                '胜': 'sheng', '盛': 'sheng', '世': 'shi', '仕': 'shi', '寿': 'shou', '淑': 'shu', '述': 'shu',
+                '树': 'shu', '双': 'shuang', '水': 'shui', '顺': 'shun', '思': 'si', '松': 'song', '苏': 'su',
+                '素': 'su', '太': 'tai', '泰': 'tai', '坦': 'tan', '堂': 'tang', '涛': 'tao', '腾': 'teng',
+                '天': 'tian', '田': 'tian', '通': 'tong', '同': 'tong', '统': 'tong', '伟': 'wei', '威': 'wei',
+                '维': 'wei', '玮': 'wei', '纬': 'wei', '文': 'wen', '武': 'wu', '舞': 'wu', '梧': 'wu',
+                '西': 'xi', '希': 'xi', '锡': 'xi', '喜': 'xi', '侠': 'xia', '仙': 'xian', '先': 'xian',
+                '贤': 'xian', '香': 'xiang', '祥': 'xiang', '翔': 'xiang', '小': 'xiao', '晓': 'xiao', '孝': 'xiao',
+                '笑': 'xiao', '新': 'xin', '信': 'xin', '兴': 'xing', '星': 'xing', '行': 'xing', '雄': 'xiong',
+                '修': 'xiu', '秀': 'xiu', '旭': 'xu', '学': 'xue', '雪': 'xue', '勋': 'xun', '迅': 'xun',
+                '亚': 'ya', '严': 'yan', '言': 'yan', '炎': 'yan', '研': 'yan', '延': 'yan', '雁': 'yan',
+                '扬': 'yang', '羊': 'yang', '洋': 'yang', '尧': 'yao', '耀': 'yao', '业': 'ye', '叶': 'ye',
+                '一': 'yi', '义': 'yi', '益': 'yi', '毅': 'yi', '银': 'yin', '寅': 'yin', '英': 'ying',
+                '盈': 'ying', '永': 'yong', '勇': 'yong', '友': 'you', '有': 'you', '瑜': 'yu', '宇': 'yu',
+                '羽': 'yu', '玉': 'yu', '钰': 'yu', '源': 'yuan', '远': 'yuan', '月': 'yue', '岳': 'yue',
+                '悦': 'yue', '越': 'yue', '云': 'yun', '韵': 'yun', '赞': 'zan', '泽': 'ze', '增': 'zeng',
+                '占': 'zhan', '章': 'zhang', '兆': 'zhao', '哲': 'zhe', '震': 'zhen', '正': 'zheng',
+                '政': 'zheng', '之': 'zhi', '知': 'zhi', '植': 'zhi', '志': 'zhi', '智': 'zhi', '中': 'zhong',
+                '忠': 'zhong', '仲': 'zhong', '众': 'zhong', '州': 'zhou', '舟': 'zhou', '珠': 'zhu',
+                '竹': 'zhu', '主': 'zhu', '子': 'zi', '自': 'zi', '宗': 'zong', '祖': 'zu', '尊': 'zun',
+                '佐': 'zuo',
 
                 // 治疗相关词汇
                 '盆': 'pen', '底': 'di', '电': 'dian', '磁': 'ci', '推': 'tui', '拿': 'na', '按': 'an', '摩': 'mo',
@@ -3116,21 +3204,24 @@
             }
         }
 
-        // 从数据库加载患者姓名
+        // 从数据库加载患者姓名（使用真实记录数）
         function loadPatientNamesFromDB() {
             $.get('/api/patients/names', function(res) {
                 if (res.success && res.data && res.data.names) {
-                    // 合并数据库中的姓名到缓存
-                    res.data.names.forEach(name => {
-                        if (!patientNamesCache[name]) {
-                            patientNamesCache[name] = 1;
-                        }
+                    // 使用数据库中的真实记录数更新缓存
+                    res.data.names.forEach(item => {
+                        // 后端返回 {name: string, count: number} 格式
+                        const name = item.name || item;
+                        const count = item.count || 1;
+                        // 总是使用数据库的真实计数
+                        patientNamesCache[name] = count;
                     });
                     savePatientNamesCache();
+                    console.log('[患者姓名] 已从数据库加载', res.data.names.length, '个姓名');
                 }
             }).fail(function() {
                 // API不存在时静默失败，使用本地缓存
-                console.log('患者姓名API不可用，使用本地缓存');
+                console.log('[患者姓名] API不可用，使用本地缓存');
             });
         }
 
@@ -3599,7 +3690,8 @@
                 start_date: $('#filterStartDate').val(),
                 end_date: $('#filterEndDate').val(),
                 therapist_id: $('#filterTherapist').val() || null,
-                category_id: $('#filterCategory').val() || null
+                category_id: $('#filterCategory').val() || null,
+                patient_info: $('#filterPatient').val().trim() || null
             };
 
             $.get('/api/records', params, function(res) {
@@ -4656,7 +4748,8 @@
                 start_date: startDate,
                 end_date: endDate,
                 therapist_id: $('#filterTherapist').val() || null,
-                category_id: $('#filterCategory').val() || null
+                category_id: $('#filterCategory').val() || null,
+                patient_info: $('#filterPatient').val().trim() || null
             };
 
             showToast('正在导出...', 'info');

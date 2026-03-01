@@ -538,6 +538,7 @@ def get_records():
     end_date = request.args.get('end_date')
     therapist_id = request.args.get('therapist_id', type=int)
     category_id = request.args.get('category_id', type=int)
+    patient_info = request.args.get('patient_info', '').strip()  # 患者姓名筛选
 
     query = WorkloadRecord.query
 
@@ -550,6 +551,9 @@ def get_records():
     if category_id:
         # 通过治疗项目关联查询
         query = query.join(WorkloadTreatmentItem).filter_by(category_id=category_id)
+    if patient_info:
+        # 按患者信息模糊搜索
+        query = query.filter(WorkloadRecord.patient_info.contains(patient_info))
 
     records = query.order_by(WorkloadRecord.record_date.desc()).all()
 
@@ -726,10 +730,15 @@ def update_record(record_id):
 
     db.session.commit()
 
+    # 触发统计和成就更新
+    update_therapist_stats(record.therapist_id)
+    new_achievements = check_and_award_achievements(record.therapist_id)
+
     return jsonify({
         'success': True,
         'message': '记录更新成功',
-        'data': record.to_dict()
+        'data': record.to_dict(),
+        'new_achievements': new_achievements if new_achievements else None
     })
 
 
@@ -740,8 +749,14 @@ def delete_record(record_id):
     if not record:
         return jsonify({'success': False, 'error': '记录不存在'}), 404
 
+    # 保存治疗师ID用于后续更新统计
+    therapist_id = record.therapist_id
+
     db.session.delete(record)
     db.session.commit()
+
+    # 触发统计和成就更新
+    update_therapist_stats(therapist_id)
 
     return jsonify({
         'success': True,
@@ -759,14 +774,20 @@ def batch_delete_records():
 
     ids = data['ids']
     deleted = 0
+    affected_therapists = set()
 
     for record_id in ids:
         record = WorkloadRecord.query.get(record_id)
         if record:
+            affected_therapists.add(record.therapist_id)
             db.session.delete(record)
             deleted += 1
 
     db.session.commit()
+
+    # 批量更新受影响治疗师的统计
+    for tid in affected_therapists:
+        update_therapist_stats(tid)
 
     return jsonify({
         'success': True,
@@ -790,6 +811,7 @@ def batch_import_records():
         imported = 0
         failed = 0
         errors = []
+        affected_therapists = set()  # 收集受影响的治疗师
 
         def parse_date_flexible(date_value):
             """灵活解析多种日期格式（兼容WPS/Excel）"""
@@ -885,6 +907,7 @@ def batch_import_records():
                 )
 
                 db.session.add(new_record)
+                affected_therapists.add(therapist.id)
                 imported += 1
 
             except Exception as e:
@@ -893,13 +916,22 @@ def batch_import_records():
 
         db.session.commit()
 
+        # 批量更新受影响治疗师的统计和成就
+        new_achievements_by_therapist = {}
+        for tid in affected_therapists:
+            update_therapist_stats(tid)
+            new_achievements = check_and_award_achievements(tid)
+            if new_achievements:
+                new_achievements_by_therapist[tid] = new_achievements
+
         return jsonify({
             'success': True,
             'message': f'成功导入 {imported} 条记录',
             'data': {
                 'imported': imported,
                 'failed': failed,
-                'errors': errors[:20]  # 只返回前20个错误
+                'errors': errors[:20],  # 只返回前20个错误
+                'new_achievements': new_achievements_by_therapist if new_achievements_by_therapist else None
             }
         })
 
@@ -1599,13 +1631,17 @@ def get_patient_names():
             func.count(WorkloadRecord.id).desc()
         ).limit(100).all()
 
-        names = [r.patient_info for r in result if r.patient_info and r.patient_info.strip()]
+        # 返回姓名和真实记录数
+        names_with_count = [
+            {'name': r.patient_info, 'count': r.count}
+            for r in result if r.patient_info and r.patient_info.strip()
+        ]
 
         return jsonify({
             'success': True,
             'data': {
-                'names': names,
-                'total': len(names)
+                'names': names_with_count,
+                'total': len(names_with_count)
             }
         })
 
