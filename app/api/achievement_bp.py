@@ -43,6 +43,9 @@ def update_therapist_stats(therapist_id):
     stats.total_sessions = sum(r.session_count for r in records)
     stats.total_workload = sum(r.weighted_workload for r in records)
 
+    # 计算累计积分 (工作量 * 10 = 积分)
+    stats.total_points = int(stats.total_workload * 10)
+
     # 计算连续打卡
     dates = sorted(set(r.record_date for r in records), reverse=True)
     if dates:
@@ -223,6 +226,25 @@ def get_level_leaderboard():
     for i, stats in enumerate(stats_list, 1):
         therapist = WorkloadTherapist.query.get(stats.therapist_id)
         if therapist and therapist.is_active:
+            # 获取该治疗师已获得的成就
+            therapist_achievements = TherapistAchievement.query.filter_by(
+                therapist_id=stats.therapist_id
+            ).all()
+            unlocked_achievement_ids = [ta.achievement_id for ta in therapist_achievements]
+
+            # 获取成就详情
+            achievements_detail = []
+            for ta in therapist_achievements:
+                ach = Achievement.query.get(ta.achievement_id)
+                if ach:
+                    achievements_detail.append({
+                        'id': ach.id,
+                        'code': ach.code,
+                        'name': ach.name,
+                        'icon': ach.icon,
+                        'unlocked_at': ta.unlocked_at.isoformat() if ta.unlocked_at else None
+                    })
+
             result.append({
                 'rank': i,
                 'therapist_id': stats.therapist_id,
@@ -231,7 +253,8 @@ def get_level_leaderboard():
                 'level_name': TherapistStats.get_level_name(stats.current_level),
                 'level_badge': TherapistStats.get_level_badge(stats.current_level),
                 'total_points': stats.total_points,
-                'achievements_count': stats.achievements_count
+                'achievements_count': stats.achievements_count,
+                'achievements': achievements_detail  # 添加成就列表
             })
 
     return jsonify({

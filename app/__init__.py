@@ -37,6 +37,116 @@ def is_mobile_device(user_agent):
     ]
     return any(re.search(pattern, user_agent, re.IGNORECASE) for pattern in mobile_patterns)
 
+def auto_migrate():
+    """自动迁移：检查并创建缺失的表和数据"""
+    from sqlalchemy import text
+
+    print("=" * 50)
+    print("[AutoMigrate] Checking database schema...")
+
+    try:
+        # 检查成就表是否存在
+        result = db.session.execute(text(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='achievements'"
+        ))
+        achievements_exists = result.fetchone() is not None
+
+        if not achievements_exists:
+            print("[AutoMigrate] Creating achievement tables...")
+            # 创建成就相关表
+            db.session.execute(text("""
+                CREATE TABLE IF NOT EXISTS achievements (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    code VARCHAR(50) UNIQUE NOT NULL,
+                    name VARCHAR(100) NOT NULL,
+                    description TEXT,
+                    icon VARCHAR(50),
+                    category VARCHAR(50),
+                    condition_type VARCHAR(50),
+                    condition_value INTEGER,
+                    points_reward INTEGER DEFAULT 0,
+                    rarity VARCHAR(20) DEFAULT 'common',
+                    is_active BOOLEAN DEFAULT 1,
+                    sort_order INTEGER DEFAULT 0,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            """))
+
+            db.session.execute(text("""
+                CREATE TABLE IF NOT EXISTS therapist_achievements (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    therapist_id INTEGER NOT NULL,
+                    achievement_id INTEGER NOT NULL,
+                    unlocked_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (therapist_id) REFERENCES therapists(id),
+                    FOREIGN KEY (achievement_id) REFERENCES achievements(id),
+                    UNIQUE(therapist_id, achievement_id)
+                )
+            """))
+
+            db.session.execute(text("""
+                CREATE TABLE IF NOT EXISTS therapist_stats (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    therapist_id INTEGER UNIQUE NOT NULL,
+                    total_sessions INTEGER DEFAULT 0,
+                    total_workload FLOAT DEFAULT 0,
+                    total_points INTEGER DEFAULT 0,
+                    current_level INTEGER DEFAULT 1,
+                    level_progress FLOAT DEFAULT 0,
+                    current_streak INTEGER DEFAULT 0,
+                    longest_streak INTEGER DEFAULT 0,
+                    last_record_date DATE,
+                    achievements_count INTEGER DEFAULT 0,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (therapist_id) REFERENCES therapists(id)
+                )
+            """))
+
+            db.session.commit()
+            print("[AutoMigrate] Achievement tables created successfully")
+        else:
+            print("[AutoMigrate] Achievement tables already exist")
+
+        # 检查并初始化默认成就
+        from app.models import Achievement, DEFAULT_ACHIEVEMENTS
+        existing_count = Achievement.query.count()
+        if existing_count == 0:
+            print("[AutoMigrate] Initializing default achievements...")
+            for ach_data in DEFAULT_ACHIEVEMENTS:
+                achievement = Achievement(**ach_data)
+                db.session.add(achievement)
+            db.session.commit()
+            print(f"[AutoMigrate] Created {len(DEFAULT_ACHIEVEMENTS)} default achievements")
+        else:
+            print(f"[AutoMigrate] Found {existing_count} existing achievements")
+
+        # 检查并添加 allow_delete 设置
+        from app.models import WorkloadSettings
+        allow_delete_exists = WorkloadSettings.query.filter_by(setting_key='allow_delete').first()
+        if not allow_delete_exists:
+            print("[AutoMigrate] Adding allow_delete setting...")
+            setting = WorkloadSettings(
+                setting_key='allow_delete',
+                setting_value='false',
+                setting_type='bool',
+                description='启用删除功能（删除操作不可恢复，请谨慎使用）'
+            )
+            db.session.add(setting)
+            db.session.commit()
+            print("[AutoMigrate] allow_delete setting added")
+        else:
+            print("[AutoMigrate] allow_delete setting already exists")
+
+        print("[AutoMigrate] Database schema check completed")
+        print("=" * 50)
+
+    except Exception as e:
+        print(f"[AutoMigrate] Error during migration: {e}")
+        db.session.rollback()
+        # 不抛出异常，允许系统继续运行
+
 def create_app():
     base_path = get_base_path()
 
@@ -91,5 +201,7 @@ def create_app():
     # 创建数据库表（首次运行时自动创建空数据库）
     with app.app_context():
         db.create_all()
+        # 自动迁移检查
+        auto_migrate()
 
     return app

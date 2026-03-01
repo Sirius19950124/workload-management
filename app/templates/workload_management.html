@@ -629,6 +629,154 @@
         .level-badge.level-8 { background: linear-gradient(135deg, #fde68a, #fbbf24); color: #78350f; }
         .level-badge.level-9 { background: linear-gradient(135deg, #a78bfa, #7c3aed); color: white; }
 
+        /* 治疗师个人成就徽章 */
+        .therapist-badges {
+            margin-top: 5px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3px;
+            align-items: center;
+        }
+
+        .achievement-mini-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            font-size: 14px;
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border-radius: 50%;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            cursor: help;
+            transition: transform 0.2s;
+        }
+
+        .achievement-mini-badge:hover {
+            transform: scale(1.2);
+        }
+
+        .achievement-more {
+            font-size: 11px;
+            color: #6b7280;
+            background: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 2px;
+        }
+
+        /* Emoji 不支持时的备用徽章样式 */
+        .badge-fallback {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .badge-fallback.bronze { background: linear-gradient(135deg, #cd7f32, #8b4513); }
+        .badge-fallback.silver { background: linear-gradient(135deg, #c0c0c0, #808080); }
+        .badge-fallback.gold { background: linear-gradient(135deg, #ffd700, #daa520); }
+        .badge-fallback.diamond { background: linear-gradient(135deg, #b9f2ff, #00bfff); }
+        .badge-fallback.crown { background: linear-gradient(135deg, #ffd700, #ff8c00); }
+        .badge-fallback.star { background: linear-gradient(135deg, #fff44f, #ffd700); }
+        .badge-fallback.fire { background: linear-gradient(135deg, #ff4500, #ff6347); }
+        .badge-fallback.legend { background: linear-gradient(135deg, #e6e6fa, #9370db); }
+        .badge-fallback.supreme { background: linear-gradient(135deg, #ff1493, #c71585); }
+
+        /* 成就图标备用样式 */
+        .achievement-icon-fallback {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            font-size: 10px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .achievement-icon-fallback.seed { background: #22c55e; }
+        .achievement-icon-fallback.leaf { background: #16a34a; }
+        .achievement-icon-fallback.star { background: #eab308; }
+        .achievement-icon-fallback.fire { background: #ef4444; }
+        .achievement-icon-fallback.crown { background: #f59e0b; }
+        .achievement-icon-fallback.gem { background: #8b5cf6; }
+        .achievement-icon-fallback.muscle { background: #3b82f6; }
+        .achievement-icon-fallback.lightning { background: #06b6d4; }
+        .achievement-icon-fallback.trophy { background: #ec4899; }
+
+        /* ========== Font Awesome图标徽章样式（彩色Emoji回退方案） ========== */
+        .fa-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin: 2px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }
+        .fa-badge:hover { transform: scale(1.15); }
+        .fa-badge i { font-size: 12px; color: white; }
+
+        /* 治疗次数成就 - 绿色到橙色 */
+        .fa-badge.seed { background: linear-gradient(135deg, #22c55e, #16a34a); }
+        .fa-badge.leaf { background: linear-gradient(135deg, #4ade80, #22c55e); }
+        .fa-badge.star { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+        .fa-badge.fire { background: linear-gradient(135deg, #f97316, #ea580c); }
+        .fa-badge.crown { background: linear-gradient(135deg, #fbbf24, #d97706); }
+        .fa-badge.gem { background: linear-gradient(135deg, #a78bfa, #7c3aed); }
+
+        /* 工作量成就 - 金色系 */
+        .fa-badge.star-gold { background: linear-gradient(135deg, #ffd700, #b8860b); }
+        .fa-badge.medal { background: linear-gradient(135deg, #fbbf24, #d97706); }
+        .fa-badge.trophy { background: linear-gradient(135deg, #fcd34d, #b45309); }
+        .fa-badge.flash { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+
+        /* 连续打卡成就 */
+        .fa-badge.bolt { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+        .fa-badge.bolt-blue { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+
+        /* 日工作量成就 */
+        .fa-badge.rocket { background: linear-gradient(135deg, #ec4899, #db2777); }
+        .fa-badge.target { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+        .fa-badge.heart { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+
+        /* 等级徽章（小尺寸） */
+        .fa-badge-sm {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            margin-right: 4px;
+        }
+        .fa-badge-sm i { font-size: 10px; color: white; }
+        .fa-badge-sm.lv1 { background: linear-gradient(135deg, #6b7280, #4b5563); }
+        .fa-badge-sm.lv2 { background: linear-gradient(135deg, #22c55e, #16a34a); }
+        .fa-badge-sm.lv3 { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .fa-badge-sm.lv4 { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+        .fa-badge-sm.lv5 { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .fa-badge-sm.lv6 { background: linear-gradient(135deg, #f97316, #ea580c); }
+        .fa-badge-sm.lv7 { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .fa-badge-sm.lv8 { background: linear-gradient(135deg, #ec4899, #db2777); }
+        .fa-badge-sm.lv9 { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+
+        /* Font Awesome徽章补充颜色 */
+        .fa-badge.medal { background: linear-gradient(135deg, #fbbf24, #d97706); }
+        .fa-badge.trophy { background: linear-gradient(135deg, #fcd34d, #b45309); }
+        .fa-badge.flash { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+        .fa-badge.bolt-blue { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+        .fa-badge.bolt { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+
         .streak-fire {
             animation: fire-pulse 0.5s ease-in-out infinite alternate;
         }
@@ -657,6 +805,71 @@
             transition: stroke-dashoffset 0.35s;
             transform: rotate(-90deg);
             transform-origin: 50% 50%;
+        }
+
+        /* 患者姓名自动完成下拉框 */
+        .patient-autocomplete {
+            position: relative;
+        }
+
+        .patient-autocomplete-dropdown {
+            position: fixed;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 9999;
+            display: none;
+            min-width: 150px;
+        }
+
+        .patient-autocomplete-dropdown.show {
+            display: block;
+        }
+
+        .patient-autocomplete-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .patient-autocomplete-item:last-child {
+            border-bottom: none;
+        }
+
+        .patient-autocomplete-item:hover,
+        .patient-autocomplete-item.active {
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            color: #0369a1;
+        }
+
+        .patient-autocomplete-item .patient-name {
+            font-weight: 500;
+        }
+
+        .patient-autocomplete-item .patient-count {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            background: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+
+        .patient-autocomplete-item.active .patient-count {
+            background: #bae6fd;
+            color: #0369a1;
+        }
+
+        /* 高亮匹配文字 */
+        .patient-match {
+            background: #fef08a;
+            padding: 0 2px;
+            border-radius: 2px;
         }
     </style>
 </head>
@@ -1244,6 +1457,27 @@
                                         </div>
                                     </div>
 
+                                    <!-- 删除功能设置 -->
+                                    <div class="card mb-3">
+                                        <div class="card-header bg-light">
+                                            <i class="fas fa-trash-alt mr-1"></i>删除功能
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="form-group">
+                                                <div class="custom-control custom-switch">
+                                                    <input type="checkbox" class="custom-control-input" id="allowDelete"
+                                                           onchange="updateSetting('allow_delete', this.checked)">
+                                                    <label class="custom-control-label" for="allowDelete">
+                                                        <span class="text-danger"><i class="fas fa-exclamation-triangle mr-1"></i>启用删除功能</span>
+                                                    </label>
+                                                </div>
+                                                <small class="text-muted">
+                                                    启用后，将显示删除按钮（治疗项目、类别、工作量记录等）。<strong class="text-danger">注意：删除操作不可恢复，请谨慎使用！</strong>
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <!-- 设置说明 -->
                                     <div class="alert alert-info">
                                         <i class="fas fa-info-circle mr-1"></i>
@@ -1251,6 +1485,7 @@
                                         <ul class="mb-0 mt-2">
                                             <li><strong>过往日期录入</strong>：开启后，用户可以选择过去的日期进行录入，方便补录遗漏的记录</li>
                                             <li><strong>最大过往天数</strong>：限制可以补录的最大天数，防止录入过于久远的数据</li>
+                                            <li><strong>删除功能</strong>：开启后显示删除按钮，<span class="text-danger">删除操作不可恢复，请谨慎使用</span></li>
                                             <li>设置更改后立即生效，无需重启系统</li>
                                         </ul>
                                     </div>
@@ -1754,25 +1989,69 @@
     <!-- Pinyin library - 简化版内联实现 -->
     <script>
         // 简易拼音库（如果无法加载外部库）
+        // 包含常用姓氏、名字和治疗相关汉字
         var pinyinPro = {
+            pinyinMap: {
+                // 常用姓氏 (按拼音排序)
+                '王': 'wang', '李': 'li', '张': 'zhang', '刘': 'liu', '陈': 'chen', '杨': 'yang', '黄': 'huang',
+                '赵': 'zhao', '周': 'zhou', '吴': 'wu', '徐': 'xu', '孙': 'sun', '马': 'ma', '朱': 'zhu',
+                '胡': 'hu', '郭': 'guo', '何': 'he', '林': 'lin', '罗': 'luo', '高': 'gao', '郑': 'zheng',
+                '梁': 'liang', '谢': 'xie', '宋': 'song', '唐': 'tang', '许': 'xu', '邓': 'deng', '冯': 'feng',
+                '韩': 'han', '曹': 'cao', '曾': 'zeng', '彭': 'peng', '萧': 'xiao', '蔡': 'cai', '潘': 'pan',
+                '田': 'tian', '董': 'dong', '袁': 'yuan', '于': 'yu', '余': 'yu', '叶': 'ye', '蒋': 'jiang',
+                '杜': 'du', '苏': 'su', '魏': 'wei', '程': 'cheng', '吕': 'lv', '丁': 'ding', '沈': 'shen',
+                '任': 'ren', '姚': 'yao', '卢': 'lu', '傅': 'fu', '钟': 'zhong', '姜': 'jiang', '崔': 'cui',
+                '谭': 'tan', '廖': 'liao', '范': 'fan', '汪': 'wang', '陆': 'lu', '金': 'jin', '石': 'shi',
+                '戴': 'dai', '贾': 'jia', '韦': 'wei', '夏': 'xia', '邱': 'qiu', '方': 'fang', '侯': 'hou',
+                '邹': 'zou', '熊': 'xiong', '孟': 'meng', '秦': 'qin', '白': 'bai', '江': 'jiang', '阎': 'yan',
+                '薛': 'xue', '尹': 'yin', '段': 'duan', '雷': 'lei', '龙': 'long', '黎': 'li', '史': 'shi',
+                '陶': 'tao', '贺': 'he', '顾': 'gu', '毛': 'mao', '郝': 'hao', '龚': 'gong', '邵': 'shao',
+                '万': 'wan', '钱': 'qian', '严': 'yan', '洪': 'hong', '武': 'wu', '莫': 'mo', '孔': 'kong',
+                '向': 'xiang', '常': 'chang', '温': 'wen', '康': 'kang', '邢': 'xing', '俞': 'yu', '李': 'li',
+
+                // 常用名字用字
+                '蔼': 'ai', '珠': 'zhu', '婷': 'ting', '宇': 'yu', '凡': 'fan', '芮': 'rui', '凯': 'kai',
+                '珊': 'shan', '德': 'de', '裕': 'yu', '明': 'ming', '华': 'hua', '文': 'wen', '军': 'jun',
+                '平': 'ping', '建': 'jian', '国': 'guo', '红': 'hong', '丽': 'li', '芳': 'fang', '敏': 'min',
+                '静': 'jing', '强': 'qiang', '刚': 'gang', '勇': 'yong', '杰': 'jie', '峰': 'feng', '磊': 'lei',
+                '艳': 'yan', '英': 'ying', '梅': 'mei', '萍': 'ping', '琳': 'lin', '霞': 'xia', '燕': 'yan',
+                '玲': 'ling', '洁': 'jie', '云': 'yun', '莲': 'lian', '琴': 'qin', '雪': 'xue', '青': 'qing',
+                '秀': 'xiu', '娟': 'juan', '欣': 'xin', '雅': 'ya', '瑞': 'rui', '鹏': 'peng', '辉': 'hui',
+                '斌': 'bin', '浩': 'hao', '亮': 'liang', '健': 'jian', '俊': 'jun', '帅': 'shuai', '旭': 'xu',
+                '晨': 'chen', '阳': 'yang', '宁': 'ning', '慧': 'hui', '晶': 'jing', '媛': 'yuan', '倩': 'qian',
+                '颖': 'ying', '佳': 'jia', '欣': 'xin', '怡': 'yi', '悦': 'yue', '萱': 'xuan', '涵': 'han',
+                '博': 'bo', '思': 'si', '雨': 'yu', '泽': 'ze', '航': 'hang', '轩': 'xuan', '豪': 'hao',
+                '然': 'ran', '一': 'yi', '二': 'er', '三': 'san', '四': 'si', '五': 'wu', '六': 'liu',
+                '七': 'qi', '八': 'ba', '九': 'jiu', '十': 'shi', '百': 'bai', '千': 'qian', '万': 'wan',
+
+                // 治疗相关词汇
+                '盆': 'pen', '底': 'di', '电': 'dian', '磁': 'ci', '推': 'tui', '拿': 'na', '按': 'an', '摩': 'mo',
+                '针': 'zhen', '灸': 'jiu', '拔': 'ba', '罐': 'guan', '刮': 'gua', '痧': 'sha',
+                '腰': 'yao', '腿': 'tui', '颈': 'jing', '椎': 'zhui', '肩': 'jian', '背': 'bei',
+                '手': 'shou', '足': 'zu', '头': 'tou', '面': 'mian', '腹': 'fu', '胸': 'xiong',
+                '康': 'kang', '复': 'fu', '理': 'li', '疗': 'liao', '治': 'zhi', '诊': 'zhen',
+                '患': 'huan', '者': 'zhe', '医': 'yi', '生': 'sheng', '护': 'hu', '士': 'shi',
+                '药': 'yao', '片': 'pian', '剂': 'ji', '丸': 'wan', '汤': 'tang', '散': 'san'
+            },
             pinyin: function(text, options) {
                 if (!text) return '';
-                // 简单的汉字拼音映射（仅包含常用字）
-                var pinyinMap = {
-                    '李': 'li', '德': 'de', '裕': 'yu', '陈': 'chen', '宇': 'yu', '凡': 'fan',
-                    '白': 'bai', '芮': 'rui', '张': 'zhang', '婷': 'ting', '林': 'lin', '凯': 'kai', '珊': 'shan',
-                    '盆': 'pen', '底': 'di', '电': 'dian', '磁': 'ci', '推': 'tui', '拿': 'na', '按': 'an', '摩': 'mo',
-                    '针': 'zhen', '灸': 'jiu', '拔': 'ba', '罐': 'guan', '刮': 'gua', '痧': 'sha',
-                    '腰': 'yao', '腿': 'tui', '颈': 'jing', '椎': 'zhui', '肩': 'jian', '背': 'bei',
-                    '手': 'shou', '足': 'zu', '头': 'tou', '面': 'mian', '腹': 'fu', '胸': 'xiong'
-                };
+
+                var pattern = options && options.pattern ? options.pattern : 'pinyin';
                 var result = '';
+
                 for (var i = 0; i < text.length; i++) {
                     var char = text[i];
-                    if (pinyinMap[char]) {
-                        result += pinyinMap[char] + ' ';
+                    var pinyin = this.pinyinMap[char];
+
+                    if (pinyin) {
+                        if (pattern === 'first') {
+                            // 首字母模式：只取拼音第一个字母
+                            result += pinyin.charAt(0);
+                        } else {
+                            result += pinyin + ' ';
+                        }
                     } else if (/[a-zA-Z0-9]/.test(char)) {
-                        result += char;
+                        result += char.toLowerCase();
                     }
                 }
                 return result.trim();
@@ -1784,6 +2063,7 @@
         let therapists = [];
         let treatmentItems = [];
         let categories = [];
+        window.allowDelete = false;  // 默认禁用删除功能，需要在设置中开启
 
         // 验证拼音库是否加载（延迟到页面加载完成后）
         window.addEventListener('load', function() {
@@ -1811,12 +2091,46 @@
                             document.getElementById('pastDateDaysGroup').style.display = s.value ? 'block' : 'none';
                         } else if (s.key === 'past_date_max_days') {
                             document.getElementById('pastDateMaxDays').value = s.value || 7;
+                        } else if (s.key === 'allow_delete') {
+                            document.getElementById('allowDelete').checked = s.value;
+                            updateDeleteButtonsVisibility(s.value);
                         }
                     });
                 }
             } catch (err) {
                 console.error('加载设置失败', err);
             }
+        }
+
+        // 更新删除按钮的可见性
+        function updateDeleteButtonsVisibility(visible) {
+            // 批量删除按钮
+            const batchDeleteItemsBtn = document.getElementById('batchDeleteItemsBtn');
+            const batchDeleteCategoriesBtn = document.getElementById('batchDeleteCategoriesBtn');
+            const batchDeleteRecordsBtn = document.getElementById('batchDeleteRecordsBtn');
+
+            if (batchDeleteItemsBtn) {
+                batchDeleteItemsBtn.style.display = visible ? '' : 'none';
+            }
+            if (batchDeleteCategoriesBtn) {
+                batchDeleteCategoriesBtn.style.display = visible ? '' : 'none';
+            }
+            // 记录的批量删除按钮需要特殊处理（只有在有选中项时才显示）
+            if (batchDeleteRecordsBtn && visible) {
+                const selected = $('.record-checkbox:checked').length;
+                batchDeleteRecordsBtn.style.display = selected > 0 ? '' : 'none';
+            } else if (batchDeleteRecordsBtn) {
+                batchDeleteRecordsBtn.style.display = 'none';
+            }
+
+            // 存储设置到全局变量，供渲染函数使用
+            window.allowDelete = visible;
+
+            // 重新渲染表格以更新删除按钮显示
+            if (typeof renderItemsTable === 'function') renderItemsTable();
+            if (typeof renderCategoriesTable === 'function') renderCategoriesTable();
+            // 记录表格需要重新加载数据
+            if (typeof loadRecords === 'function') loadRecords();
         }
 
         // 更新设置
@@ -1834,6 +2148,11 @@
                     // 显示/隐藏天数设置
                     if (key === 'allow_past_date') {
                         document.getElementById('pastDateDaysGroup').style.display = value ? 'block' : 'none';
+                    }
+
+                    // 更新删除按钮可见性
+                    if (key === 'allow_delete') {
+                        updateDeleteButtonsVisibility(value);
                     }
                 } else {
                     showToast(data.error || '保存失败', 'error');
@@ -1903,6 +2222,120 @@
         }
 
         // 格式化日期
+        // ===================== Emoji支持检测 =====================
+        // 检测系统是否支持彩色Emoji（Windows 7等旧系统不支持）
+        var emojiSupported = null;
+
+        function checkEmojiSupport() {
+            if (emojiSupported !== null) return emojiSupported;
+
+            try {
+                var canvas = document.createElement('canvas');
+                var ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    emojiSupported = false;
+                    return false;
+                }
+
+                // 绘制一个彩色emoji，检查是否有颜色
+                ctx.fillText('🌟', 0, 16);
+                var data = ctx.getImageData(0, 0, 16, 16).data;
+
+                // 检查是否有非灰度颜色（彩色emoji会有多种颜色）
+                var hasColor = false;
+                for (var i = 0; i < data.length; i += 4) {
+                    var r = data[i], g = data[i+1], b = data[i+2];
+                    // 如果RGB值差异较大，说明有颜色
+                    if (Math.max(r, g, b) - Math.min(r, g, b) > 30) {
+                        hasColor = true;
+                        break;
+                    }
+                }
+
+                emojiSupported = hasColor;
+                console.log('[Emoji检测] 彩色Emoji支持: ' + (hasColor ? '是' : '否'));
+                return hasColor;
+            } catch (e) {
+                emojiSupported = false;
+                console.log('[Emoji检测] 检测失败，默认不支持彩色: ' + e.message);
+                return false;
+            }
+        }
+
+        // 成就图标到Font Awesome图标的映射（不支持彩色Emoji时使用）
+        // 注意：使用 Font Awesome 5.x 语法（fas前缀）
+        var achievementFallbackMap = {
+            // 治疗次数成就
+            '🌱': { icon: 'fas fa-leaf', color: 'seed' },       // 绿色 - 初露锋芒
+            '🌿': { icon: 'fas fa-leaf', color: 'leaf' },       // 浅绿 - 渐入佳境
+            '⭐': { icon: 'fas fa-star', color: 'star' },       // 金色 - 技艺精进
+            '🔥': { icon: 'fas fa-fire', color: 'fire' },       // 橙色 - 炉火纯青
+            '👑': { icon: 'fas fa-trophy', color: 'crown' },    // 金色奖杯 - 康复大师
+            '💎': { icon: 'fas fa-gem', color: 'gem' },         // 紫色宝石 - 传奇治疗师（FA5: fa-gem）
+            // 工作量成就
+            '🌟': { icon: 'fas fa-star', color: 'star-gold' },  // 亮金 - 勤奋之星
+            '🏅': { icon: 'fas fa-thumbs-up', color: 'medal' }, // 金色点赞 - 努力标兵
+            '🏆': { icon: 'fas fa-trophy', color: 'trophy' },   // 金色奖杯 - 劳动模范
+            '💫': { icon: 'fas fa-star', color: 'flash' },      // 黄色闪光 - 工作狂人
+            // 连续打卡成就
+            '💪': { icon: 'fas fa-bolt', color: 'bolt' },       // 黄色闪电 - 坚持不懈
+            '⚡': { icon: 'fas fa-bolt', color: 'bolt-blue' },  // 蓝色闪电 - 持之以恒
+            // 日工作量成就
+            '🚀': { icon: 'fas fa-rocket', color: 'rocket' },   // 粉色火箭 - 高效能者
+            '🎯': { icon: 'fas fa-bullseye', color: 'target' }, // 红色靶心 - 爆发之星
+            '💯': { icon: 'fas fa-bullseye', color: 'target' },  // 红色靶心
+            // 其他
+            '🎖️': { icon: 'fas fa-certificate', color: 'medal' },
+            '❤️': { icon: 'fas fa-heart', color: 'heart' },
+            '✨': { icon: 'fas fa-star', color: 'star' }
+        };
+
+        // 等级徽章回退映射
+        var levelFallbackMap = {
+            'Lv.1': { icon: 'fas fa-star', color: 'lv1' },
+            'Lv.2': { icon: 'fas fa-star', color: 'lv2' },
+            'Lv.3': { icon: 'fas fa-star', color: 'lv3' },
+            'Lv.4': { icon: 'fas fa-star', color: 'lv4' },
+            'Lv.5': { icon: 'fas fa-star', color: 'lv5' },
+            'Lv.6': { icon: 'fas fa-star', color: 'lv6' },
+            'Lv.7': { icon: 'fas fa-star', color: 'lv7' },
+            'Lv.8': { icon: 'fas fa-star', color: 'lv8' },
+            'Lv.9': { icon: 'fas fa-star', color: 'lv9' }
+        };
+
+        // 生成成就徽章HTML（带回退支持）
+        function renderAchievementBadge(icon, name) {
+            if (checkEmojiSupport()) {
+                // 支持彩色emoji，直接显示
+                return '<span class="achievement-mini-badge" title="' + name + '">' + icon + '</span>';
+            } else {
+                // 不支持彩色emoji，使用Font Awesome图标
+                var fallback = achievementFallbackMap[icon] || { icon: 'fas fa-star', color: 'star' };
+                return '<span class="fa-badge ' + fallback.color + '" title="' + name + '"><i class="' + fallback.icon + '"></i></span>';
+            }
+        }
+
+        // 生成等级徽章HTML（带回退支持）
+        function renderLevelBadge(level, levelBadge, levelName) {
+            if (checkEmojiSupport()) {
+                return '<span class="level-badge level-' + level + '" title="' + levelName + '">' + levelBadge + ' ' + levelName + '</span>';
+            } else {
+                var fallback = levelFallbackMap[levelBadge] || { icon: 'fas fa-star', color: 'lv' + level };
+                return '<span class="level-badge level-' + level + '" title="' + levelName + '"><span class="fa-badge-sm ' + fallback.color + '"><i class="' + fallback.icon + '"></i></span> ' + levelName + '</span>';
+            }
+        }
+
+        // 生成火焰/连续打卡徽章HTML（带回退支持）
+        function renderStreakBadge(streak) {
+            var icon = streak >= 7 ? '🔥' : streak >= 3 ? '⚡' : '💪';
+            if (checkEmojiSupport()) {
+                return '<span class="streak-fire">' + icon + '</span>';
+            } else {
+                var fallback = achievementFallbackMap[icon] || { icon: 'fas fa-bolt', color: 'bolt' };
+                return '<span class="fa-badge ' + fallback.color + '"><i class="' + fallback.icon + '"></i></span>';
+            }
+        }
+
         function formatDate(dateStr) {
             const d = new Date(dateStr);
             return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
@@ -1922,6 +2355,8 @@
             loadCategories();
             loadDashboard();
             loadRecentUsed();
+            loadPatientNamesCache();  // 加载患者姓名缓存
+            loadPatientNamesFromDB(); // 从数据库加载患者姓名
             initAchievements();  // 初始化成就系统
 
             // 初始添加5行 - 移至 checkAllDataLoaded() 中执行，确保数据加载完成
@@ -1994,15 +2429,32 @@
                     let html = '';
                     res.data.leaderboard.forEach((item, index) => {
                         const rankClass = index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : 'normal';
+
+                        // 生成成就徽章HTML（最多显示5个）- 使用回退支持
+                        let badgesHtml = '';
+                        if (item.achievements && item.achievements.length > 0) {
+                            const displayBadges = item.achievements.slice(0, 5);
+                            displayBadges.forEach(ach => {
+                                badgesHtml += renderAchievementBadge(ach.icon, ach.name);
+                            });
+                            if (item.achievements.length > 5) {
+                                badgesHtml += `<span class="achievement-more">+${item.achievements.length - 5}</span>`;
+                            }
+                        }
+
+                        // 生成等级徽章 - 使用回退支持
+                        var levelBadgeHtml = renderLevelBadge(item.level, item.level_badge, item.level_name);
+
                         html += `
                             <div class="ranking-item">
                                 <div class="rank ${rankClass}">${index + 1}</div>
                                 <div class="flex-grow-1">
                                     <div class="font-weight-bold">
-                                        <span class="level-badge level-${item.level}">${item.level_badge} Lv.${item.level}</span>
+                                        ${levelBadgeHtml}
                                         ${item.therapist_name}
                                     </div>
                                     <small class="text-muted">积分: ${item.total_points} | 成就: ${item.achievements_count}</small>
+                                    <div class="therapist-badges">${badgesHtml}</div>
                                 </div>
                             </div>
                         `;
@@ -2023,13 +2475,14 @@
                     let html = '';
                     res.data.leaderboard.forEach((item, index) => {
                         const rankClass = index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : 'normal';
-                        const fireEmoji = item.current_streak >= 7 ? '🔥' : item.current_streak >= 3 ? '⚡' : '💪';
+                        // 使用回退支持渲染连续打卡徽章
+                        const streakBadge = renderStreakBadge(item.current_streak);
                         html += `
                             <div class="ranking-item">
                                 <div class="rank ${rankClass}">${index + 1}</div>
                                 <div class="flex-grow-1">
                                     <div class="font-weight-bold">
-                                        <span class="streak-fire">${fireEmoji}</span> ${item.therapist_name}
+                                        ${streakBadge} ${item.therapist_name}
                                     </div>
                                     <small class="text-muted">连续: ${item.current_streak}天 | 最长: ${item.longest_streak}天</small>
                                 </div>
@@ -2055,10 +2508,17 @@
                     // 只展示前12个成就
                     const displayAchievements = achievements.slice(0, 12);
                     displayAchievements.forEach(ach => {
+                        // 生成成就图标HTML - 使用回退支持
+                        var iconHtml = ach.icon;
+                        if (!checkEmojiSupport()) {
+                            var fallback = achievementFallbackMap[ach.icon] || { icon: 'fas fa-star', color: 'star' };
+                            iconHtml = '<span class="fa-badge ' + fallback.color + '" style="width:48px;height:48px;font-size:20px;"><i class="' + fallback.icon + '"></i></span>';
+                        }
+
                         html += `
                             <div class="col-md-2 col-sm-4 col-6 mb-3">
                                 <div class="achievement-card">
-                                    <div class="achievement-icon">${ach.icon}</div>
+                                    <div class="achievement-icon">${iconHtml}</div>
                                     <div class="achievement-name">${ach.name}</div>
                                     <div class="achievement-desc">${ach.description}</div>
                                     ${ach.points_reward > 0 ? `<small class="text-success">+${ach.points_reward}积分</small>` : ''}
@@ -2218,6 +2678,7 @@
         // 渲染治疗项目表格
         function renderItemsTable() {
             let html = '';
+            const showDelete = window.allowDelete === true;
             treatmentItems.forEach(item => {
                 html += `
                     <tr>
@@ -2235,9 +2696,9 @@
                             <button class="btn btn-sm btn-outline-primary" onclick="editItem(${item.id})" title="编辑">
                                 <i class="fas fa-edit"></i> 编辑
                             </button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteItem(${item.id})" title="删除">
+                            ${showDelete ? `<button class="btn btn-sm btn-outline-danger" onclick="deleteItem(${item.id})" title="删除">
                                 <i class="fas fa-trash"></i> 删除
-                            </button>
+                            </button>` : ''}
                         </td>
                     </tr>
                 `;
@@ -2257,8 +2718,9 @@
         function updateItemSelectStatus() {
             const total = $('.item-checkbox').length;
             const selected = $('.item-checkbox:checked').length;
+            const showDelete = window.allowDelete === true;
             $('#selectAllItems').prop('indeterminate', selected > 0 && selected < total);
-            $('#batchDeleteItemsBtn').toggle(selected > 0);
+            $('#batchDeleteItemsBtn').toggle(selected > 0 && showDelete);
         }
 
         // 批量删除治疗项目
@@ -2319,6 +2781,7 @@
         // 渲染类别表格
         function renderCategoriesTable() {
             let html = '';
+            const showDelete = window.allowDelete === true;
             categories.forEach(c => {
                 html += `
                     <tr>
@@ -2334,9 +2797,9 @@
                             <button class="btn btn-sm btn-outline-primary" onclick="editCategory(${c.id})" title="编辑">
                                 <i class="fas fa-edit"></i> 编辑
                             </button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteCategory(${c.id})" title="删除">
+                            ${showDelete ? `<button class="btn btn-sm btn-outline-danger" onclick="deleteCategory(${c.id})" title="删除">
                                 <i class="fas fa-trash"></i> 删除
-                            </button>
+                            </button>` : ''}
                         </td>
                     </tr>
                 `;
@@ -2355,7 +2818,8 @@
         // 更新批量删除按钮状态
         function updateCategoryBatchDeleteBtn() {
             const checkedCount = $('.category-checkbox:checked').length;
-            if (checkedCount > 0) {
+            const showDelete = window.allowDelete === true;
+            if (checkedCount > 0 && showDelete) {
                 $('#batchDeleteCategoriesBtn').show().html(`<i class="fas fa-trash mr-1"></i>批量删除 (${checkedCount})`);
             } else {
                 $('#batchDeleteCategoriesBtn').hide();
@@ -2399,6 +2863,276 @@
         // ==================== 快速录入功能 ====================
         let entryRowId = 0;
         let recentUsed = { therapists: [], items: [] };
+
+        // ==================== 患者姓名自动完成功能 ====================
+        let patientNamesCache = {}; // 患者姓名缓存 { name: count }
+        let activeAutocomplete = null; // 当前激活的自动完成下拉框
+        let autocompleteIndex = -1; // 当前选中项索引
+
+        // 加载患者姓名缓存
+        function loadPatientNamesCache() {
+            const saved = localStorage.getItem('workload_patientNames');
+            if (saved) {
+                patientNamesCache = JSON.parse(saved);
+            }
+        }
+
+        // 保存患者姓名缓存
+        function savePatientNamesCache() {
+            localStorage.setItem('workload_patientNames', JSON.stringify(patientNamesCache));
+        }
+
+        // 添加患者姓名到缓存
+        function addPatientName(name) {
+            if (!name || name.trim() === '') return;
+            name = name.trim();
+            if (patientNamesCache[name]) {
+                patientNamesCache[name]++;
+            } else {
+                patientNamesCache[name] = 1;
+            }
+            savePatientNamesCache();
+        }
+
+        // 批量添加患者姓名
+        function addPatientNames(names) {
+            names.forEach(name => {
+                if (name && name.trim() !== '') {
+                    name = name.trim();
+                    if (patientNamesCache[name]) {
+                        patientNamesCache[name]++;
+                    } else {
+                        patientNamesCache[name] = 1;
+                    }
+                }
+            });
+            savePatientNamesCache();
+        }
+
+        // 获取拼音首字母
+        function getPinyinInitials(text) {
+            if (!text) return '';
+            if (typeof pinyinPro !== 'undefined' && pinyinPro.pinyin) {
+                try {
+                    return pinyinPro.pinyin(text, { pattern: 'first', toneType: 'none' }).replace(/\s/g, '').toLowerCase();
+                } catch (e) {
+                    return '';
+                }
+            }
+            return '';
+        }
+
+        // 获取完整拼音
+        function getFullPinyin(text) {
+            if (!text) return '';
+            if (typeof pinyinPro !== 'undefined' && pinyinPro.pinyin) {
+                try {
+                    return pinyinPro.pinyin(text, { toneType: 'none' }).replace(/\s/g, '').toLowerCase();
+                } catch (e) {
+                    return '';
+                }
+            }
+            return '';
+        }
+
+        // 匹配患者姓名（支持首字、拼音首字母、完整拼音）
+        function matchPatientName(patientName, searchTerm) {
+            if (!searchTerm) return false;
+            searchTerm = searchTerm.toLowerCase();
+            patientName = patientName.toLowerCase();
+
+            // 1. 直接匹配（包含）
+            if (patientName.indexOf(searchTerm) > -1) return true;
+
+            // 2. 首字匹配
+            if (patientName[0] === searchTerm[0]) return true;
+
+            // 3. 拼音首字母匹配
+            const pinyinInitials = getPinyinInitials(patientName);
+            if (pinyinInitials && pinyinInitials.indexOf(searchTerm) > -1) return true;
+
+            // 4. 完整拼音匹配
+            const fullPinyin = getFullPinyin(patientName);
+            if (fullPinyin && fullPinyin.indexOf(searchTerm) > -1) return true;
+
+            return false;
+        }
+
+        // 高亮匹配文字
+        function highlightMatch(text, searchTerm) {
+            if (!searchTerm) return text;
+            const regex = new RegExp(`(${searchTerm})`, 'gi');
+            return text.replace(regex, '<span class="patient-match">$1</span>');
+        }
+
+        // 获取匹配的患者列表
+        function getMatchingPatients(searchTerm) {
+            const matches = [];
+            const sortedPatients = Object.entries(patientNamesCache)
+                .sort((a, b) => b[1] - a[1]); // 按使用次数排序
+
+            for (const [name, count] of sortedPatients) {
+                if (matchPatientName(name, searchTerm)) {
+                    matches.push({ name, count });
+                    if (matches.length >= 10) break; // 最多显示10个
+                }
+            }
+            return matches;
+        }
+
+        // 显示自动完成下拉框
+        function showPatientAutocomplete(input) {
+            const $input = $(input);
+            const value = $input.val().trim();
+            const $dropdown = $input.siblings('.patient-autocomplete-dropdown');
+
+            // 如果输入为空，显示最近使用的5个患者
+            const matches = value ? getMatchingPatients(value) : getRecentPatients(5);
+
+            if (matches.length === 0) {
+                hidePatientAutocomplete();
+                return;
+            }
+
+            let html = '';
+            matches.forEach((item, index) => {
+                const displayName = value ? highlightMatch(item.name, value) : item.name;
+                html += `
+                    <div class="patient-autocomplete-item ${index === 0 ? 'active' : ''}"
+                         data-name="${item.name}"
+                         data-index="${index}">
+                        <span class="patient-name">${displayName}</span>
+                        <span class="patient-count">${item.count}次</span>
+                    </div>
+                `;
+            });
+
+            $dropdown.html(html).addClass('show');
+
+            // 动态定位下拉框（使用fixed定位，坐标相对于视口，不需要加scrollY）
+            const inputRect = input.getBoundingClientRect();
+            $dropdown.css({
+                'top': inputRect.bottom + 2,
+                'left': inputRect.left,
+                'width': inputRect.width
+            });
+
+            activeAutocomplete = $dropdown[0];
+            autocompleteIndex = 0;
+        }
+
+        // 获取最近使用的患者
+        function getRecentPatients(limit) {
+            return Object.entries(patientNamesCache)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, limit)
+                .map(([name, count]) => ({ name, count }));
+        }
+
+        // 隐藏自动完成下拉框
+        function hidePatientAutocomplete() {
+            $('.patient-autocomplete-dropdown').removeClass('show');
+            activeAutocomplete = null;
+            autocompleteIndex = -1;
+        }
+
+        // 选择患者姓名
+        function selectPatientName(name, input) {
+            $(input).val(name);
+            hidePatientAutocomplete();
+            // 触发change事件以便其他逻辑处理
+            $(input).trigger('change');
+        }
+
+        // 绑定患者输入框自动完成事件
+        function bindPatientAutocomplete(input) {
+            const $input = $(input);
+            const $wrapper = $input.parent('.patient-autocomplete');
+            const $dropdown = $wrapper.find('.patient-autocomplete-dropdown');
+
+            // 输入事件
+            $input.on('input', function() {
+                showPatientAutocomplete(this);
+            });
+
+            // 聚焦事件
+            $input.on('focus', function() {
+                showPatientAutocomplete(this);
+            });
+
+            // 键盘导航
+            $input.on('keydown', function(e) {
+                const $items = $dropdown.find('.patient-autocomplete-item');
+                const itemCount = $items.length;
+
+                if (e.keyCode === 40) { // 下箭头
+                    e.preventDefault();
+                    autocompleteIndex = Math.min(autocompleteIndex + 1, itemCount - 1);
+                    updateAutocompleteSelection($items);
+                } else if (e.keyCode === 38) { // 上箭头
+                    e.preventDefault();
+                    autocompleteIndex = Math.max(autocompleteIndex - 1, 0);
+                    updateAutocompleteSelection($items);
+                } else if (e.keyCode === 13) { // 回车
+                    e.preventDefault();
+                    if (autocompleteIndex >= 0 && autocompleteIndex < itemCount) {
+                        const name = $items.eq(autocompleteIndex).data('name');
+                        selectPatientName(name, this);
+                    }
+                } else if (e.keyCode === 27) { // ESC
+                    hidePatientAutocomplete();
+                }
+            });
+
+            // 点击选择
+            $dropdown.on('click', '.patient-autocomplete-item', function() {
+                const name = $(this).data('name');
+                selectPatientName(name, $input[0]);
+            });
+
+            // 失焦隐藏（延迟以便点击事件可以触发）
+            $input.on('blur', function() {
+                setTimeout(hidePatientAutocomplete, 200);
+            });
+        }
+
+        // 更新自动完成选中状态
+        function updateAutocompleteSelection($items) {
+            $items.removeClass('active');
+            if (autocompleteIndex >= 0 && autocompleteIndex < $items.length) {
+                $items.eq(autocompleteIndex).addClass('active');
+                // 滚动到可见区域
+                const $selected = $items.eq(autocompleteIndex);
+                const $dropdown = $selected.parent();
+                const dropdownHeight = $dropdown.height();
+                const itemTop = $selected.position().top;
+                const itemHeight = $selected.outerHeight();
+
+                if (itemTop < 0) {
+                    $dropdown.scrollTop($dropdown.scrollTop() + itemTop);
+                } else if (itemTop + itemHeight > dropdownHeight) {
+                    $dropdown.scrollTop($dropdown.scrollTop() + itemTop + itemHeight - dropdownHeight);
+                }
+            }
+        }
+
+        // 从数据库加载患者姓名
+        function loadPatientNamesFromDB() {
+            $.get('/api/patients/names', function(res) {
+                if (res.success && res.data && res.data.names) {
+                    // 合并数据库中的姓名到缓存
+                    res.data.names.forEach(name => {
+                        if (!patientNamesCache[name]) {
+                            patientNamesCache[name] = 1;
+                        }
+                    });
+                    savePatientNamesCache();
+                }
+            }).fail(function() {
+                // API不存在时静默失败，使用本地缓存
+                console.log('患者姓名API不可用，使用本地缓存');
+            });
+        }
 
         // 加载最近使用记录
         function loadRecentUsed() {
@@ -2485,7 +3219,7 @@
                     <td class="text-center text-muted">${entryRowId}</td>
                     <td><input type="date" class="form-control form-control-sm entry-date" value="${today}"></td>
                     <td><select class="form-control form-control-sm entry-therapist select2-search">${therapistOptions}</select></td>
-                    <td><input type="text" class="form-control form-control-sm entry-patient" placeholder="患者ID/姓名"></td>
+                    <td><div class="patient-autocomplete" style="position:relative;"><input type="text" class="form-control form-control-sm entry-patient" placeholder="患者ID/姓名" autocomplete="off"><div class="patient-autocomplete-dropdown"></div></div></td>
                     <td><select class="form-control form-control-sm entry-item select2-search">${itemOptions}</select></td>
                     <td><input type="text" class="form-control form-control-sm entry-weight bg-light" readonly value="-"></td>
                     <td><input type="number" class="form-control form-control-sm entry-sessions" value="1" min="1"></td>
@@ -2618,6 +3352,10 @@
         // 绑定行事件
         function bindEntryRowEvents(rowId) {
             const $row = $(`#${rowId}`);
+
+            // 患者输入框自动完成
+            const $patientInput = $row.find('.entry-patient');
+            bindPatientAutocomplete($patientInput);
 
             // 治疗师选择
             $row.find('.entry-therapist').on('change', function() {
@@ -2766,19 +3504,41 @@
                 data: JSON.stringify(records),
                 success: function(res) {
                     if (res.success) {
-                        showToast(`成功保存 ${res.data.total} 条记录！总工作量: ${totalWorkload}`, 'success');
+                        // 检查是否有部分失败（如重复记录）
+                        if (res.data.errors && res.data.errors.length > 0) {
+                            // 有部分记录保存失败
+                            const errorMsg = res.data.errors.join('\n');
+                            showToast(`成功保存 ${res.data.total} 条，失败 ${res.data.errors.length} 条`, 'warning');
+                            // 弹框显示详细错误
+                            alert('以下记录保存失败：\n\n' + errorMsg);
+                        } else {
+                            showToast(`成功保存 ${res.data.total} 条记录！总工作量: ${totalWorkload}`, 'success');
+                        }
+                        // 保存患者姓名到缓存
+                        const patientNames = records.map(r => r.patient_info).filter(n => n && n.trim());
+                        addPatientNames(patientNames);
                         // 清空表格并重新添加5行
                         $('#quickEntryBody').empty();
                         entryRowId = 0;
                         addMultipleRows(5);
                         updateEntryStats();
                         loadDashboard();
+                        // 刷新成就系统（排行榜和徽章）
+                        initAchievements();
+                        // 显示新解锁的成就
+                        if (res.data.new_achievements && Object.keys(res.data.new_achievements).length > 0) {
+                            showAchievementNotification(res.data.new_achievements);
+                        }
                     } else {
+                        // 全部失败
                         showToast('保存失败：' + res.error, 'error');
+                        alert('保存失败：\n\n' + res.error);
                     }
                 },
-                error: function() {
-                    showToast('请求失败，请稍后重试', 'error');
+                error: function(xhr) {
+                    const errorMsg = xhr.responseJSON?.error || '请求失败，请稍后重试';
+                    showToast(errorMsg, 'error');
+                    alert('保存失败：\n\n' + errorMsg);
                 }
             });
         }
@@ -2845,6 +3605,7 @@
             $.get('/api/records', params, function(res) {
                 if (res.success) {
                     let html = '';
+                    const showDelete = window.allowDelete === true;
                     res.data.records.forEach(r => {
                         html += `
                             <tr>
@@ -2858,9 +3619,9 @@
                                 <td>${r.weighted_workload}</td>
                                 <td>${r.remark || '-'}</td>
                                 <td>
-                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteRecord(${r.id})" title="删除记录">
+                                    ${showDelete ? `<button class="btn btn-sm btn-outline-danger" onclick="deleteRecord(${r.id})" title="删除记录">
                                         <i class="fas fa-trash"></i> 删除
-                                    </button>
+                                    </button>` : '<span class="text-muted">-</span>'}
                                 </td>
                             </tr>
                         `;
@@ -2901,8 +3662,9 @@
         function updateRecordSelectStatus() {
             const total = $('.record-checkbox').length;
             const selected = $('.record-checkbox:checked').length;
+            const showDelete = window.allowDelete === true;
             $('#selectAllRecords').prop('indeterminate', selected > 0 && selected < total);
-            $('#batchDeleteRecordsBtn').toggle(selected > 0);
+            $('#batchDeleteRecordsBtn').toggle(selected > 0 && showDelete);
             $('#selectedRecordsCount').text(selected > 0 ? `已选中 ${selected} 条记录` : '');
         }
 
@@ -3669,9 +4431,22 @@
                         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
                         const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
 
-                        // 检测表头判断列顺序
+                        // 检测表头判断列顺序（动态检测每列的位置）
                         const header = jsonData[0] || [];
-                        const hasWeightColumn = header.includes('权重');
+                        const headerLower = header.map(h => String(h || '').trim().toLowerCase());
+
+                        // 查找各列的索引位置
+                        const colIndex = {
+                            date: headerLower.findIndex(h => h.includes('日期')),
+                            therapist: headerLower.findIndex(h => h.includes('治疗师')),
+                            patient: headerLower.findIndex(h => h.includes('患者') || h.includes('患者id') || h.includes('患者姓名')),
+                            item: headerLower.findIndex(h => h.includes('治疗项目') || h.includes('项目')),
+                            weight: headerLower.findIndex(h => h.includes('权重')),
+                            sessions: headerLower.findIndex(h => h.includes('人次') || h.includes('次数')),
+                            remark: headerLower.findIndex(h => h.includes('备注') || h.includes('说明'))
+                        };
+
+                        console.log('检测到的列索引:', colIndex);
 
                         // 兼容WPS/Excel的日期解析函数
                         function parseDate(value) {
@@ -3679,13 +4454,14 @@
 
                             // 如果是数字（Excel/WPS日期序列号）
                             if (typeof value === 'number') {
-                                // Excel日期序列号转换（支持1900和1904日期系统）
-                                // 大多数情况使用1900系统（基准日期1899-12-30）
-                                const excelEpoch = new Date(1899, 11, 30);
-                                const date = new Date(excelEpoch.getTime() + value * 86400 * 1000);
-                                const year = date.getFullYear();
-                                const month = String(date.getMonth() + 1).padStart(2, '0');
-                                const day = String(date.getDate()).padStart(2, '0');
+                                // Excel日期序列号转换
+                                // SheetJS库已经处理了Excel 1900年bug
+                                // Excel序列号1 = 1900-01-01，所以基准是1899-12-31
+                                // 使用 UTC 时间避免时区问题
+                                const date = new Date(Date.UTC(1899, 11, 31 + value - 1));
+                                const year = date.getUTCFullYear();
+                                const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+                                const day = String(date.getUTCDate()).padStart(2, '0');
                                 return `${year}-${month}-${day}`;
                             }
 
@@ -3737,7 +4513,7 @@
                             return null;
                         }
 
-                        // 跳过表头，解析数据
+                        // 跳过表头，解析数据（使用动态列索引）
                         recordsImportData = [];
                         const previewBody = $('#recordsPreviewTable tbody');
                         previewBody.empty();
@@ -3746,30 +4522,16 @@
                             const row = jsonData[i];
                             if (!row || row.length < 4) continue;
 
-                            let record;
-                            if (hasWeightColumn) {
-                                // 新格式：日期, 治疗师, 患者, 治疗项目, 权重, 人次, 备注
-                                record = {
-                                    date: parseDate(row[0]),
-                                    therapist: String(row[1] || '').trim(),
-                                    patient: String(row[2] || '').trim(),
-                                    item: String(row[3] || '').trim(),
-                                    weight: parseFloat(row[4]) || null,
-                                    sessions: parseInt(row[5]) || 1,
-                                    remark: String(row[6] || '').trim()
-                                };
-                            } else {
-                                // 旧格式：日期, 治疗师, 患者, 治疗项目, 人次, 备注
-                                record = {
-                                    date: parseDate(row[0]),
-                                    therapist: String(row[1] || '').trim(),
-                                    patient: String(row[2] || '').trim(),
-                                    item: String(row[3] || '').trim(),
-                                    weight: null,
-                                    sessions: parseInt(row[4]) || 1,
-                                    remark: String(row[5] || '').trim()
-                                };
-                            }
+                            // 使用动态列索引获取数据，如果找不到则使用默认位置
+                            const record = {
+                                date: parseDate(colIndex.date >= 0 ? row[colIndex.date] : row[0]),
+                                therapist: String(colIndex.therapist >= 0 ? row[colIndex.therapist] : row[1] || '').trim(),
+                                patient: String(colIndex.patient >= 0 ? row[colIndex.patient] : row[2] || '').trim(),
+                                item: String(colIndex.item >= 0 ? row[colIndex.item] : row[3] || '').trim(),
+                                weight: colIndex.weight >= 0 ? (parseFloat(row[colIndex.weight]) || null) : null,
+                                sessions: colIndex.sessions >= 0 ? (parseInt(row[colIndex.sessions]) || 1) : 1,
+                                remark: String(colIndex.remark >= 0 ? row[colIndex.remark] : '').trim()
+                            };
 
                             if (record.date && record.therapist && record.item) {
                                 recordsImportData.push({

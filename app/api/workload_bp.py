@@ -635,6 +635,20 @@ def create_record():
                 errors.append(f'第{idx+1}条: 只能录入过去{past_date_max_days}天内的记录')
                 continue
 
+        # 检查重复记录（同一日期、同一治疗师、同一患者、同一治疗项目）
+        patient_info = record_data.get('patient_info', '').strip()
+        existing_record = WorkloadRecord.query.filter(
+            WorkloadRecord.record_date == record_date,
+            WorkloadRecord.therapist_id == therapist_id,
+            WorkloadRecord.patient_info == patient_info,
+            WorkloadRecord.treatment_item_id == treatment_item_id
+        ).first()
+
+        if existing_record:
+            item_name = treatment_item.name if treatment_item else f'ID:{treatment_item_id}'
+            errors.append(f'第{idx+1}条: 重复记录 - 日期{record_date}、患者"{patient_info}"、项目"{item_name}"已存在')
+            continue
+
         # 使用传入的权重或默认权重
         weight = record_data.get('weight_coefficient', treatment_item.weight_coefficient)
         sessions = record_data.get('session_count', 1)
@@ -1556,6 +1570,40 @@ def lookup_item():
         })
 
 
+@workload_bp.route('/patients/names', methods=['GET'])
+def get_patient_names():
+    """获取所有患者姓名列表（用于自动完成）
+
+    返回数据库中所有不重复的患者姓名，按使用次数排序
+    """
+    try:
+        # 查询所有非空的患者姓名，按出现次数排序
+        result = db.session.query(
+            WorkloadRecord.patient_info,
+            func.count(WorkloadRecord.id).label('count')
+        ).filter(
+            WorkloadRecord.patient_info != None,
+            WorkloadRecord.patient_info != ''
+        ).group_by(
+            WorkloadRecord.patient_info
+        ).order_by(
+            func.count(WorkloadRecord.id).desc()
+        ).limit(100).all()
+
+        names = [r.patient_info for r in result if r.patient_info and r.patient_info.strip()]
+
+        return jsonify({
+            'success': True,
+            'data': {
+                'names': names,
+                'total': len(names)
+            }
+        })
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'获取患者姓名失败: {str(e)}'}), 500
+
+
 # ============================================================================
 # 系统设置 API
 # ============================================================================
@@ -1571,6 +1619,11 @@ DEFAULT_SETTINGS = {
         'value': 7,
         'type': 'int',
         'description': '允许录入的最大过往天数（从今天起）'
+    },
+    'allow_delete': {
+        'value': False,
+        'type': 'bool',
+        'description': '启用删除功能（删除操作不可恢复，请谨慎使用）'
     }
 }
 
