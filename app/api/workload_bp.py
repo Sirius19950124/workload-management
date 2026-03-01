@@ -780,127 +780,136 @@ def batch_delete_records():
 @workload_bp.route('/records/batch-import', methods=['POST'])
 def batch_import_records():
     """批量导入工作量记录"""
-    data = request.get_json()
+    try:
+        data = request.get_json()
 
-    if not data or not data.get('records'):
-        return jsonify({'success': False, 'error': '请提供记录数据'}), 400
+        if not data or not data.get('records'):
+            return jsonify({'success': False, 'error': '请提供记录数据'}), 400
 
-    records_data = data['records']
-    imported = 0
-    failed = 0
-    errors = []
+        records_data = data['records']
+        imported = 0
+        failed = 0
+        errors = []
 
-    def parse_date_flexible(date_value):
-        """灵活解析多种日期格式（兼容WPS/Excel）"""
-        if isinstance(date_value, date) and not isinstance(date_value, datetime):
-            return date_value
+        def parse_date_flexible(date_value):
+            """灵活解析多种日期格式（兼容WPS/Excel）"""
+            if isinstance(date_value, date) and not isinstance(date_value, datetime):
+                return date_value
 
-        if isinstance(date_value, datetime):
-            return date_value.date()
+            if isinstance(date_value, datetime):
+                return date_value.date()
 
-        date_str = str(date_value).strip() if date_value else ''
-        if not date_str:
+            date_str = str(date_value).strip() if date_value else ''
+            if not date_str:
+                return None
+
+            # 支持的日期格式列表
+            date_formats = [
+                '%Y-%m-%d',       # 2024-01-15
+                '%Y/%m/%d',       # 2024/01/15
+                '%Y年%m月%d日',    # 2024年01月15日
+                '%m/%d/%Y',       # 01/15/2024 (美国格式)
+                '%d-%m-%Y',       # 15-01-2024
+                '%d/%m/%Y',       # 15/01/2024
+            ]
+
+            for fmt in date_formats:
+                try:
+                    return datetime.strptime(date_str, fmt).date()
+                except ValueError:
+                    continue
+
+            # 尝试解析带时间的格式
+            try:
+                return datetime.fromisoformat(date_str.replace('Z', '+00:00')).date()
+            except (ValueError, AttributeError):
+                pass
+
             return None
 
-        # 支持的日期格式列表
-        date_formats = [
-            '%Y-%m-%d',       # 2024-01-15
-            '%Y/%m/%d',       # 2024/01/15
-            '%Y年%m月%d日',    # 2024年01月15日
-            '%m/%d/%Y',       # 01/15/2024 (美国格式)
-            '%d-%m-%Y',       # 15-01-2024
-            '%d/%m/%Y',       # 15/01/2024
-        ]
-
-        for fmt in date_formats:
+        for idx, record in enumerate(records_data):
             try:
-                return datetime.strptime(date_str, fmt).date()
-            except ValueError:
-                continue
+                # 解析日期（支持多种格式）
+                record_date = parse_date_flexible(record.get('date', ''))
+                if not record_date:
+                    errors.append(f'第{idx+1}行: 日期格式错误 "{record.get("date", "")}"')
+                    failed += 1
+                    continue
 
-        # 尝试解析带时间的格式
-        try:
-            return datetime.fromisoformat(date_str.replace('Z', '+00:00')).date()
-        except (ValueError, AttributeError):
-            pass
+                # 查找治疗师（按姓名或工号）
+                therapist_input = record.get('therapist', '').strip()
+                therapist = WorkloadTherapist.query.filter(
+                    (WorkloadTherapist.name == therapist_input) |
+                    (WorkloadTherapist.employee_id == therapist_input)
+                ).first()
 
-        return None
+                if not therapist:
+                    errors.append(f'第{idx+1}行: 找不到治疗师 "{therapist_input}"')
+                    failed += 1
+                    continue
 
-    for idx, record in enumerate(records_data):
-        try:
-            # 解析日期（支持多种格式）
-            record_date = parse_date_flexible(record.get('date', ''))
-            if not record_date:
-                errors.append(f'第{idx+1}行: 日期格式错误 "{record.get("date", "")}"')
+                # 查找治疗项目（按编号或名称）
+                item_input = record.get('item', '').strip()
+                # 去掉可能的编号前缀 [xxx]
+                item_name = re.sub(r'^\[.*?\]\s*', '', item_input) if '[' in item_input else item_input
+
+                treatment_item = WorkloadTreatmentItem.query.filter(
+                    (WorkloadTreatmentItem.code == item_input) |
+                    (WorkloadTreatmentItem.name == item_input) |
+                    (WorkloadTreatmentItem.name == item_name)
+                ).first()
+
+                if not treatment_item:
+                    errors.append(f'第{idx+1}行: 找不到治疗项目 "{item_input}"')
+                    failed += 1
+                    continue
+
+                # 创建记录
+                sessions = int(record.get('sessions', 1))
+                # 使用导入的权重，如果未提供则使用治疗项目的默认权重
+                weight = record.get('weight')
+                if weight is None or weight == '':
+                    weight = treatment_item.weight_coefficient
+                else:
+                    weight = float(weight)
+
+                new_record = WorkloadRecord(
+                    record_date=record_date,
+                    therapist_id=therapist.id,
+                    patient_info=record.get('patient', ''),
+                    treatment_item_id=treatment_item.id,
+                    weight_coefficient=weight,
+                    session_count=sessions,
+                    weighted_workload=round(weight * sessions, 2),
+                    remark=record.get('remark', '')
+                )
+
+                db.session.add(new_record)
+                imported += 1
+
+            except Exception as e:
+                errors.append(f'第{idx+1}行: {str(e)}')
                 failed += 1
-                continue
 
-            # 查找治疗师（按姓名或工号）
-            therapist_input = record.get('therapist', '').strip()
-            therapist = WorkloadTherapist.query.filter(
-                (WorkloadTherapist.name == therapist_input) |
-                (WorkloadTherapist.employee_id == therapist_input)
-            ).first()
+        db.session.commit()
 
-            if not therapist:
-                errors.append(f'第{idx+1}行: 找不到治疗师 "{therapist_input}"')
-                failed += 1
-                continue
+        return jsonify({
+            'success': True,
+            'message': f'成功导入 {imported} 条记录',
+            'data': {
+                'imported': imported,
+                'failed': failed,
+                'errors': errors[:20]  # 只返回前20个错误
+            }
+        })
 
-            # 查找治疗项目（按编号或名称）
-            item_input = record.get('item', '').strip()
-            # 去掉可能的编号前缀 [xxx]
-            item_name = re.sub(r'^\[.*?\]\s*', '', item_input) if '[' in item_input else item_input
-
-            treatment_item = WorkloadTreatmentItem.query.filter(
-                (WorkloadTreatmentItem.code == item_input) |
-                (WorkloadTreatmentItem.name == item_input) |
-                (WorkloadTreatmentItem.name == item_name)
-            ).first()
-
-            if not treatment_item:
-                errors.append(f'第{idx+1}行: 找不到治疗项目 "{item_input}"')
-                failed += 1
-                continue
-
-            # 创建记录
-            sessions = int(record.get('sessions', 1))
-            # 使用导入的权重，如果未提供则使用治疗项目的默认权重
-            weight = record.get('weight')
-            if weight is None or weight == '':
-                weight = treatment_item.weight_coefficient
-            else:
-                weight = float(weight)
-
-            new_record = WorkloadRecord(
-                record_date=record_date,
-                therapist_id=therapist.id,
-                patient_info=record.get('patient', ''),
-                treatment_item_id=treatment_item.id,
-                weight_coefficient=weight,
-                session_count=sessions,
-                weighted_workload=round(weight * sessions, 2),
-                remark=record.get('remark', '')
-            )
-
-            db.session.add(new_record)
-            imported += 1
-
-        except Exception as e:
-            errors.append(f'第{idx+1}行: {str(e)}')
-            failed += 1
-
-    db.session.commit()
-
-    return jsonify({
-        'success': True,
-        'message': f'成功导入 {imported} 条记录',
-        'data': {
-            'imported': imported,
-            'failed': failed,
-            'errors': errors[:20]  # 只返回前20个错误
-        }
-    })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'error': f'导入失败: {str(e)}',
+            'details': str(e)
+        }), 500
 
 
 # ============================================================================
