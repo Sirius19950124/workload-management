@@ -43,8 +43,8 @@ def update_therapist_stats(therapist_id):
     stats.total_sessions = sum(r.session_count for r in records)
     stats.total_workload = sum(r.weighted_workload for r in records)
 
-    # 计算累计积分 (工作量 * 10 = 积分)
-    stats.total_points = int(stats.total_workload * 10)
+    # 计算累计积分 (工作量 * 0.1 = 积分)
+    stats.total_points = int(stats.total_workload * 0.1)
 
     # 计算连续打卡
     dates = sorted(set(r.record_date for r in records), reverse=True)
