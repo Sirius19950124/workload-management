@@ -923,6 +923,9 @@
                     <button class="btn btn-light btn-sm ml-2" onclick="showImportModal()">
                         <i class="fas fa-file-import mr-1"></i>导入Excel
                     </button>
+                    <button class="btn btn-outline-light btn-sm ml-2" onclick="shutdownServer()" id="btnShutdown" style="display:none;">
+                        <i class="fas fa-power-off mr-1"></i>关闭服务
+                    </button>
                 </div>
             </div>
         </div>
@@ -2429,6 +2432,35 @@
             return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
         }
 
+        // Shutdown server function (only works in standalone exe mode)
+        function shutdownServer() {
+            if (confirm('确定要关闭服务器吗？\n\n关闭后需要重新启动程序才能使用系统。')) {
+                $.ajax({
+                    url: '/api/system/shutdown',
+                    type: 'POST',
+                    success: function(res) {
+                        if (res.success) {
+                            alert('服务器已关闭，本页面将无法继续使用。');
+                        }
+                    },
+                    error: function() {
+                        alert('关闭服务器失败，请手动关闭程序窗口。');
+                    }
+                });
+            }
+        }
+
+        // Check if running as standalone exe and show shutdown button
+        function checkStandaloneMode() {
+            $.get('/api/system/shutdown', function(res) {
+                // If endpoint exists, we're in standalone mode
+                $('#btnShutdown').show();
+            }).fail(function() {
+                // Endpoint doesn't exist, hide button
+                $('#btnShutdown').hide();
+            });
+        }
+
         // 页面初始化
         $(document).ready(function() {
             const today = new Date().toISOString().split('T')[0];
@@ -2446,6 +2478,7 @@
             loadPatientNamesCache();  // 加载患者姓名缓存
             loadPatientNamesFromDB(); // 从数据库加载患者姓名
             initAchievements();  // 初始化成就系统
+            checkStandaloneMode(); // 检查是否为独立运行模式
 
             // 初始添加5行 - 移至 checkAllDataLoaded() 中执行，确保数据加载完成
 

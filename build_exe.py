@@ -181,7 +181,7 @@ def build_exe():
         '--clean',
         '--noconfirm',
         '--onefile',
-        '--console',
+        '--noconsole',  # Hide console window for better UX
         '--name', APP_NAME,
         MAIN_SCRIPT
     ]

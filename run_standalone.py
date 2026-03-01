@@ -11,6 +11,7 @@ import os
 import webbrowser
 import threading
 import time
+import signal
 
 # 设置控制台编码
 if sys.platform == 'win32' and sys.stdout is not None:
@@ -26,6 +27,10 @@ if getattr(sys, 'frozen', False):
     os.chdir(BASE_DIR)
 
 from app import create_app
+from flask import jsonify
+
+# Global flag for shutdown
+shutdown_requested = False
 
 def open_browser():
     """延迟打开浏览器"""
@@ -35,8 +40,24 @@ def open_browser():
     except:
         pass
 
+def shutdown_server():
+    """关闭服务器"""
+    global shutdown_requested
+    shutdown_requested = True
+    # Give time for response to be sent
+    time.sleep(0.5)
+    os._exit(0)
+
 def main():
+    global shutdown_requested
     app = create_app()
+
+    # Add shutdown endpoint
+    @app.route('/api/system/shutdown', methods=['POST'])
+    def api_shutdown():
+        """关闭服务器API"""
+        threading.Thread(target=shutdown_server, daemon=True).start()
+        return jsonify({'success': True, 'message': 'Server shutting down...'})
 
     print("")
     print("=" * 60)
