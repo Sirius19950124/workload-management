@@ -37,6 +37,29 @@ def is_mobile_device(user_agent):
     ]
     return any(re.search(pattern, user_agent, re.IGNORECASE) for pattern in mobile_patterns)
 
+def recalculate_all_points():
+    """重新计算所有治疗师的积分（修复积分公式变更后的数据）"""
+    from sqlalchemy import text
+
+    try:
+        # 检查是否有治疗师统计数据
+        result = db.session.execute(text(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='therapist_stats'"
+        ))
+        if result.fetchone() is None:
+            return  # 表不存在，跳过
+
+        # 更新所有治疗师的积分：积分 = 工作量 × 0.1
+        db.session.execute(text(
+            "UPDATE therapist_stats SET total_points = CAST(total_workload * 0.1 AS INTEGER)"
+        ))
+        db.session.commit()
+        print("[AutoMigrate] Recalculated all therapist points (formula: workload × 0.1)")
+
+    except Exception as e:
+        print(f"[AutoMigrate] Error recalculating points: {e}")
+        db.session.rollback()
+
 def auto_migrate():
     """自动迁移：检查并创建缺失的表和数据"""
     from sqlalchemy import text
@@ -140,6 +163,10 @@ def auto_migrate():
             print("[AutoMigrate] allow_delete setting already exists")
 
         print("[AutoMigrate] Database schema check completed")
+
+        # 重新计算所有治疗师的积分（修复积分公式变更后的数据）
+        recalculate_all_points()
+
         print("=" * 50)
 
     except Exception as e:
