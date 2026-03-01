@@ -27,7 +27,7 @@ if getattr(sys, 'frozen', False):
     os.chdir(BASE_DIR)
 
 from app import create_app
-from flask import jsonify
+from flask import jsonify, request
 
 # Global flag for shutdown
 shutdown_requested = False
@@ -52,10 +52,14 @@ def main():
     global shutdown_requested
     app = create_app()
 
-    # Add shutdown endpoint
-    @app.route('/api/system/shutdown', methods=['POST'])
+    # Add shutdown endpoint (GET for checking, POST for actual shutdown)
+    @app.route('/api/system/shutdown', methods=['GET', 'POST'])
     def api_shutdown():
         """关闭服务器API"""
+        if request.method == 'GET':
+            # GET request just checks if endpoint exists (standalone mode)
+            return jsonify({'success': True, 'standalone': True})
+        # POST request actually shuts down
         threading.Thread(target=shutdown_server, daemon=True).start()
         return jsonify({'success': True, 'message': 'Server shutting down...'})
 
