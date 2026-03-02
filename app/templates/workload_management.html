@@ -2315,13 +2315,9 @@
                 e.preventDefault();
 
                 if (settingsPasswordVerified) {
-                    // 已验证，直接切换
-                    $('.nav-tabs .nav-link').removeClass('active');
-                    $(this).addClass('active');
-                    $('.tab-pane').removeClass('show active');
-                    $('#tabSettings').addClass('show active');
-                    // ✅ 修复：加载设置页面数据
-                    loadSettingsData();
+                    // 已验证，使用 Bootstrap tab 方法切换
+                    $(this).tab('show');
+                    // 数据加载将在 shown.bs.tab 事件中触发
                     return;
                 }
 
@@ -2335,17 +2331,20 @@
                 // ✅ 从后端验证密码
                 verifySettingsPassword(password, $(this));
             });
+
+            // ✅ 监听设置标签页显示完成事件
+            $('.settings-tab-link').on('shown.bs.tab', function(e) {
+                console.log('[设置] 标签页显示完成，加载数据...');
+                loadSettingsData();
+            });
         });
 
         // ✅ 加载设置页面数据
         function loadSettingsData() {
-            // 延迟加载，等待 Bootstrap tab 动画完成
-            setTimeout(function() {
-                console.log('[设置] 加载设置页面数据...');
-                loadTherapists();
-                loadTreatmentItems();
-                loadCategories();
-            }, 100);
+            console.log('[设置] 加载设置页面数据...');
+            loadTherapists();
+            loadTreatmentItems();
+            loadCategories();
         }
 
         // 从后端验证密码
@@ -2358,13 +2357,9 @@
                 success: function(res) {
                     if (res.success) {
                         settingsPasswordVerified = true;
-                        // 验证成功，切换 tab
-                        $('.nav-tabs .nav-link').removeClass('active');
-                        $tabLink.addClass('active');
-                        $('.tab-pane').removeClass('show active');
-                        $('#tabSettings').addClass('show active');
-                        // ✅ 修复：加载设置页面数据
-                        loadSettingsData();
+                        // ✅ 验证成功，使用 Bootstrap tab 方法切换
+                        // 数据加载将在 shown.bs.tab 事件中触发
+                        $tabLink.tab('show');
                     } else {
                         showToast('密码错误，无法访问设置页面', 'error');
                     }
@@ -2929,9 +2924,12 @@
 
         // 加载治疗师列表
         function loadTherapists() {
+            console.log('[治疗师] 开始加载治疗师列表...');
             $.get('/api/therapists', function(res) {
+                console.log('[治疗师] API返回:', res);
                 if (res.success) {
                     therapists = res.data.therapists;
+                    console.log('[治疗师] 加载了 ' + therapists.length + ' 个治疗师');
 
                     let options = '<option value="">请选择治疗师</option>';
                     therapists.forEach(t => {
@@ -2941,7 +2939,11 @@
                     $('#filterTherapist').html(options);
 
                     renderTherapistsTable();
+                } else {
+                    console.error('[治疗师] API返回失败:', res);
                 }
+            }).fail(function(xhr, status, error) {
+                console.error('[治疗师] API请求失败:', status, error);
             }).always(function() {
                 checkAllDataLoaded();
             });
@@ -2949,6 +2951,7 @@
 
         // 渲染治疗师表格
         function renderTherapistsTable() {
+            console.log('[治疗师表格] 开始渲染，治疗师数量:', therapists.length);
             let html = '';
             therapists.forEach(t => {
                 html += `
@@ -2971,7 +2974,8 @@
                     </tr>
                 `;
             });
-            $('#therapistsTable').html(html || '<tr><td colspan="4" class="text-center text-muted">暂无数据</td></tr>');
+            const result = $('#therapistsTable').html(html || '<tr><td colspan="4" class="text-center text-muted">暂无数据</td></tr>');
+            console.log('[治疗师表格] 渲染完成，表格行数:', $('#therapistsTable tr').length);
         }
 
         // 加载治疗项目列表
