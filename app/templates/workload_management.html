@@ -2339,9 +2339,13 @@
 
         // ✅ 加载设置页面数据
         function loadSettingsData() {
-            loadTherapists();
-            loadTreatmentItems();
-            loadCategories();
+            // 延迟加载，等待 Bootstrap tab 动画完成
+            setTimeout(function() {
+                console.log('[设置] 加载设置页面数据...');
+                loadTherapists();
+                loadTreatmentItems();
+                loadCategories();
+            }, 100);
         }
 
         // 从后端验证密码
