@@ -640,6 +640,7 @@ def create_record():
                 continue
 
         # 检查重复记录（同一日期、同一治疗师、同一患者、同一治疗项目）
+        # ✅ V1.1: 改为确认机制，支持每日多次治疗
         patient_info = record_data.get('patient_info', '').strip()
         existing_record = WorkloadRecord.query.filter(
             WorkloadRecord.record_date == record_date,
@@ -649,9 +650,30 @@ def create_record():
         ).first()
 
         if existing_record:
-            item_name = treatment_item.name if treatment_item else f'ID:{treatment_item_id}'
-            errors.append(f'第{idx+1}条: 重复记录 - 日期{record_date}、患者"{patient_info}"、项目"{item_name}"已存在')
-            continue
+            # 检查是否强制确认（用户已确认要重复录入）
+            # ✅ V1.1 FIX: 正确处理数组类型的请求数据
+            force_confirm = record_data.get('force_confirm', False)
+            if not force_confirm and isinstance(data, dict):
+                force_confirm = data.get('force_confirm', False)
+
+            if not force_confirm:
+                # 返回需要确认的响应（不是错误，而是提醒）
+                item_name = treatment_item.name if treatment_item else f'ID:{treatment_item_id}'
+                return jsonify({
+                    'success': True,
+                    'needs_confirmation': True,
+                    'message': f'该患者今日已有相同治疗记录（项目：{item_name}），是否继续录入？',
+                    'duplicate_info': {
+                        'record_date': str(record_date),
+                        'patient_info': patient_info,
+                        'item_name': item_name,
+                        'existing_record_id': existing_record.id
+                    }
+                }), 200
+
+            # 如果 force_confirm=True，继续创建新记录（允许每日多次治疗）
+            # 记录日志
+            print(f"[INFO] 用户确认后强制创建重复记录 - 日期:{record_date}, 患者:{patient_info}, 项目:{treatment_item_id}")
 
         # 使用传入的权重或默认权重
         weight = record_data.get('weight_coefficient', treatment_item.weight_coefficient)

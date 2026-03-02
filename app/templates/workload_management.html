@@ -3783,7 +3783,8 @@
         }
 
         // 保存全部记录
-        function saveAllEntries() {
+        // ✅ V1.1: 支持每日多次治疗的确认机制
+        function saveAllEntries(forceConfirm = false) {
             const rows = $('#quickEntryBody tr');
             const records = [];
 
@@ -3815,19 +3816,47 @@
 
             const totalWorkload = records.reduce((sum, r) => sum + r.weight_coefficient * r.session_count, 0).toFixed(2);
 
-            if (!confirm(`确定保存 ${records.length} 条记录？\n总工作量: ${totalWorkload}`)) {
-                return;
+            // ✅ V1.1: 首次保存时显示确认对话框
+            if (!forceConfirm) {
+                if (!confirm(`确定保存 ${records.length} 条记录？\n总工作量: ${totalWorkload}`)) {
+                    return;
+                }
             }
 
             // 显示保存中提示
             showToast('正在保存...', 'info');
 
+            // ✅ V1.1: 如果是强制确认，添加 force_confirm 参数
+            const requestData = forceConfirm ? records.map(r => ({...r, force_confirm: true})) : records;
+
             $.ajax({
                 url: '/api/records',
                 method: 'POST',
                 contentType: 'application/json',
-                data: JSON.stringify(records),
+                data: JSON.stringify(requestData),
                 success: function(res) {
+                    // ✅ V1.1: 处理需要确认的情况（每日多次治疗）
+                    if (res.success && res.needs_confirmation) {
+                        const dupInfo = res.duplicate_info;
+                        const confirmMsg = res.message + '\n\n' +
+                            '已有记录：\n' +
+                            '- 日期：' + dupInfo.record_date + '\n' +
+                            '- 患者：' + dupInfo.patient_info + '\n' +
+                            '- 项目：' + dupInfo.item_name + '\n\n' +
+                            '点击"确定"继续录入新的治疗记录\n' +
+                            '点击"取消"返回修改';
+
+                        if (confirm(confirmMsg)) {
+                            // 用户确认，重新调用并设置 force_confirm=true
+                            showToast('正在重新保存...', 'info');
+                            saveAllEntries(true);
+                        } else {
+                            // 用户取消
+                            showToast('已取消保存', 'warning');
+                        }
+                        return;
+                    }
+
                     if (res.success) {
                         // 检查是否有部分失败（如重复记录）
                         if (res.data.errors && res.data.errors.length > 0) {
