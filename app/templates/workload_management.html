@@ -2320,6 +2320,8 @@
                     $(this).addClass('active');
                     $('.tab-pane').removeClass('show active');
                     $('#tabSettings').addClass('show active');
+                    // ✅ 修复：加载设置页面数据
+                    loadSettingsData();
                     return;
                 }
 
@@ -2334,6 +2336,13 @@
                 verifySettingsPassword(password, $(this));
             });
         });
+
+        // ✅ 加载设置页面数据
+        function loadSettingsData() {
+            loadTherapists();
+            loadTreatmentItems();
+            loadCategories();
+        }
 
         // 从后端验证密码
         function verifySettingsPassword(password, $tabLink) {
@@ -2350,6 +2359,8 @@
                         $tabLink.addClass('active');
                         $('.tab-pane').removeClass('show active');
                         $('#tabSettings').addClass('show active');
+                        // ✅ 修复：加载设置页面数据
+                        loadSettingsData();
                     } else {
                         showToast('密码错误，无法访问设置页面', 'error');
                     }
