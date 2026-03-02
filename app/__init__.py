@@ -38,7 +38,7 @@ def is_mobile_device(user_agent):
     return any(re.search(pattern, user_agent, re.IGNORECASE) for pattern in mobile_patterns)
 
 def recalculate_all_points():
-    """重新计算所有治疗师的积分（修复积分公式变更后的数据）"""
+    """重新计算所有治疗师的积分和等级（修复积分公式变更后的数据）"""
     from sqlalchemy import text
 
     try:
@@ -49,12 +49,50 @@ def recalculate_all_points():
         if result.fetchone() is None:
             return  # 表不存在，跳过
 
-        # 更新所有治疗师的积分：积分 = 工作量 × 0.1
+        # ✅ 步骤1：更新所有治疗师的积分：积分 = 工作量 × 0.1
         db.session.execute(text(
             "UPDATE therapist_stats SET total_points = CAST(total_workload * 0.1 AS INTEGER)"
         ))
+
+        # ✅ 步骤2：根据积分重新计算等级
+        # 等级规则：
+        # Level 1: < 500
+        # Level 2: 500-1499
+        # Level 3: 1500-2999
+        # Level 4: 3000-4999
+        # Level 5: 5000-7999
+        # Level 6: 8000-11999
+        # Level 7: 12000-17999
+        # Level 8: 18000-24999
+        # Level 9: >= 25000
+        db.session.execute(text("""
+            UPDATE therapist_stats SET
+                current_level = CASE
+                    WHEN total_points < 500 THEN 1
+                    WHEN total_points < 1500 THEN 2
+                    WHEN total_points < 3000 THEN 3
+                    WHEN total_points < 5000 THEN 4
+                    WHEN total_points < 8000 THEN 5
+                    WHEN total_points < 12000 THEN 6
+                    WHEN total_points < 18000 THEN 7
+                    WHEN total_points < 25000 THEN 8
+                    ELSE 9
+                END,
+                level_progress = CASE
+                    WHEN total_points < 500 THEN (total_points * 1.0 / 500) * 100
+                    WHEN total_points < 1500 THEN ((total_points - 500) * 1.0 / 1000) * 100
+                    WHEN total_points < 3000 THEN ((total_points - 1500) * 1.0 / 1500) * 100
+                    WHEN total_points < 5000 THEN ((total_points - 3000) * 1.0 / 2000) * 100
+                    WHEN total_points < 8000 THEN ((total_points - 5000) * 1.0 / 3000) * 100
+                    WHEN total_points < 12000 THEN ((total_points - 8000) * 1.0 / 4000) * 100
+                    WHEN total_points < 18000 THEN ((total_points - 12000) * 1.0 / 6000) * 100
+                    WHEN total_points < 25000 THEN ((total_points - 18000) * 1.0 / 7000) * 100
+                    ELSE 100
+                END
+        """))
+
         db.session.commit()
-        print("[AutoMigrate] Recalculated all therapist points (formula: workload × 0.1)")
+        print("[AutoMigrate] Recalculated all therapist points and levels (formula: workload × 0.1)")
 
     except Exception as e:
         print(f"[AutoMigrate] Error recalculating points: {e}")

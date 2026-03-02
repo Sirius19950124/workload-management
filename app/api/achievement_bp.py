@@ -217,6 +217,21 @@ def get_level_leaderboard():
     """等级排行榜"""
     limit = request.args.get('limit', 10, type=int)
 
+    # ✅ 修复：在返回排行榜前，自动更新所有激活治疗师的统计数据
+    # 检查是否有 refresh 参数，默认为 true（实时刷新）
+    should_refresh = request.args.get('refresh', 'true').lower() == 'true'
+
+    if should_refresh:
+        try:
+            therapists = WorkloadTherapist.query.filter_by(is_active=True).all()
+            for therapist in therapists:
+                update_therapist_stats(therapist.id)
+                check_and_award_achievements(therapist.id)
+            db.session.commit()
+        except Exception as e:
+            # 即使更新失败也继续返回现有数据
+            print(f"[警告] 更新统计数据失败: {e}")
+
     stats_list = TherapistStats.query.order_by(
         TherapistStats.current_level.desc(),
         TherapistStats.total_points.desc()
@@ -270,6 +285,20 @@ def get_level_leaderboard():
 def get_streak_leaderboard():
     """连续打卡排行榜"""
     limit = request.args.get('limit', 10, type=int)
+
+    # ✅ 修复：在返回排行榜前，自动更新所有激活治疗师的统计数据
+    # 检查是否有 refresh 参数，默认为 true（实时刷新）
+    should_refresh = request.args.get('refresh', 'true').lower() == 'true'
+
+    if should_refresh:
+        try:
+            therapists = WorkloadTherapist.query.filter_by(is_active=True).all()
+            for therapist in therapists:
+                update_therapist_stats(therapist.id)
+            db.session.commit()
+        except Exception as e:
+            # 即使更新失败也继续返回现有数据
+            print(f"[警告] 更新统计数据失败: {e}")
 
     stats_list = TherapistStats.query.order_by(
         TherapistStats.current_streak.desc()

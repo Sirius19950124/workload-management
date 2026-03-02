@@ -1072,7 +1072,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" data-toggle="tab" href="#tabSettings" onclick="return checkSettingsPassword()">
+                    <a class="nav-link settings-tab-link" href="#tabSettings">
                         <i class="fas fa-cog mr-1"></i>设置
                     </a>
                 </li>
@@ -1374,6 +1374,11 @@
                                         <i class="fas fa-database mr-1"></i>数据备份
                                     </a>
                                 </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-toggle="pill" href="#settingsPassword">
+                                        <i class="fas fa-key mr-1"></i>密码设置
+                                    </a>
+                                </li>
                             </ul>
                             <div class="tab-content">
                                 <div class="tab-pane fade show active" id="settingsTherapists">
@@ -1572,6 +1577,43 @@
                                                 </div>
                                             </div>
                                         </div>
+                                    </div>
+                                </div>
+                                <!-- 密码设置 -->
+                                <div class="tab-pane fade" id="settingsPassword">
+                                    <div class="d-flex justify-content-between mb-3">
+                                        <h6><i class="fas fa-key mr-1"></i>密码设置</h6>
+                                    </div>
+                                    <div class="alert alert-warning mb-3">
+                                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                                        <strong>注意：</strong>设置页面密码用于保护系统设置不被随意修改。请牢记新密码，否则将无法访问设置页面。
+                                    </div>
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <form id="passwordChangeForm">
+                                                <div class="form-group">
+                                                    <label><i class="fas fa-lock mr-1"></i>当前密码</label>
+                                                    <input type="password" class="form-control" id="currentPassword" placeholder="请输入当前密码">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label><i class="fas fa-key mr-1"></i>新密码</label>
+                                                    <input type="password" class="form-control" id="newPassword" placeholder="请输入新密码">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label><i class="fas fa-check-double mr-1"></i>确认新密码</label>
+                                                    <input type="password" class="form-control" id="confirmPassword" placeholder="请再次输入新密码">
+                                                </div>
+                                                <button type="button" class="btn btn-primary" onclick="submitPasswordChange()">
+                                                    <i class="fas fa-save mr-1"></i>修改密码
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3">
+                                        <small class="text-muted">
+                                            <i class="fas fa-info-circle mr-1"></i>
+                                            默认密码：<code>2026</code>（首次使用建议修改）
+                                        </small>
                                     </div>
                                 </div>
                             </div>
@@ -2264,11 +2306,140 @@
         });
 
         // ==================== Toast 通知系统 ====================
-        // 设置页面密码保护
-        const SETTINGS_PASSWORD = '2026';
+        // 设置页面密码保护（从后端验证）
         let settingsPasswordVerified = false;
 
-        // 检查设置页面密码
+        // ✅ 修复：使用事件监听器阻止 tab 切换
+        $(document).ready(function() {
+            $('.settings-tab-link').on('click', function(e) {
+                e.preventDefault();
+
+                if (settingsPasswordVerified) {
+                    // 已验证，直接切换
+                    $('.nav-tabs .nav-link').removeClass('active');
+                    $(this).addClass('active');
+                    $('.tab-pane').removeClass('show active');
+                    $('#tabSettings').addClass('show active');
+                    return;
+                }
+
+                // 未验证，弹出密码框
+                const password = prompt('请输入设置页面密码：');
+                if (password === null) {
+                    // 用户取消，不做任何操作
+                    return;
+                }
+
+                // ✅ 从后端验证密码
+                verifySettingsPassword(password, $(this));
+            });
+        });
+
+        // 从后端验证密码
+        function verifySettingsPassword(password, $tabLink) {
+            $.ajax({
+                url: '/api/settings/verify-password',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ password: password }),
+                success: function(res) {
+                    if (res.success) {
+                        settingsPasswordVerified = true;
+                        // 验证成功，切换 tab
+                        $('.nav-tabs .nav-link').removeClass('active');
+                        $tabLink.addClass('active');
+                        $('.tab-pane').removeClass('show active');
+                        $('#tabSettings').addClass('show active');
+                    } else {
+                        showToast('密码错误，无法访问设置页面', 'error');
+                    }
+                },
+                error: function() {
+                    showToast('密码验证失败，请稍后重试', 'error');
+                }
+            });
+        }
+
+        // 修改设置页面密码
+        function changeSettingsPassword() {
+            const oldPassword = prompt('请输入当前密码：');
+            if (oldPassword === null) return;
+
+            const newPassword = prompt('请输入新密码：');
+            if (newPassword === null) return;
+
+            const confirmPassword = prompt('请再次输入新密码：');
+            if (confirmPassword === null) return;
+
+            if (newPassword !== confirmPassword) {
+                showToast('两次输入的新密码不一致', 'error');
+                return;
+            }
+
+            $.ajax({
+                url: '/api/settings/change-password',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    old_password: oldPassword,
+                    new_password: newPassword
+                }),
+                success: function(res) {
+                    if (res.success) {
+                        showToast('密码修改成功！', 'success');
+                    } else {
+                        showToast(res.error || '密码修改失败', 'error');
+                    }
+                },
+                error: function(xhr) {
+                    const res = xhr.responseJSON || {};
+                    showToast(res.error || '密码修改失败', 'error');
+                }
+            });
+        }
+
+        // 提交密码修改（从设置页面表单）
+        function submitPasswordChange() {
+            const currentPassword = $('#currentPassword').val();
+            const newPassword = $('#newPassword').val();
+            const confirmPassword = $('#confirmPassword').val();
+
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                showToast('请填写所有字段', 'error');
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                showToast('两次输入的新密码不一致', 'error');
+                return;
+            }
+
+            $.ajax({
+                url: '/api/settings/change-password',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    old_password: currentPassword,
+                    new_password: newPassword
+                }),
+                success: function(res) {
+                    if (res.success) {
+                    showToast('密码修改成功！', 'success');
+                    $('#currentPassword').val('');
+                    $('#newPassword').val('');
+                    $('#confirmPassword').val('');
+                } else {
+                    showToast(res.error || '密码修改失败', 'error');
+                }
+                },
+                error: function(xhr) {
+                    const res = xhr.responseJSON || {};
+                    showToast(res.error || '密码修改失败', 'error');
+                }
+            });
+        }
+
+        // 检查设置页面密码（保留兼容性）
         function checkSettingsPassword() {
             if (settingsPasswordVerified) {
                 return true;
@@ -2279,13 +2450,24 @@
                 return false; // 用户取消
             }
 
-            if (password === SETTINGS_PASSWORD) {
-                settingsPasswordVerified = true;
-                return true;
-            } else {
+            // 同步验证（用于向后兼容）
+            $.ajax({
+                url: '/api/settings/verify-password',
+                method: 'POST',
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify({ password: password }),
+                success: function(res) {
+                    if (res.success) {
+                        settingsPasswordVerified = true;
+                    }
+                }
+            });
+
+            if (!settingsPasswordVerified) {
                 showToast('密码错误，无法访问设置页面', 'error');
-                return false;
             }
+            return settingsPasswordVerified;
         }
 
         function showToast(message, type = 'info') {
@@ -2668,7 +2850,7 @@
             // 初始化默认成就
             $.post('/api/achievements/init', function(res) {
                 if (res.success) {
-                    // 加载排行榜和徽章
+                    // 加载排行榜和徽章（后端 API 会自动刷新统计数据）
                     loadLevelLeaderboard();
                     loadStreakLeaderboard();
                     loadAchievementBadges();
@@ -5094,6 +5276,49 @@
                     $(this).next('.custom-file-label').text(file.name);
                 }
             });
+        });
+
+        // ========== 浏览器关闭时自动关闭后台服务 ==========
+        // 检查是否为独立运行模式（exe）
+        let isStandaloneMode = false;
+
+        // 页面加载时检查是否为独立模式
+        $(document).ready(function() {
+            // 检查 /api/system/shutdown 端点是否存在
+            $.ajax({
+                url: '/api/system/shutdown',
+                method: 'GET',
+                timeout: 1000,
+                success: function(res) {
+                    if (res.standalone) {
+                        isStandaloneMode = true;
+                        console.log('[系统] 独立运行模式：关闭浏览器将自动停止后台服务');
+                    }
+                },
+                error: function() {
+                    // 非 standalone 模式，不处理
+                }
+            });
+        });
+
+        // 浏览器关闭或刷新时发送关闭请求
+        window.addEventListener('beforeunload', function(e) {
+            if (isStandaloneMode) {
+                // 使用 navigator.sendBeacon 发送异步请求（不会阻塞页面关闭）
+                navigator.sendBeacon('/api/system/shutdown', JSON.stringify({}));
+            }
+        });
+
+        // 页面隐藏时也检查是否需要关闭（处理手机切换应用等场景）
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'hidden' && isStandaloneMode) {
+                // 延迟发送，给用户返回的机会
+                setTimeout(function() {
+                    if (document.visibilityState === 'hidden') {
+                        navigator.sendBeacon('/api/system/shutdown', JSON.stringify({}));
+                    }
+                }, 30000); // 30秒后如果还没返回，则关闭
+            }
         });
     </script>
 </body>

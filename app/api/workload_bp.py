@@ -1669,6 +1669,11 @@ DEFAULT_SETTINGS = {
         'value': False,
         'type': 'bool',
         'description': '启用删除功能（删除操作不可恢复，请谨慎使用）'
+    },
+    'settings_password': {
+        'value': '2026',
+        'type': 'string',
+        'description': '设置页面访问密码（在设置页面中可修改）'
     }
 }
 
@@ -1797,4 +1802,64 @@ def update_setting(key):
         'success': True,
         'message': '设置已更新',
         'data': setting.to_dict()
+    })
+
+
+# ==================== 设置页面密码 API ====================
+
+@workload_bp.route('/settings/verify-password', methods=['POST'])
+def verify_settings_password():
+    """验证设置页面密码"""
+    data = request.get_json()
+    if not data or 'password' not in data:
+        return jsonify({'success': False, 'error': '请提供密码'}), 400
+
+    # 从数据库获取密码设置
+    password_setting = WorkloadSettings.query.filter_by(setting_key='settings_password').first()
+    stored_password = password_setting.setting_value if password_setting else '2026'
+
+    if data['password'] == stored_password:
+        return jsonify({
+            'success': True,
+            'message': '密码验证成功'
+        })
+    else:
+        return jsonify({
+            'success': False,
+            'error': '密码错误'
+        }), 401
+
+
+@workload_bp.route('/settings/change-password', methods=['POST'])
+def change_settings_password():
+    """修改设置页面密码"""
+    data = request.get_json()
+    if not data or 'old_password' not in data or 'new_password' not in data:
+        return jsonify({'success': False, 'error': '请提供旧密码和新密码'}), 400
+
+    # 验证旧密码
+    password_setting = WorkloadSettings.query.filter_by(setting_key='settings_password').first()
+    stored_password = password_setting.setting_value if password_setting else '2026'
+
+    if data['old_password'] != stored_password:
+        return jsonify({
+            'success': False,
+            'error': '旧密码错误'
+        }), 401
+
+    # 更新密码
+    if not password_setting:
+        password_setting = WorkloadSettings(
+            setting_key='settings_password',
+            setting_type='string',
+            description='设置页面访问密码'
+        )
+        db.session.add(password_setting)
+
+    password_setting.setting_value = data['new_password']
+    db.session.commit()
+
+    return jsonify({
+        'success': True,
+        'message': '密码修改成功'
     })

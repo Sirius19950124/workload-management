@@ -53,13 +53,18 @@ def main():
     app = create_app()
 
     # Add shutdown endpoint (GET for checking, POST for actual shutdown)
-    @app.route('/api/system/shutdown', methods=['GET', 'POST'])
+    @app.route('/api/system/shutdown', methods=['GET', 'POST', 'OPTIONS'])
     def api_shutdown():
         """关闭服务器API"""
         if request.method == 'GET':
             # GET request just checks if endpoint exists (standalone mode)
             return jsonify({'success': True, 'standalone': True})
+        if request.method == 'OPTIONS':
+            # CORS preflight
+            return jsonify({'success': True}), 200
         # POST request actually shuts down
+        # 支持 sendBeacon 发送的请求（可能是 text/plain 格式）
+        print("[系统] 收到关闭请求，正在停止服务...")
         threading.Thread(target=shutdown_server, daemon=True).start()
         return jsonify({'success': True, 'message': 'Server shutting down...'})
 
