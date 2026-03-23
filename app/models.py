@@ -114,6 +114,7 @@ class WorkloadRecord(db.Model):
     record_date = db.Column(db.Date, nullable=False, index=True, comment='登记日期')
     therapist_id = db.Column(db.Integer, db.ForeignKey('workload_therapists.id'), nullable=False, comment='治疗师ID')
     patient_info = db.Column(db.String(100), comment='患者ID/姓名')
+    patient_id = db.Column(db.Integer, db.ForeignKey('patients.id'), nullable=True, comment='患者ID（关联患者表）')
     treatment_item_id = db.Column(db.Integer, db.ForeignKey('workload_treatment_items.id'), nullable=False, comment='治疗项目ID')
     weight_coefficient = db.Column(db.Float, nullable=False, comment='权重系数（登记时的快照）')
     session_count = db.Column(db.Integer, default=1, comment='人次')
@@ -145,6 +146,8 @@ class WorkloadRecord(db.Model):
             'therapist_id': self.therapist_id,
             'therapist_name': self.therapist_rel.name if self.therapist_rel else None,
             'patient_info': self.patient_info,
+            'patient_id': self.patient_id,
+            'patient_name': self.patient_rel.name if self.patient_rel else self.patient_info,
             'treatment_item_id': self.treatment_item_id,
             'treatment_item_name': self.treatment_item_rel.name if self.treatment_item_rel else None,
             'weight_coefficient': self.weight_coefficient,
@@ -453,6 +456,107 @@ DEFAULT_ACHIEVEMENTS = [
     {'code': 'daily_50', 'name': '高效能者', 'description': '单日工作量达到50', 'icon': '⚡', 'category': 'special', 'condition_type': 'daily_workload', 'condition_value': 50, 'points_reward': 30, 'rarity': 'rare'},
     {'code': 'daily_100', 'name': '爆发之星', 'description': '单日工作量达到100', 'icon': '💥', 'category': 'special', 'condition_type': 'daily_workload', 'condition_value': 100, 'points_reward': 80, 'rarity': 'epic'},
 ]
+
+
+# ===================== 患者管理系统 =====================
+
+class Patient(db.Model):
+    """患者信息表"""
+    __tablename__ = 'patients'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False, comment='患者姓名')
+    patient_no = db.Column(db.String(30), unique=True, nullable=True, comment='患者编号/住院号')
+    gender = db.Column(db.String(10), comment='性别')
+    age = db.Column(db.Integer, comment='年龄')
+    phone = db.Column(db.String(20), comment='联系电话')
+    diagnosis = db.Column(db.String(200), comment='诊断')
+    bed_no = db.Column(db.String(20), comment='床号')
+
+    # 主管治疗师关联（支持最多3个治疗师）
+    primary_therapist_id = db.Column(db.Integer, db.ForeignKey('workload_therapists.id'), comment='主管治疗师1 ID')
+    secondary_therapist_id = db.Column(db.Integer, db.ForeignKey('workload_therapists.id'), comment='主管治疗师2 ID')
+    tertiary_therapist_id = db.Column(db.Integer, db.ForeignKey('workload_therapists.id'), comment='主管治疗师3 ID')
+
+    # 状态
+    status = db.Column(db.String(20), default='active', comment='状态: active-在治, completed-已结束, paused-暂停')
+
+    # 复诊提醒相关
+    alert_dismissed = db.Column(db.Boolean, default=False, comment='是否已消除提醒')
+    alert_dismiss_reason = db.Column(db.String(200), comment='消除提醒的理由')
+    alert_dismissed_at = db.Column(db.DateTime, comment='消除提醒时间')
+    admission_date = db.Column(db.Date, comment='入院日期')
+    discharge_date = db.Column(db.Date, comment='出院日期')
+
+    # 备注
+    notes = db.Column(db.Text, comment='备注信息')
+
+    # 时间戳
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # 关联
+    primary_therapist = db.relationship('WorkloadTherapist', foreign_keys=[primary_therapist_id],
+                                          backref=db.backref('managed_patients', lazy='dynamic'))
+    secondary_therapist = db.relationship('WorkloadTherapist', foreign_keys=[secondary_therapist_id],
+                                            backref=db.backref('secondary_patients', lazy='dynamic'))
+    tertiary_therapist = db.relationship('WorkloadTherapist', foreign_keys=[tertiary_therapist_id],
+                                          backref=db.backref('tertiary_patients', lazy='dynamic'))
+    workload_records = db.relationship('WorkloadRecord', backref='patient_rel',
+                                       foreign_keys='WorkloadRecord.patient_id',
+                                       lazy='dynamic')
+
+    def to_dict(self):
+        # 计算最后治疗日期
+        last_record = self.workload_records.order_by(db.desc('record_date')).first()
+        last_treatment_date = last_record.record_date.isoformat() if last_record and last_record.record_date else None
+
+        # 计算距今天数
+        days_since_last = None
+        if last_treatment_date:
+            from datetime import date
+            last_date = date.fromisoformat(last_treatment_date)
+            days_since_last = (date.today() - last_date).days
+
+        return {
+            'id': self.id,
+            'name': self.name,
+            'patient_no': self.patient_no,
+            'gender': self.gender,
+            'age': self.age,
+            'phone': self.phone,
+            'diagnosis': self.diagnosis,
+            'bed_no': self.bed_no,
+            'primary_therapist_id': self.primary_therapist_id,
+            'primary_therapist_name': self.primary_therapist.name if self.primary_therapist else None,
+            'secondary_therapist_id': self.secondary_therapist_id,
+            'secondary_therapist_name': self.secondary_therapist.name if self.secondary_therapist else None,
+            'tertiary_therapist_id': self.tertiary_therapist_id,
+            'tertiary_therapist_name': self.tertiary_therapist.name if self.tertiary_therapist else None,
+            'status': self.status,
+            'status_display': self.get_status_display(),
+            'admission_date': self.admission_date.isoformat() if self.admission_date else None,
+            'discharge_date': self.discharge_date.isoformat() if self.discharge_date else None,
+            'notes': self.notes,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'treatment_count': self.workload_records.count(),
+            'last_treatment_date': last_treatment_date,
+            'days_since_last_treatment': days_since_last,
+            'alert_dismissed': self.alert_dismissed,
+            'alert_dismiss_reason': self.alert_dismiss_reason
+        }
+
+    def get_status_display(self):
+        """获取状态显示文本"""
+        status_map = {
+            'active': '在治',
+            'completed': '已结束',
+            'paused': '暂停'
+        }
+        return status_map.get(self.status, self.status)
+
+    def __repr__(self):
+        return f'<Patient {self.name} (主管: {self.primary_therapist.name if self.primary_therapist else "无"})>'
 
 
 # 默认设置常量

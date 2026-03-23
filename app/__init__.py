@@ -13,13 +13,30 @@ import re
 db = SQLAlchemy()
 
 def get_base_path():
-    """获取应用基础路径（兼容 PyInstaller 打包）"""
+    """获取应用基础路径（兼容 PyInstaller 打包）
+    用于数据库等可写文件
+    """
     if getattr(sys, 'frozen', False):
-        # PyInstaller 打包后运行
+        # PyInstaller 打包后运行 - 返回exe所在目录
         return os.path.dirname(sys.executable)
     else:
         # 开发环境运行
         return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+def get_resource_path(relative_path):
+    """获取资源文件绝对路径（兼容 PyInstaller 打包）
+    用于静态文件、模板等只读资源
+    
+    PyInstaller打包后，资源会被解压到临时目录 sys._MEIPASS
+    """
+    if getattr(sys, 'frozen', False):
+        # PyInstaller 打包后运行
+        base_path = sys._MEIPASS
+    else:
+        # 开发环境运行
+        base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    
+    return os.path.join(base_path, relative_path)
 
 def is_mobile_device(user_agent):
     """检测是否为移动设备"""
@@ -170,6 +187,70 @@ def auto_migrate():
         else:
             print("[AutoMigrate] Achievement tables already exist")
 
+        # 检查患者表是否存在
+        result = db.session.execute(text(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='patients'"
+        ))
+        patients_exists = result.fetchone() is not None
+
+        if not patients_exists:
+            print("[AutoMigrate] Creating patients table...")
+            db.session.execute(text("""
+                CREATE TABLE IF NOT EXISTS patients (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name VARCHAR(50) NOT NULL,
+                    patient_no VARCHAR(30) UNIQUE,
+                    gender VARCHAR(10),
+                    age INTEGER,
+                    phone VARCHAR(20),
+                    diagnosis VARCHAR(200),
+                    bed_no VARCHAR(20),
+                    primary_therapist_id INTEGER,
+                    status VARCHAR(20) DEFAULT 'active',
+                    admission_date DATE,
+                    discharge_date DATE,
+                    notes TEXT,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (primary_therapist_id) REFERENCES workload_therapists(id)
+                )
+            """))
+            db.session.commit()
+            print("[AutoMigrate] Patients table created successfully")
+        else:
+            print("[AutoMigrate] Patients table already exists")
+            # 检查并添加 secondary_therapist_id 字段
+            try:
+                result = db.session.execute(text(
+                    "SELECT * FROM pragma_table_info('patients') WHERE name='secondary_therapist_id'"
+                ))
+                if result.fetchone() is None:
+                    print("[AutoMigrate] Adding secondary_therapist_id column to patients table...")
+                    db.session.execute(text(
+                        "ALTER TABLE patients ADD COLUMN secondary_therapist_id INTEGER REFERENCES workload_therapists(id)"
+                    ))
+                    db.session.commit()
+                    print("[AutoMigrate] secondary_therapist_id column added")
+            except Exception as e:
+                print(f"[AutoMigrate] Error adding secondary_therapist_id: {e}")
+
+        # 无论patients表是否存在，都检查并添加 patient_id 字段到 workload_records 表
+        try:
+            result = db.session.execute(text(
+                "SELECT * FROM pragma_table_info('workload_records') WHERE name='patient_id'"
+            ))
+            if result.fetchone() is None:
+                print("[AutoMigrate] Adding patient_id column to workload_records table...")
+                db.session.execute(text(
+                    "ALTER TABLE workload_records ADD COLUMN patient_id INTEGER REFERENCES patients(id)"
+                ))
+                db.session.commit()
+                print("[AutoMigrate] patient_id column added to workload_records")
+            else:
+                print("[AutoMigrate] workload_records.patient_id column already exists")
+        except Exception as e:
+            print(f"[AutoMigrate] Error adding patient_id to workload_records: {e}")
+
         # 检查并初始化默认成就
         from app.models import Achievement, DEFAULT_ACHIEVEMENTS
         existing_count = Achievement.query.count()
@@ -215,13 +296,22 @@ def auto_migrate():
 def create_app():
     base_path = get_base_path()
 
-    app = Flask(__name__,
-                template_folder='templates',
-                static_folder='../static')
+    # 使用get_resource_path获取静态文件和模板路径（兼容PyInstaller打包）
+    static_path = get_resource_path('static')
+    template_path = get_resource_path('app/templates')
 
-    # 配置 - 使用绝对路径
+    app = Flask(__name__,
+                template_folder=template_path,
+                static_folder=static_path)
+
+    # 配置 - 使用绝对路径（数据库在exe所在目录，可读写）
     db_path = os.path.join(base_path, 'instance', 'workload.db')
     upload_path = os.path.join(base_path, 'uploads')
+    
+    # 调试输出：显示数据库路径
+    print(f"[数据库] Base path: {base_path}")
+    print(f"[数据库] Database path: {db_path}")
+    print(f"[数据库] Database exists: {os.path.exists(db_path)}")
 
     # 确保目录存在
     os.makedirs(os.path.dirname(db_path), exist_ok=True)
@@ -239,10 +329,12 @@ def create_app():
     from .api.workload_bp import workload_bp
     from .api.workload_excel_bp import workload_excel_bp
     from .api.achievement_bp import achievement_bp
+    from .api.patient_bp import patient_bp
 
     app.register_blueprint(workload_bp)
     app.register_blueprint(workload_excel_bp)
     app.register_blueprint(achievement_bp)
+    app.register_blueprint(patient_bp)
 
     # PC端首页路由
     @app.route('/')

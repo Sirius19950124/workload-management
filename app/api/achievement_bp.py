@@ -264,11 +264,11 @@ def get_level_leaderboard():
                 'rank': i,
                 'therapist_id': stats.therapist_id,
                 'therapist_name': therapist.name,
-                'level': stats.current_level,
-                'level_name': TherapistStats.get_level_name(stats.current_level),
-                'level_badge': TherapistStats.get_level_badge(stats.current_level),
-                'total_points': stats.total_points,
-                'achievements_count': stats.achievements_count,
+                'level': stats.current_level or 1,  # 确保level有默认值
+                'level_name': TherapistStats.get_level_name(stats.current_level or 1),
+                'level_badge': TherapistStats.get_level_badge(stats.current_level or 1),
+                'total_points': stats.total_points or 0,
+                'achievements_count': stats.achievements_count or 0,
                 'achievements': achievements_detail  # 添加成就列表
             })
 

@@ -17,7 +17,8 @@ from sqlalchemy import extract, func
 from app import db
 from app.models import (
     WorkloadTherapist, WorkloadTreatmentCategory,
-    WorkloadTreatmentItem, WorkloadRecord, WorkloadSettings
+    WorkloadTreatmentItem, WorkloadRecord, WorkloadSettings,
+    Patient  # 导入患者模型
 )
 from app.api.achievement_bp import update_therapist_stats, check_and_award_achievements
 from app.api.achievement_bp import update_therapist_stats, check_and_award_achievements
@@ -264,6 +265,11 @@ def update_treatment_item(item_id):
 @workload_bp.route('/treatment-items/<int:item_id>', methods=['DELETE'])
 def delete_treatment_item(item_id):
     """删除治疗项目（软删除）"""
+    # 检查是否允许删除
+    allow_delete_setting = WorkloadSettings.query.filter_by(setting_key='allow_delete').first()
+    if not allow_delete_setting or allow_delete_setting.setting_value != 'true':
+        return jsonify({'success': False, 'error': '删除功能已禁用，请在设置中开启'}), 403
+    
     item = WorkloadTreatmentItem.query.get(item_id)
     if not item:
         return jsonify({'success': False, 'error': '治疗项目不存在'}), 404
@@ -482,6 +488,11 @@ def delete_category(category_id):
 @workload_bp.route('/categories/batch-delete', methods=['POST'])
 def batch_delete_categories():
     """批量删除治疗类别"""
+    # 检查是否允许删除
+    allow_delete_setting = WorkloadSettings.query.filter_by(setting_key='allow_delete').first()
+    if not allow_delete_setting or allow_delete_setting.setting_value != 'true':
+        return jsonify({'success': False, 'error': '删除功能已禁用，请在设置中开启'}), 403
+    
     data = request.get_json()
 
     if not data or not data.get('ids'):
@@ -679,10 +690,52 @@ def create_record():
         weight = record_data.get('weight_coefficient', treatment_item.weight_coefficient)
         sessions = record_data.get('session_count', 1)
 
+        # ========== 自动同步患者到患者表 ==========
+        patient_id = None
+        patient_info = record_data.get('patient_info', '').strip()
+        if patient_info:
+            # 查找是否已存在该患者（按姓名匹配）
+            existing_patient = Patient.query.filter(
+                Patient.name == patient_info,
+                Patient.status.in_(['active', 'paused'])  # 只匹配在治或暂停的患者
+            ).first()
+
+            if existing_patient:
+                # 患者已存在，关联到记录（不更新主管治疗师，保持第一次的）
+                patient_id = existing_patient.id
+            else:
+                # 检查是否有已结束的同名患者
+                completed_patient = Patient.query.filter(
+                    Patient.name == patient_info,
+                    Patient.status == 'completed'
+                ).order_by(Patient.updated_at.desc()).first()
+
+                if completed_patient:
+                    # 有已结束的同名患者，重新激活并关联
+                    completed_patient.status = 'active'
+                    completed_patient.admission_date = record_date
+                    completed_patient.discharge_date = None
+                    # 不更新主管治疗师，保持原来的
+                    patient_id = completed_patient.id
+                else:
+                    # 全新患者，创建患者记录，设置当前治疗师为主管治疗师
+                    new_patient = Patient(
+                        name=patient_info,
+                        primary_therapist_id=therapist_id,  # 首次录入的治疗师作为主管
+                        status='active',
+                        admission_date=record_date
+                    )
+                    db.session.add(new_patient)
+                    db.session.flush()  # 获取 ID
+                    patient_id = new_patient.id
+                    print(f"[患者同步] 新患者 '{patient_info}' 已创建，主管治疗师ID: {therapist_id}")
+        # ========== 患者同步逻辑结束 ==========
+
         record = WorkloadRecord(
             record_date=record_date,
             therapist_id=therapist_id,
             patient_info=record_data.get('patient_info'),
+            patient_id=patient_id,  # 关联患者ID
             treatment_item_id=treatment_item_id,
             weight_coefficient=weight,
             session_count=sessions,
@@ -732,6 +785,29 @@ def update_record(record_id):
         record.record_date = data['record_date']
     if 'patient_info' in data:
         record.patient_info = data['patient_info']
+        # 同步更新患者关联
+        patient_info = data['patient_info'].strip()
+        if patient_info:
+            existing_patient = Patient.query.filter(
+                Patient.name == patient_info,
+                Patient.status.in_(['active', 'paused'])
+            ).first()
+            if existing_patient:
+                record.patient_id = existing_patient.id
+            else:
+                # 创建新患者
+                new_patient = Patient(
+                    name=patient_info,
+                    primary_therapist_id=record.therapist_id,
+                    status='active',
+                    admission_date=record.record_date
+                )
+                db.session.add(new_patient)
+                db.session.flush()
+                record.patient_id = new_patient.id
+                print(f"[患者同步] 更新记录时创建新患者 '{patient_info}'，主管治疗师ID: {record.therapist_id}")
+        else:
+            record.patient_id = None
     if data.get('treatment_item_id'):
         record.treatment_item_id = data['treatment_item_id']
         # 更新权重
@@ -767,6 +843,11 @@ def update_record(record_id):
 @workload_bp.route('/records/<int:record_id>', methods=['DELETE'])
 def delete_record(record_id):
     """删除工作量记录"""
+    # 检查是否允许删除
+    allow_delete_setting = WorkloadSettings.query.filter_by(setting_key='allow_delete').first()
+    if not allow_delete_setting or allow_delete_setting.setting_value != 'true':
+        return jsonify({'success': False, 'error': '删除功能已禁用，请在设置中开启'}), 403
+    
     record = WorkloadRecord.query.get(record_id)
     if not record:
         return jsonify({'success': False, 'error': '记录不存在'}), 404
@@ -789,6 +870,11 @@ def delete_record(record_id):
 @workload_bp.route('/records/batch-delete', methods=['POST'])
 def batch_delete_records():
     """批量删除工作量记录"""
+    # 检查是否允许删除
+    allow_delete_setting = WorkloadSettings.query.filter_by(setting_key='allow_delete').first()
+    if not allow_delete_setting or allow_delete_setting.setting_value != 'true':
+        return jsonify({'success': False, 'error': '删除功能已禁用，请在设置中开启'}), 403
+    
     data = request.get_json()
 
     if not data or not data.get('ids'):
@@ -917,10 +1003,47 @@ def batch_import_records():
                 else:
                     weight = float(weight)
 
+                # ========== 自动同步患者到患者表 ==========
+                patient_id = None
+                patient_info = record.get('patient', '').strip()
+                if patient_info:
+                    # 查找是否已存在该患者（按姓名匹配）
+                    existing_patient = Patient.query.filter(
+                        Patient.name == patient_info,
+                        Patient.status.in_(['active', 'paused'])
+                    ).first()
+
+                    if existing_patient:
+                        patient_id = existing_patient.id
+                    else:
+                        # 检查是否有已结束的同名患者
+                        completed_patient = Patient.query.filter(
+                            Patient.name == patient_info,
+                            Patient.status == 'completed'
+                        ).order_by(Patient.updated_at.desc()).first()
+
+                        if completed_patient:
+                            completed_patient.status = 'active'
+                            completed_patient.admission_date = record_date
+                            completed_patient.discharge_date = None
+                            patient_id = completed_patient.id
+                        else:
+                            # 全新患者，设置当前治疗师为主管治疗师
+                            new_patient = Patient(
+                                name=patient_info,
+                                primary_therapist_id=therapist.id,
+                                status='active',
+                                admission_date=record_date
+                            )
+                            db.session.add(new_patient)
+                            db.session.flush()
+                            patient_id = new_patient.id
+
                 new_record = WorkloadRecord(
                     record_date=record_date,
                     therapist_id=therapist.id,
                     patient_info=record.get('patient', ''),
+                    patient_id=patient_id,
                     treatment_item_id=treatment_item.id,
                     weight_coefficient=weight,
                     session_count=sessions,
@@ -1549,11 +1672,44 @@ def import_records():
                     errors.append(f'未找到治疗项目: {item_ref}')
                     continue
 
+                # ========== 自动同步患者到患者表 ==========
+                patient_id = None
+                if patient_info:
+                    existing_patient = Patient.query.filter(
+                        Patient.name == patient_info,
+                        Patient.status.in_(['active', 'paused'])
+                    ).first()
+
+                    if existing_patient:
+                        patient_id = existing_patient.id
+                    else:
+                        completed_patient = Patient.query.filter(
+                            Patient.name == patient_info,
+                            Patient.status == 'completed'
+                        ).order_by(Patient.updated_at.desc()).first()
+
+                        if completed_patient:
+                            completed_patient.status = 'active'
+                            completed_patient.admission_date = record_date
+                            completed_patient.discharge_date = None
+                            patient_id = completed_patient.id
+                        else:
+                            new_patient = Patient(
+                                name=patient_info,
+                                primary_therapist_id=therapist.id,
+                                status='active',
+                                admission_date=record_date
+                            )
+                            db.session.add(new_patient)
+                            db.session.flush()
+                            patient_id = new_patient.id
+
                 # 创建记录
                 record = WorkloadRecord(
                     record_date=record_date,
                     therapist_id=therapist.id,
                     patient_info=patient_info,
+                    patient_id=patient_id,
                     treatment_item_id=item.id,
                     weight_coefficient=weight,
                     session_count=sessions,

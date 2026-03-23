@@ -500,91 +500,6 @@
             border-top: 1px solid #e5e7eb;
         }
 
-        /* 操作栏优化 */
-        .action-bar {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            align-items: center;
-            padding: 15px;
-            background: #f8fafc;
-            border-radius: 12px;
-            margin-bottom: 15px;
-        }
-        /* IE11 兼容：gap 回退 */
-        .action-bar > * {
-            margin-right: 10px;
-            margin-bottom: 10px;
-        }
-
-        .action-bar .btn-group {
-            display: flex;
-            gap: 8px;
-        }
-        .action-bar .btn-group > * + * {
-            margin-left: 8px;
-        }
-
-        /* 底部统计优化 */
-        .entry-stats {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            align-items: center;
-            padding: 15px 20px;
-            background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
-            border-radius: 12px;
-            border-left: 4px solid #10b981;
-            margin-top: 15px;
-            background: #f0fdf4\9; /* IE9 回退 */
-        }
-        /* IE11 兼容：gap 回退 */
-        .entry-stats > * {
-            margin-right: 20px;
-            margin-bottom: 10px;
-        }
-
-        .entry-stats .stat-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .entry-stats .stat-item > * + * {
-            margin-left: 8px;
-        }
-
-        .entry-stats .stat-value {
-            font-size: 1.2rem;
-            font-weight: 700;
-        }
-
-        /* 最近使用优化 */
-        .recent-section {
-            padding: 10px 15px;
-            background: #f8fafc;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        /* IE11 兼容：gap 回退 */
-        .recent-section > * {
-            margin-right: 8px;
-            margin-bottom: 5px;
-        }
-
-        .recent-section .badge {
-            cursor: pointer;
-            font-size: 0.8rem;
-            padding: 5px 10px;
-        }
-
-        .recent-section .badge:hover {
-            opacity: 0.8;
-        }
-
         /* 成就系统样式 */
         .achievement-section {
             background: white;
@@ -640,10 +555,6 @@
             font-weight: 600;
             font-size: 0.85rem;
         }
-        /* IE11 兼容：gap 回退 */
-        .level-badge > * + * {
-            margin-left: 5px;
-        }
 
         .level-badge.level-1 { background: #fef3c7; color: #92400e; }
         .level-badge.level-2 { background: #e5e7eb; color: #374151; }
@@ -652,8 +563,6 @@
         .level-badge.level-5 { background: #ede9fe; color: #5b21b6; }
         .level-badge.level-6 { background: #fce7f3; color: #9d174d; }
         .level-badge.level-7 { background: #cffafe; color: #0e7490; }
-        .level-badge.level-8 { background: linear-gradient(135deg, #fde68a, #fbbf24); color: #78350f; background: #fde68a\9; /* IE9 回退 */ }
-        .level-badge.level-9 { background: linear-gradient(135deg, #a78bfa, #7c3aed); color: white; background: #a78bfa\9; /* IE9 回退 */ }
 
         /* 治疗师个人成就徽章 */
         .therapist-badges {
@@ -662,11 +571,6 @@
             flex-wrap: wrap;
             gap: 3px;
             align-items: center;
-        }
-        /* IE11 兼容：gap 回退 */
-        .therapist-badges > * {
-            margin-right: 3px;
-            margin-bottom: 3px;
         }
 
         .achievement-mini-badge {
@@ -687,127 +591,6 @@
             transform: scale(1.2);
         }
 
-        .achievement-more {
-            font-size: 11px;
-            color: #6b7280;
-            background: #f3f4f6;
-            padding: 2px 6px;
-            border-radius: 10px;
-            margin-left: 2px;
-        }
-
-        /* Emoji 不支持时的备用徽章样式 */
-        .badge-fallback {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            font-size: 12px;
-            font-weight: bold;
-            color: white;
-        }
-
-        .badge-fallback.bronze { background: linear-gradient(135deg, #cd7f32, #8b4513); }
-        .badge-fallback.silver { background: linear-gradient(135deg, #c0c0c0, #808080); }
-        .badge-fallback.gold { background: linear-gradient(135deg, #ffd700, #daa520); }
-        .badge-fallback.diamond { background: linear-gradient(135deg, #b9f2ff, #00bfff); }
-        .badge-fallback.crown { background: linear-gradient(135deg, #ffd700, #ff8c00); }
-        .badge-fallback.star { background: linear-gradient(135deg, #fff44f, #ffd700); }
-        .badge-fallback.fire { background: linear-gradient(135deg, #ff4500, #ff6347); }
-        .badge-fallback.legend { background: linear-gradient(135deg, #e6e6fa, #9370db); }
-        .badge-fallback.supreme { background: linear-gradient(135deg, #ff1493, #c71585); }
-
-        /* 成就图标备用样式 */
-        .achievement-icon-fallback {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            font-size: 10px;
-            font-weight: bold;
-            color: white;
-        }
-
-        .achievement-icon-fallback.seed { background: #22c55e; }
-        .achievement-icon-fallback.leaf { background: #16a34a; }
-        .achievement-icon-fallback.star { background: #eab308; }
-        .achievement-icon-fallback.fire { background: #ef4444; }
-        .achievement-icon-fallback.crown { background: #f59e0b; }
-        .achievement-icon-fallback.gem { background: #8b5cf6; }
-        .achievement-icon-fallback.muscle { background: #3b82f6; }
-        .achievement-icon-fallback.lightning { background: #06b6d4; }
-        .achievement-icon-fallback.trophy { background: #ec4899; }
-
-        /* ========== Font Awesome图标徽章样式（彩色Emoji回退方案） ========== */
-        .fa-badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            margin: 2px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            transition: transform 0.2s;
-        }
-        .fa-badge:hover { transform: scale(1.15); }
-        .fa-badge i { font-size: 12px; color: white; }
-
-        /* 治疗次数成就 - 绿色到橙色 */
-        .fa-badge.seed { background: linear-gradient(135deg, #22c55e, #16a34a); }
-        .fa-badge.leaf { background: linear-gradient(135deg, #4ade80, #22c55e); }
-        .fa-badge.star { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
-        .fa-badge.fire { background: linear-gradient(135deg, #f97316, #ea580c); }
-        .fa-badge.crown { background: linear-gradient(135deg, #fbbf24, #d97706); }
-        .fa-badge.gem { background: linear-gradient(135deg, #a78bfa, #7c3aed); }
-
-        /* 工作量成就 - 金色系 */
-        .fa-badge.star-gold { background: linear-gradient(135deg, #ffd700, #b8860b); }
-        .fa-badge.medal { background: linear-gradient(135deg, #fbbf24, #d97706); }
-        .fa-badge.trophy { background: linear-gradient(135deg, #fcd34d, #b45309); }
-        .fa-badge.flash { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
-
-        /* 连续打卡成就 */
-        .fa-badge.bolt { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
-        .fa-badge.bolt-blue { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
-
-        /* 日工作量成就 */
-        .fa-badge.rocket { background: linear-gradient(135deg, #ec4899, #db2777); }
-        .fa-badge.target { background: linear-gradient(135deg, #ef4444, #b91c1c); }
-        .fa-badge.heart { background: linear-gradient(135deg, #ef4444, #b91c1c); }
-
-        /* 等级徽章（小尺寸） */
-        .fa-badge-sm {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            margin-right: 4px;
-        }
-        .fa-badge-sm i { font-size: 10px; color: white; }
-        .fa-badge-sm.lv1 { background: linear-gradient(135deg, #6b7280, #4b5563); }
-        .fa-badge-sm.lv2 { background: linear-gradient(135deg, #22c55e, #16a34a); }
-        .fa-badge-sm.lv3 { background: linear-gradient(135deg, #3b82f6, #2563eb); }
-        .fa-badge-sm.lv4 { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
-        .fa-badge-sm.lv5 { background: linear-gradient(135deg, #f59e0b, #d97706); }
-        .fa-badge-sm.lv6 { background: linear-gradient(135deg, #f97316, #ea580c); }
-        .fa-badge-sm.lv7 { background: linear-gradient(135deg, #ef4444, #dc2626); }
-        .fa-badge-sm.lv8 { background: linear-gradient(135deg, #ec4899, #db2777); }
-        .fa-badge-sm.lv9 { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
-
-        /* Font Awesome徽章补充颜色 */
-        .fa-badge.medal { background: linear-gradient(135deg, #fbbf24, #d97706); }
-        .fa-badge.trophy { background: linear-gradient(135deg, #fcd34d, #b45309); }
-        .fa-badge.flash { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
-        .fa-badge.bolt-blue { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
-        .fa-badge.bolt { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
-
         .streak-fire {
             animation: fire-pulse 0.5s ease-in-out infinite alternate;
         }
@@ -817,90 +600,67 @@
             to { transform: scale(1.1); }
         }
 
-        .achievement-unlocked-animation {
-            animation: achievement-pop 0.5s ease-out;
+        /* 操作栏优化 */
+        .action-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 12px;
+            margin-bottom: 15px;
         }
 
-        @keyframes achievement-pop {
-            0% { transform: scale(0); opacity: 0; }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); opacity: 1; }
+        .action-bar .btn-group {
+            display: flex;
+            gap: 8px;
         }
 
-        .progress-ring {
-            width: 60px;
-            height: 60px;
+        /* 底部统计优化 */
+        .entry-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+            border-radius: 12px;
+            border-left: 4px solid #10b981;
+            margin-top: 15px;
         }
 
-        .progress-ring-circle {
-            transition: stroke-dashoffset 0.35s;
-            transform: rotate(-90deg);
-            transform-origin: 50% 50%;
-        }
-
-        /* 患者姓名自动完成下拉框 */
-        .patient-autocomplete {
-            position: relative;
-        }
-
-        .patient-autocomplete-dropdown {
-            position: fixed;
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            max-height: 200px;
-            overflow-y: auto;
-            z-index: 9999;
-            display: none;
-            min-width: 150px;
-        }
-
-        .patient-autocomplete-dropdown.show {
-            display: block;
-        }
-
-        .patient-autocomplete-item {
-            padding: 8px 12px;
-            cursor: pointer;
-            border-bottom: 1px solid #f3f4f6;
+        .entry-stats .stat-item {
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            gap: 8px;
         }
 
-        .patient-autocomplete-item:last-child {
-            border-bottom: none;
+        .entry-stats .stat-value {
+            font-size: 1.2rem;
+            font-weight: 700;
         }
 
-        .patient-autocomplete-item:hover,
-        .patient-autocomplete-item.active {
-            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
-            color: #0369a1;
-        }
-
-        .patient-autocomplete-item .patient-name {
-            font-weight: 500;
-        }
-
-        .patient-autocomplete-item .patient-count {
-            font-size: 0.75rem;
-            color: #9ca3af;
-            background: #f3f4f6;
-            padding: 2px 6px;
+        /* 最近使用优化 */
+        .recent-section {
+            padding: 10px 15px;
+            background: #f8fafc;
             border-radius: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
         }
 
-        .patient-autocomplete-item.active .patient-count {
-            background: #bae6fd;
-            color: #0369a1;
+        .recent-section .badge {
+            cursor: pointer;
+            font-size: 0.8rem;
+            padding: 5px 10px;
         }
 
-        /* 高亮匹配文字 */
-        .patient-match {
-            background: #fef08a;
-            padding: 0 2px;
-            border-radius: 2px;
+        .recent-section .badge:hover {
+            opacity: 0.8;
         }
     </style>
 </head>
@@ -1023,7 +783,7 @@
             <!-- 成就系统（可折叠） -->
             <div class="ranking-collapse mb-4">
                 <div class="ranking-toggle" data-toggle="collapse" data-target="#achievementContent">
-                    <span><i class="fas fa-award text-purple mr-2" style="color: #8b5cf6;"></i><strong>成就系统</strong> <small class="text-muted ml-2">点击展开/收起</small></span>
+                    <span><i class="fas fa-award mr-2" style="color: #8b5cf6;"></i><strong>成就系统</strong> <small class="text-muted ml-2">点击展开/收起</small></span>
                     <i class="fas fa-chevron-down"></i>
                 </div>
                 <div class="collapse" id="achievementContent">
@@ -1072,7 +832,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link settings-tab-link" href="#tabSettings">
+                    <a class="nav-link" href="#tabSettings" id="settingsTabLink">
                         <i class="fas fa-cog mr-1"></i>设置
                     </a>
                 </li>
@@ -1091,7 +851,7 @@
                             <button class="btn btn-outline-info btn-sm" onclick="showRecordsImportModal()" title="从Excel导入">
                                 <i class="fas fa-file-import"></i> 导入
                             </button>
-                            <button class="btn btn-outline-success btn-sm" onclick="exportRecords()" title="导出到Excel">
+                            <button class="btn btn-outline-success btn-sm" onclick="exportRecordsXLSX()" title="导出到Excel">
                                 <i class="fas fa-file-export"></i> 导出
                             </button>
                         </div>
@@ -1186,17 +946,17 @@
                                     </select>
                                 </div>
                                 <div class="col-md-2">
+                                    <label class="small text-muted mb-1">患者姓名</label>
+                                    <input type="text" class="form-control" id="filterPatient" placeholder="输入患者姓名">
+                                </div>
+                                <div class="col-md-2">
                                     <label class="small text-muted mb-1">类别</label>
                                     <select class="form-control" id="filterCategory">
                                         <option value="">所有类别</option>
                                     </select>
                                 </div>
                                 <div class="col-md-2">
-                                    <label class="small text-muted mb-1">患者姓名</label>
-                                    <input type="text" class="form-control" id="filterPatient" placeholder="输入患者姓名">
-                                </div>
-                                <div class="col-md-1">
-                                    <label class="small text-muted mb-1">快捷</label>
+                                    <label class="small text-muted mb-1">快捷选择</label>
                                     <select class="form-control" id="quickDateRange" onchange="applyQuickDateRange()">
                                         <option value="">自定义</option>
                                         <option value="today">今天</option>
@@ -1208,10 +968,10 @@
                                         <option value="thisYear">今年</option>
                                     </select>
                                 </div>
-                                <div class="col-md-1">
+                                <div class="col-md-2">
                                     <label class="small text-muted mb-1">&nbsp;</label>
                                     <button class="btn btn-primary btn-block" onclick="loadRecords()">
-                                        <i class="fas fa-search"></i>
+                                        <i class="fas fa-search mr-1"></i>查询
                                     </button>
                                 </div>
                             </div>
@@ -1365,18 +1125,13 @@
                                     <a class="nav-link" data-toggle="pill" href="#settingsCategories">类别管理</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" data-toggle="pill" href="#settingsEntry">
-                                        <i class="fas fa-edit mr-1"></i>录入设置
-                                    </a>
-                                </li>
-                                <li class="nav-item">
                                     <a class="nav-link" data-toggle="pill" href="#settingsBackup">
                                         <i class="fas fa-database mr-1"></i>数据备份
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" data-toggle="pill" href="#settingsPassword">
-                                        <i class="fas fa-key mr-1"></i>密码设置
+                                    <a class="nav-link" data-toggle="pill" href="#settingsEntry">
+                                        <i class="fas fa-edit mr-1"></i>录入设置
                                     </a>
                                 </li>
                             </ul>
@@ -1458,81 +1213,6 @@
                                         </tbody>
                                     </table>
                                 </div>
-                                <!-- 录入设置 -->
-                                <div class="tab-pane fade" id="settingsEntry">
-                                    <div class="d-flex justify-content-between mb-3">
-                                        <h6><i class="fas fa-edit mr-1"></i>录入设置</h6>
-                                    </div>
-
-                                    <!-- 过往日期设置 -->
-                                    <div class="card mb-3">
-                                        <div class="card-header bg-light">
-                                            <i class="fas fa-calendar-alt mr-1"></i>过往日期录入
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="form-group">
-                                                <div class="custom-control custom-switch">
-                                                    <input type="checkbox" class="custom-control-input" id="allowPastDate"
-                                                           onchange="updateSetting('allow_past_date', this.checked)">
-                                                    <label class="custom-control-label" for="allowPastDate">
-                                                        允许录入过往日期的记录
-                                                    </label>
-                                                </div>
-                                                <small class="text-muted">
-                                                    启用后，用户可以在录入时选择过去的日期（适用于补录遗漏的记录）
-                                                </small>
-                                            </div>
-
-                                            <div class="form-group mt-3" id="pastDateDaysGroup" style="display:none;">
-                                                <label for="pastDateMaxDays">允许的最大过往天数</label>
-                                                <div class="input-group" style="max-width: 200px;">
-                                                    <input type="number" class="form-control" id="pastDateMaxDays"
-                                                           min="1" max="30" value="7"
-                                                           onchange="updateSetting('past_date_max_days', this.value)">
-                                                    <div class="input-group-append">
-                                                        <span class="input-group-text">天</span>
-                                                    </div>
-                                                </div>
-                                                <small class="text-muted">
-                                                    从今天起，允许录入的最大过往天数（1-30天）
-                                                </small>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- 删除功能设置 -->
-                                    <div class="card mb-3">
-                                        <div class="card-header bg-light">
-                                            <i class="fas fa-trash-alt mr-1"></i>删除功能
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="form-group">
-                                                <div class="custom-control custom-switch">
-                                                    <input type="checkbox" class="custom-control-input" id="allowDelete"
-                                                           onchange="updateSetting('allow_delete', this.checked)">
-                                                    <label class="custom-control-label" for="allowDelete">
-                                                        <span class="text-danger"><i class="fas fa-exclamation-triangle mr-1"></i>启用删除功能</span>
-                                                    </label>
-                                                </div>
-                                                <small class="text-muted">
-                                                    启用后，将显示删除按钮（治疗项目、类别、工作量记录等）。<strong class="text-danger">注意：删除操作不可恢复，请谨慎使用！</strong>
-                                                </small>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- 设置说明 -->
-                                    <div class="alert alert-info">
-                                        <i class="fas fa-info-circle mr-1"></i>
-                                        <strong>设置说明：</strong>
-                                        <ul class="mb-0 mt-2">
-                                            <li><strong>过往日期录入</strong>：开启后，用户可以选择过去的日期进行录入，方便补录遗漏的记录</li>
-                                            <li><strong>最大过往天数</strong>：限制可以补录的最大天数，防止录入过于久远的数据</li>
-                                            <li><strong>删除功能</strong>：开启后显示删除按钮，<span class="text-danger">删除操作不可恢复，请谨慎使用</span></li>
-                                            <li>设置更改后立即生效，无需重启系统</li>
-                                        </ul>
-                                    </div>
-                                </div>
                                 <!-- 数据备份设置 -->
                                 <div class="tab-pane fade" id="settingsBackup">
                                     <div class="d-flex justify-content-between mb-3">
@@ -1579,41 +1259,51 @@
                                         </div>
                                     </div>
                                 </div>
-                                <!-- 密码设置 -->
-                                <div class="tab-pane fade" id="settingsPassword">
+                                <!-- 录入设置 -->
+                                <div class="tab-pane fade" id="settingsEntry">
                                     <div class="d-flex justify-content-between mb-3">
-                                        <h6><i class="fas fa-key mr-1"></i>密码设置</h6>
+                                        <h6><i class="fas fa-edit mr-1"></i>录入设置</h6>
                                     </div>
-                                    <div class="alert alert-warning mb-3">
-                                        <i class="fas fa-exclamation-triangle mr-1"></i>
-                                        <strong>注意：</strong>设置页面密码用于保护系统设置不被随意修改。请牢记新密码，否则将无法访问设置页面。
-                                    </div>
-                                    <div class="card">
+                                    <div class="card mb-3">
+                                        <div class="card-header bg-light">
+                                            <i class="fas fa-calendar-alt mr-1"></i>过往日期录入
+                                        </div>
                                         <div class="card-body">
-                                            <form id="passwordChangeForm">
-                                                <div class="form-group">
-                                                    <label><i class="fas fa-lock mr-1"></i>当前密码</label>
-                                                    <input type="password" class="form-control" id="currentPassword" placeholder="请输入当前密码">
+                                            <div class="form-group">
+                                                <div class="custom-control custom-switch">
+                                                    <input type="checkbox" class="custom-control-input" id="allowPastDate"
+                                                           onchange="updateSetting('allow_past_date', this.checked)">
+                                                    <label class="custom-control-label" for="allowPastDate">
+                                                        允许录入过往日期的记录
+                                                    </label>
                                                 </div>
-                                                <div class="form-group">
-                                                    <label><i class="fas fa-key mr-1"></i>新密码</label>
-                                                    <input type="password" class="form-control" id="newPassword" placeholder="请输入新密码">
-                                                </div>
-                                                <div class="form-group">
-                                                    <label><i class="fas fa-check-double mr-1"></i>确认新密码</label>
-                                                    <input type="password" class="form-control" id="confirmPassword" placeholder="请再次输入新密码">
-                                                </div>
-                                                <button type="button" class="btn btn-primary" onclick="submitPasswordChange()">
-                                                    <i class="fas fa-save mr-1"></i>修改密码
-                                                </button>
-                                            </form>
+                                                <small class="text-muted">启用后，用户可以在录入时选择过去的日期（适用于补录遗漏的记录）</small>
+                                            </div>
+                                            <div class="form-group mt-3" id="pastDateDaysGroup" style="display:none;">
+                                                <label for="pastDateMaxDays">允许的最大过往天数</label>
+                                                <input type="number" class="form-control" id="pastDateMaxDays"
+                                                       min="1" max="30" value="7" style="width: 150px;"
+                                                       onchange="updateSetting('past_date_max_days', this.value)">
+                                                <small class="text-muted">从今天起，允许录入的最大过往天数（1-30天）</small>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="mt-3">
-                                        <small class="text-muted">
-                                            <i class="fas fa-info-circle mr-1"></i>
-                                            默认密码：<code>2026</code>（首次使用建议修改）
-                                        </small>
+                                    <div class="card mb-3">
+                                        <div class="card-header bg-light">
+                                            <i class="fas fa-trash-alt mr-1"></i>删除功能
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="form-group">
+                                                <div class="custom-control custom-switch">
+                                                    <input type="checkbox" class="custom-control-input" id="allowDelete"
+                                                           onchange="updateSetting('allow_delete', this.checked)">
+                                                    <label class="custom-control-label" for="allowDelete">
+                                                        <span class="text-danger"><i class="fas fa-exclamation-triangle mr-1"></i>启用删除功能</span>
+                                                    </label>
+                                                </div>
+                                                <small class="text-muted">启用后，将显示删除按钮。<strong class="text-danger">注意：删除操作不可恢复，请谨慎使用！</strong></small>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1648,39 +1338,6 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
                     <button type="button" class="btn btn-primary" onclick="saveTherapist()">保存</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 治疗类别模态框 -->
-    <div class="modal fade" id="categoryModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">治疗类别信息</h5>
-                    <button type="button" class="close" data-dismiss="modal">
-                        <span>&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" id="categoryId">
-                    <div class="form-group">
-                        <label>名称 *</label>
-                        <input type="text" class="form-control" id="categoryName" required placeholder="如：仪器治疗、手法治疗">
-                    </div>
-                    <div class="form-group">
-                        <label>描述</label>
-                        <textarea class="form-control" id="categoryDescription" rows="2" placeholder="可选，描述该类别的用途"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>排序</label>
-                        <input type="number" class="form-control" id="categorySortOrder" value="0" min="0">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
-                    <button type="button" class="btn btn-primary" onclick="saveCategory()">保存</button>
                 </div>
             </div>
         </div>
@@ -2069,122 +1726,25 @@
     <!-- Pinyin library - 简化版内联实现 -->
     <script>
         // 简易拼音库（如果无法加载外部库）
-        // 包含常用姓氏、名字和治疗相关汉字
         var pinyinPro = {
-            pinyinMap: {
-                // 常用姓氏 (按拼音排序)
-                '王': 'wang', '李': 'li', '张': 'zhang', '刘': 'liu', '陈': 'chen', '杨': 'yang', '黄': 'huang',
-                '赵': 'zhao', '周': 'zhou', '吴': 'wu', '徐': 'xu', '孙': 'sun', '马': 'ma', '朱': 'zhu',
-                '胡': 'hu', '郭': 'guo', '何': 'he', '林': 'lin', '罗': 'luo', '高': 'gao', '郑': 'zheng',
-                '梁': 'liang', '谢': 'xie', '宋': 'song', '唐': 'tang', '许': 'xu', '邓': 'deng', '冯': 'feng',
-                '韩': 'han', '曹': 'cao', '曾': 'zeng', '彭': 'peng', '萧': 'xiao', '蔡': 'cai', '潘': 'pan',
-                '田': 'tian', '董': 'dong', '袁': 'yuan', '于': 'yu', '余': 'yu', '叶': 'ye', '蒋': 'jiang',
-                '杜': 'du', '苏': 'su', '魏': 'wei', '程': 'cheng', '吕': 'lv', '丁': 'ding', '沈': 'shen',
-                '任': 'ren', '姚': 'yao', '卢': 'lu', '傅': 'fu', '钟': 'zhong', '姜': 'jiang', '崔': 'cui',
-                '谭': 'tan', '廖': 'liao', '范': 'fan', '汪': 'wang', '陆': 'lu', '金': 'jin', '石': 'shi',
-                '戴': 'dai', '贾': 'jia', '韦': 'wei', '夏': 'xia', '邱': 'qiu', '方': 'fang', '侯': 'hou',
-                '邹': 'zou', '熊': 'xiong', '孟': 'meng', '秦': 'qin', '白': 'bai', '江': 'jiang', '阎': 'yan',
-                '薛': 'xue', '尹': 'yin', '段': 'duan', '雷': 'lei', '龙': 'long', '黎': 'li', '史': 'shi',
-                '陶': 'tao', '贺': 'he', '顾': 'gu', '毛': 'mao', '郝': 'hao', '龚': 'gong', '邵': 'shao',
-                '万': 'wan', '钱': 'qian', '严': 'yan', '洪': 'hong', '武': 'wu', '莫': 'mo', '孔': 'kong',
-                '向': 'xiang', '常': 'chang', '温': 'wen', '康': 'kang', '邢': 'xing', '俞': 'yu', '李': 'li',
-
-                // 常用名字用字
-                '蔼': 'ai', '珠': 'zhu', '婷': 'ting', '宇': 'yu', '凡': 'fan', '芮': 'rui', '凯': 'kai',
-                '珊': 'shan', '德': 'de', '裕': 'yu', '明': 'ming', '华': 'hua', '文': 'wen', '军': 'jun',
-                '平': 'ping', '建': 'jian', '国': 'guo', '红': 'hong', '丽': 'li', '芳': 'fang', '敏': 'min',
-                '静': 'jing', '强': 'qiang', '刚': 'gang', '勇': 'yong', '杰': 'jie', '峰': 'feng', '磊': 'lei',
-                '艳': 'yan', '英': 'ying', '梅': 'mei', '萍': 'ping', '琳': 'lin', '霞': 'xia', '燕': 'yan',
-                '玲': 'ling', '洁': 'jie', '云': 'yun', '莲': 'lian', '琴': 'qin', '雪': 'xue', '青': 'qing',
-                '秀': 'xiu', '娟': 'juan', '欣': 'xin', '雅': 'ya', '瑞': 'rui', '鹏': 'peng', '辉': 'hui',
-                '斌': 'bin', '浩': 'hao', '亮': 'liang', '健': 'jian', '俊': 'jun', '帅': 'shuai', '旭': 'xu',
-                '晨': 'chen', '阳': 'yang', '宁': 'ning', '慧': 'hui', '晶': 'jing', '媛': 'yuan', '倩': 'qian',
-                '颖': 'ying', '佳': 'jia', '欣': 'xin', '怡': 'yi', '悦': 'yue', '萱': 'xuan', '涵': 'han',
-                '博': 'bo', '思': 'si', '雨': 'yu', '泽': 'ze', '航': 'hang', '轩': 'xuan', '豪': 'hao',
-                '然': 'ran', '一': 'yi', '二': 'er', '三': 'san', '四': 'si', '五': 'wu', '六': 'liu',
-                '七': 'qi', '八': 'ba', '九': 'jiu', '十': 'shi', '百': 'bai', '千': 'qian', '万': 'wan',
-
-                // 更多常用名字用字（A-Z排序）
-                '阿': 'a', '爱': 'ai', '安': 'an', '艾': 'ai', '昂': 'ang',
-                '宝': 'bao', '贝': 'bei', '碧': 'bi', '彬': 'bin', '冰': 'bing', '波': 'bo', '邦': 'bang',
-                '才': 'cai', '昌': 'chang', '畅': 'chang', '朝': 'chao', '臣': 'chen', '成': 'cheng', '承': 'cheng',
-                '初': 'chu', '春': 'chun', '纯': 'chun', '聪': 'cong', '翠': 'cui', '存': 'cun',
-                '大': 'da', '代': 'dai', '丹': 'dan', '道': 'dao', '登': 'deng', '迪': 'di', '帝': 'di',
-                '东': 'dong', '栋': 'dong', '端': 'duan', '多': 'duo',
-                '恩': 'en', '儿': 'er',
-                '法': 'fa', '帆': 'fan', '菲': 'fei', '飞': 'fei', '丰': 'feng', '枫': 'feng', '凤': 'feng', '福': 'fu',
-                '功': 'gong', '冠': 'guan', '光': 'guang', '贵': 'gui', '国': 'guo',
-                '海': 'hai', '晗': 'han', '瀚': 'han', '行': 'hang', '昊': 'hao', '和': 'he', '河': 'he', '贺': 'he',
-                '恒': 'heng', '弘': 'hong', '宏': 'hong', '洪': 'hong', '鸿': 'hong', '虎': 'hu', '花': 'hua',
-                '化': 'hua', '怀': 'huai', '欢': 'huan', '环': 'huan', '焕': 'huan', '皇': 'huang', '辉': 'hui',
-                '会': 'hui', '惠': 'hui', '佳': 'jia', '嘉': 'jia', '坚': 'jian', '俭': 'jian', '江': 'jiang',
-                '姜': 'jiang', '将': 'jiang', '金': 'jin', '进': 'jin', '晋': 'jin', '京': 'jing', '晶': 'jing',
-                '敬': 'jing', '静': 'jing', '靖': 'jing', '君': 'jun', '骏': 'jun',
-                '开': 'kai', '楷': 'kai', '科': 'ke', '可': 'ke', '克': 'ke', '坤': 'kun',
-                '兰': 'lan', '岚': 'lan', '蓝': 'lan', '朗': 'lang', '浪': 'lang', '乐': 'le', '雷': 'lei',
-                '力': 'li', '立': 'li', '礼': 'li', '丽': 'li', '利': 'li', '连': 'lian', '良': 'liang',
-                '亮': 'liang', '林': 'lin', '霖': 'lin', '灵': 'ling', '龙': 'long', '禄': 'lu', '路': 'lu',
-                '伦': 'lun', '洛': 'luo',
-                '曼': 'man', '茂': 'mao', '梦': 'meng', '孟': 'meng', '民': 'min', '铭': 'ming', '命': 'ming',
-                '穆': 'mu',
-                '南': 'nan', '能': 'neng', '年': 'nian', '宁': 'ning',
-                '欧': 'ou',
-                '培': 'pei', '朋': 'peng', '平': 'ping', '萍': 'ping', '普': 'pu',
-                '奇': 'qi', '琪': 'qi', '启': 'qi', '气': 'qi', '千': 'qian', '谦': 'qian', '前': 'qian',
-                '强': 'qiang', '桥': 'qiao', '勤': 'qin', '清': 'qing', '庆': 'qing', '秋': 'qiu', '球': 'qiu',
-                '曲': 'qu', '权': 'quan', '泉': 'quan', '群': 'qun',
-                '然': 'ran', '仁': 'ren', '日': 'ri', '荣': 'rong', '容': 'rong', '儒': 'ru', '瑞': 'rui', '润': 'run',
-                '若': 'ruo',
-                '莎': 'sha', '山': 'shan', '善': 'shan', '尚': 'shang', '绍': 'shao', '申': 'shen', '生': 'sheng',
-                '胜': 'sheng', '盛': 'sheng', '世': 'shi', '仕': 'shi', '寿': 'shou', '淑': 'shu', '述': 'shu',
-                '树': 'shu', '双': 'shuang', '水': 'shui', '顺': 'shun', '思': 'si', '松': 'song', '苏': 'su',
-                '素': 'su', '太': 'tai', '泰': 'tai', '坦': 'tan', '堂': 'tang', '涛': 'tao', '腾': 'teng',
-                '天': 'tian', '田': 'tian', '通': 'tong', '同': 'tong', '统': 'tong', '伟': 'wei', '威': 'wei',
-                '维': 'wei', '玮': 'wei', '纬': 'wei', '文': 'wen', '武': 'wu', '舞': 'wu', '梧': 'wu',
-                '西': 'xi', '希': 'xi', '锡': 'xi', '喜': 'xi', '侠': 'xia', '仙': 'xian', '先': 'xian',
-                '贤': 'xian', '香': 'xiang', '祥': 'xiang', '翔': 'xiang', '小': 'xiao', '晓': 'xiao', '孝': 'xiao',
-                '笑': 'xiao', '新': 'xin', '信': 'xin', '兴': 'xing', '星': 'xing', '行': 'xing', '雄': 'xiong',
-                '修': 'xiu', '秀': 'xiu', '旭': 'xu', '学': 'xue', '雪': 'xue', '勋': 'xun', '迅': 'xun',
-                '亚': 'ya', '严': 'yan', '言': 'yan', '炎': 'yan', '研': 'yan', '延': 'yan', '雁': 'yan',
-                '扬': 'yang', '羊': 'yang', '洋': 'yang', '尧': 'yao', '耀': 'yao', '业': 'ye', '叶': 'ye',
-                '一': 'yi', '义': 'yi', '益': 'yi', '毅': 'yi', '银': 'yin', '寅': 'yin', '英': 'ying',
-                '盈': 'ying', '永': 'yong', '勇': 'yong', '友': 'you', '有': 'you', '瑜': 'yu', '宇': 'yu',
-                '羽': 'yu', '玉': 'yu', '钰': 'yu', '源': 'yuan', '远': 'yuan', '月': 'yue', '岳': 'yue',
-                '悦': 'yue', '越': 'yue', '云': 'yun', '韵': 'yun', '赞': 'zan', '泽': 'ze', '增': 'zeng',
-                '占': 'zhan', '章': 'zhang', '兆': 'zhao', '哲': 'zhe', '震': 'zhen', '正': 'zheng',
-                '政': 'zheng', '之': 'zhi', '知': 'zhi', '植': 'zhi', '志': 'zhi', '智': 'zhi', '中': 'zhong',
-                '忠': 'zhong', '仲': 'zhong', '众': 'zhong', '州': 'zhou', '舟': 'zhou', '珠': 'zhu',
-                '竹': 'zhu', '主': 'zhu', '子': 'zi', '自': 'zi', '宗': 'zong', '祖': 'zu', '尊': 'zun',
-                '佐': 'zuo',
-
-                // 治疗相关词汇
-                '盆': 'pen', '底': 'di', '电': 'dian', '磁': 'ci', '推': 'tui', '拿': 'na', '按': 'an', '摩': 'mo',
-                '针': 'zhen', '灸': 'jiu', '拔': 'ba', '罐': 'guan', '刮': 'gua', '痧': 'sha',
-                '腰': 'yao', '腿': 'tui', '颈': 'jing', '椎': 'zhui', '肩': 'jian', '背': 'bei',
-                '手': 'shou', '足': 'zu', '头': 'tou', '面': 'mian', '腹': 'fu', '胸': 'xiong',
-                '康': 'kang', '复': 'fu', '理': 'li', '疗': 'liao', '治': 'zhi', '诊': 'zhen',
-                '患': 'huan', '者': 'zhe', '医': 'yi', '生': 'sheng', '护': 'hu', '士': 'shi',
-                '药': 'yao', '片': 'pian', '剂': 'ji', '丸': 'wan', '汤': 'tang', '散': 'san'
-            },
             pinyin: function(text, options) {
                 if (!text) return '';
-
-                var pattern = options && options.pattern ? options.pattern : 'pinyin';
+                // 简单的汉字拼音映射（仅包含常用字）
+                var pinyinMap = {
+                    '李': 'li', '德': 'de', '裕': 'yu', '陈': 'chen', '宇': 'yu', '凡': 'fan',
+                    '白': 'bai', '芮': 'rui', '张': 'zhang', '婷': 'ting', '林': 'lin', '凯': 'kai', '珊': 'shan',
+                    '盆': 'pen', '底': 'di', '电': 'dian', '磁': 'ci', '推': 'tui', '拿': 'na', '按': 'an', '摩': 'mo',
+                    '针': 'zhen', '灸': 'jiu', '拔': 'ba', '罐': 'guan', '刮': 'gua', '痧': 'sha',
+                    '腰': 'yao', '腿': 'tui', '颈': 'jing', '椎': 'zhui', '肩': 'jian', '背': 'bei',
+                    '手': 'shou', '足': 'zu', '头': 'tou', '面': 'mian', '腹': 'fu', '胸': 'xiong'
+                };
                 var result = '';
-
                 for (var i = 0; i < text.length; i++) {
                     var char = text[i];
-                    var pinyin = this.pinyinMap[char];
-
-                    if (pinyin) {
-                        if (pattern === 'first') {
-                            // 首字母模式：只取拼音第一个字母
-                            result += pinyin.charAt(0);
-                        } else {
-                            result += pinyin + ' ';
-                        }
+                    if (pinyinMap[char]) {
+                        result += pinyinMap[char] + ' ';
                     } else if (/[a-zA-Z0-9]/.test(char)) {
-                        result += char.toLowerCase();
+                        result += char;
                     }
                 }
                 return result.trim();
@@ -2196,7 +1756,6 @@
         let therapists = [];
         let treatmentItems = [];
         let categories = [];
-        window.allowDelete = false;  // 默认禁用删除功能，需要在设置中开启
 
         // 验证拼音库是否加载（延迟到页面加载完成后）
         window.addEventListener('load', function() {
@@ -2210,246 +1769,12 @@
             }
         });
 
-        // ==================== 录入设置管理 ====================
-        // 加载录入设置
-        async function loadEntrySettings() {
-            try {
-                const res = await fetch('/api/settings');
-                const data = await res.json();
-                if (data.success) {
-                    const settings = data.data.settings || {};
-                    settings.forEach(s => {
-                        if (s.key === 'allow_past_date') {
-                            document.getElementById('allowPastDate').checked = s.value;
-                            document.getElementById('pastDateDaysGroup').style.display = s.value ? 'block' : 'none';
-                        } else if (s.key === 'past_date_max_days') {
-                            document.getElementById('pastDateMaxDays').value = s.value || 7;
-                        } else if (s.key === 'allow_delete') {
-                            document.getElementById('allowDelete').checked = s.value;
-                            updateDeleteButtonsVisibility(s.value);
-                        }
-                    });
-                }
-            } catch (err) {
-                console.error('加载设置失败', err);
-            }
-        }
-
-        // 更新删除按钮的可见性
-        function updateDeleteButtonsVisibility(visible) {
-            // 批量删除按钮
-            const batchDeleteItemsBtn = document.getElementById('batchDeleteItemsBtn');
-            const batchDeleteCategoriesBtn = document.getElementById('batchDeleteCategoriesBtn');
-            const batchDeleteRecordsBtn = document.getElementById('batchDeleteRecordsBtn');
-
-            if (batchDeleteItemsBtn) {
-                batchDeleteItemsBtn.style.display = visible ? '' : 'none';
-            }
-            if (batchDeleteCategoriesBtn) {
-                batchDeleteCategoriesBtn.style.display = visible ? '' : 'none';
-            }
-            // 记录的批量删除按钮需要特殊处理（只有在有选中项时才显示）
-            if (batchDeleteRecordsBtn && visible) {
-                const selected = $('.record-checkbox:checked').length;
-                batchDeleteRecordsBtn.style.display = selected > 0 ? '' : 'none';
-            } else if (batchDeleteRecordsBtn) {
-                batchDeleteRecordsBtn.style.display = 'none';
-            }
-
-            // 存储设置到全局变量，供渲染函数使用
-            window.allowDelete = visible;
-
-            // 重新渲染表格以更新删除按钮显示
-            if (typeof renderItemsTable === 'function') renderItemsTable();
-            if (typeof renderCategoriesTable === 'function') renderCategoriesTable();
-            // 记录表格需要重新加载数据
-            if (typeof loadRecords === 'function') loadRecords();
-        }
-
-        // 更新设置
-        async function updateSetting(key, value) {
-            try {
-                const res = await fetch(`/api/settings/${key}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ value: value })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    showToast('设置已保存', 'success');
-
-                    // 显示/隐藏天数设置
-                    if (key === 'allow_past_date') {
-                        document.getElementById('pastDateDaysGroup').style.display = value ? 'block' : 'none';
-                    }
-
-                    // 更新删除按钮可见性
-                    if (key === 'allow_delete') {
-                        updateDeleteButtonsVisibility(value);
-                    }
-                } else {
-                    showToast(data.error || '保存失败', 'error');
-                    // 恢复之前的状态
-                    loadEntrySettings();
-                }
-            } catch (err) {
-                showToast('网络错误', 'error');
-                loadEntrySettings();
-            }
-        }
-
-        // 监听设置标签页切换
-        $('a[data-toggle="pill"]').on('shown.bs.tab', function(e) {
-            if (e.target.getAttribute('href') === '#settingsEntry') {
-                loadEntrySettings();
-            }
-        });
-
         // ==================== Toast 通知系统 ====================
-        // 设置页面密码保护（从后端验证）
+        // 设置页面密码保护
+        const SETTINGS_PASSWORD = '2026';
         let settingsPasswordVerified = false;
 
-        // ✅ 修复：使用事件监听器阻止 tab 切换
-        $(document).ready(function() {
-            $('.settings-tab-link').on('click', function(e) {
-                e.preventDefault();
-
-                if (settingsPasswordVerified) {
-                    // 已验证，使用 Bootstrap tab 方法切换
-                    $(this).tab('show');
-                    // 数据加载将在 shown.bs.tab 事件中触发
-                    return;
-                }
-
-                // 未验证，弹出密码框
-                const password = prompt('请输入设置页面密码：');
-                if (password === null) {
-                    // 用户取消，不做任何操作
-                    return;
-                }
-
-                // ✅ 从后端验证密码
-                verifySettingsPassword(password, $(this));
-            });
-
-            // ✅ 监听设置标签页显示完成事件
-            $('.settings-tab-link').on('shown.bs.tab', function(e) {
-                console.log('[设置] 标签页显示完成，加载数据...');
-                loadSettingsData();
-            });
-        });
-
-        // ✅ 加载设置页面数据
-        function loadSettingsData() {
-            console.log('[设置] 加载设置页面数据...');
-            loadTherapists();
-            loadTreatmentItems();
-            loadCategories();
-        }
-
-        // 从后端验证密码
-        function verifySettingsPassword(password, $tabLink) {
-            $.ajax({
-                url: '/api/settings/verify-password',
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({ password: password }),
-                success: function(res) {
-                    if (res.success) {
-                        settingsPasswordVerified = true;
-                        // ✅ 验证成功，使用 Bootstrap tab 方法切换
-                        // 数据加载将在 shown.bs.tab 事件中触发
-                        $tabLink.tab('show');
-                    } else {
-                        showToast('密码错误，无法访问设置页面', 'error');
-                    }
-                },
-                error: function() {
-                    showToast('密码验证失败，请稍后重试', 'error');
-                }
-            });
-        }
-
-        // 修改设置页面密码
-        function changeSettingsPassword() {
-            const oldPassword = prompt('请输入当前密码：');
-            if (oldPassword === null) return;
-
-            const newPassword = prompt('请输入新密码：');
-            if (newPassword === null) return;
-
-            const confirmPassword = prompt('请再次输入新密码：');
-            if (confirmPassword === null) return;
-
-            if (newPassword !== confirmPassword) {
-                showToast('两次输入的新密码不一致', 'error');
-                return;
-            }
-
-            $.ajax({
-                url: '/api/settings/change-password',
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({
-                    old_password: oldPassword,
-                    new_password: newPassword
-                }),
-                success: function(res) {
-                    if (res.success) {
-                        showToast('密码修改成功！', 'success');
-                    } else {
-                        showToast(res.error || '密码修改失败', 'error');
-                    }
-                },
-                error: function(xhr) {
-                    const res = xhr.responseJSON || {};
-                    showToast(res.error || '密码修改失败', 'error');
-                }
-            });
-        }
-
-        // 提交密码修改（从设置页面表单）
-        function submitPasswordChange() {
-            const currentPassword = $('#currentPassword').val();
-            const newPassword = $('#newPassword').val();
-            const confirmPassword = $('#confirmPassword').val();
-
-            if (!currentPassword || !newPassword || !confirmPassword) {
-                showToast('请填写所有字段', 'error');
-                return;
-            }
-
-            if (newPassword !== confirmPassword) {
-                showToast('两次输入的新密码不一致', 'error');
-                return;
-            }
-
-            $.ajax({
-                url: '/api/settings/change-password',
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({
-                    old_password: currentPassword,
-                    new_password: newPassword
-                }),
-                success: function(res) {
-                    if (res.success) {
-                    showToast('密码修改成功！', 'success');
-                    $('#currentPassword').val('');
-                    $('#newPassword').val('');
-                    $('#confirmPassword').val('');
-                } else {
-                    showToast(res.error || '密码修改失败', 'error');
-                }
-                },
-                error: function(xhr) {
-                    const res = xhr.responseJSON || {};
-                    showToast(res.error || '密码修改失败', 'error');
-                }
-            });
-        }
-
-        // 检查设置页面密码（保留兼容性）
+        // 检查设置页面密码
         function checkSettingsPassword() {
             if (settingsPasswordVerified) {
                 return true;
@@ -2460,24 +1785,13 @@
                 return false; // 用户取消
             }
 
-            // 同步验证（用于向后兼容）
-            $.ajax({
-                url: '/api/settings/verify-password',
-                method: 'POST',
-                contentType: 'application/json',
-                async: false,
-                data: JSON.stringify({ password: password }),
-                success: function(res) {
-                    if (res.success) {
-                        settingsPasswordVerified = true;
-                    }
-                }
-            });
-
-            if (!settingsPasswordVerified) {
+            if (password === SETTINGS_PASSWORD) {
+                settingsPasswordVerified = true;
+                return true;
+            } else {
                 showToast('密码错误，无法访问设置页面', 'error');
+                return false;
             }
-            return settingsPasswordVerified;
         }
 
         function showToast(message, type = 'info') {
@@ -2504,127 +1818,76 @@
             }, 3000);
         }
 
-        // 格式化日期
-        // ===================== Emoji支持检测 =====================
-        // 检测系统是否支持彩色Emoji（Windows 7等旧系统不支持）
-        var emojiSupported = null;
-
-        function checkEmojiSupport() {
-            if (emojiSupported !== null) return emojiSupported;
-
+        // ==================== 录入设置管理 ====================
+        async function loadEntrySettings() {
             try {
-                var canvas = document.createElement('canvas');
-                var ctx = canvas.getContext('2d');
-                if (!ctx) {
-                    emojiSupported = false;
-                    return false;
+                // 初始化全局变量
+                window.allowDelete = false;
+                window.allowPastDate = false;
+                window.pastDateMaxDays = 7;
+                
+                const res = await fetch('/api/settings');
+                const data = await res.json();
+                if (data.success) {
+                    const settings = data.data.settings || {};
+                    settings.forEach(s => {
+                        if (s.key === 'allow_past_date') {
+                            document.getElementById('allowPastDate').checked = s.value === true || s.value === 'true';
+                            document.getElementById('pastDateDaysGroup').style.display = s.value === true || s.value === 'true' ? 'block' : 'none';
+                        } else if (s.key === 'past_date_max_days') {
+                            window.pastDateMaxDays = s.value || 7;
+                            document.getElementById('pastDateMaxDays').value = window.pastDateMaxDays;
+                            document.getElementById('pastDateMaxDays').value = s.value || 7;
+                        } else if (s.key === 'allow_delete') {
+                            window.allowDelete = s.value === true || s.value === 'true';
+                            document.getElementById('allowDelete').checked = window.allowDelete;
+                            document.getElementById('allowDelete').checked = s.value === true || s.value === 'true';
+                        }
+                    });
                 }
+            } catch (err) {
+                console.error('加载设置失败', err);
+            }
+        }
 
-                // 绘制一个彩色emoji，检查是否有颜色
-                ctx.fillText('🌟', 0, 16);
-                var data = ctx.getImageData(0, 0, 16, 16).data;
-
-                // 检查是否有非灰度颜色（彩色emoji会有多种颜色）
-                var hasColor = false;
-                for (var i = 0; i < data.length; i += 4) {
-                    var r = data[i], g = data[i+1], b = data[i+2];
-                    // 如果RGB值差异较大，说明有颜色
-                    if (Math.max(r, g, b) - Math.min(r, g, b) > 30) {
-                        hasColor = true;
-                        break;
+        async function updateSetting(key, value) {
+            try {
+                const res = await fetch(`/api/settings/${key}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ value: value })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('设置已保存', 'success');
+                    // 🔧 修复：更新全局变量
+                    if (key === 'allow_delete') {
+                        window.allowDelete = value;
+                        console.log('全局变量 allowDelete 已更新为:', window.allowDelete);
+                    } else if (key === 'allow_past_date') {
+                        window.allowPastDate = value;
+                        document.getElementById('pastDateDaysGroup').style.display = value ? 'block' : 'none';
+                        console.log('全局变量 allowPastDate 已更新为:', window.allowPastDate);
+                    } else if (key === 'past_date_max_days') {
+                        window.pastDateMaxDays = value;
+                        console.log('全局变量 pastDateMaxDays 已更新为:', window.pastDateMaxDays);
                     }
+                } else {
+                    showToast(data.error || '保存失败', 'error');
                 }
-
-                emojiSupported = hasColor;
-                console.log('[Emoji检测] 彩色Emoji支持: ' + (hasColor ? '是' : '否'));
-                return hasColor;
-            } catch (e) {
-                emojiSupported = false;
-                console.log('[Emoji检测] 检测失败，默认不支持彩色: ' + e.message);
-                return false;
+            } catch (err) {
+                showToast('网络错误', 'error');
             }
         }
 
-        // 成就图标到Font Awesome图标的映射（不支持彩色Emoji时使用）
-        // 注意：使用 Font Awesome 5.x 语法（fas前缀）
-        var achievementFallbackMap = {
-            // 治疗次数成就
-            '🌱': { icon: 'fas fa-leaf', color: 'seed' },       // 绿色 - 初露锋芒
-            '🌿': { icon: 'fas fa-leaf', color: 'leaf' },       // 浅绿 - 渐入佳境
-            '⭐': { icon: 'fas fa-star', color: 'star' },       // 金色 - 技艺精进
-            '🔥': { icon: 'fas fa-fire', color: 'fire' },       // 橙色 - 炉火纯青
-            '👑': { icon: 'fas fa-trophy', color: 'crown' },    // 金色奖杯 - 康复大师
-            '💎': { icon: 'fas fa-gem', color: 'gem' },         // 紫色宝石 - 传奇治疗师（FA5: fa-gem）
-            // 工作量成就
-            '🌟': { icon: 'fas fa-star', color: 'star-gold' },  // 亮金 - 勤奋之星
-            '🏅': { icon: 'fas fa-thumbs-up', color: 'medal' }, // 金色点赞 - 努力标兵
-            '🏆': { icon: 'fas fa-trophy', color: 'trophy' },   // 金色奖杯 - 劳动模范
-            '💫': { icon: 'fas fa-star', color: 'flash' },      // 黄色闪光 - 工作狂人
-            // 连续打卡成就
-            '💪': { icon: 'fas fa-bolt', color: 'bolt' },       // 黄色闪电 - 坚持不懈
-            '⚡': { icon: 'fas fa-bolt', color: 'bolt-blue' },  // 蓝色闪电 - 持之以恒
-            // 日工作量成就
-            '🚀': { icon: 'fas fa-rocket', color: 'rocket' },   // 粉色火箭 - 高效能者
-            '🎯': { icon: 'fas fa-bullseye', color: 'target' }, // 红色靶心 - 爆发之星
-            '💯': { icon: 'fas fa-bullseye', color: 'target' },  // 红色靶心
-            // 其他
-            '🎖️': { icon: 'fas fa-certificate', color: 'medal' },
-            '❤️': { icon: 'fas fa-heart', color: 'heart' },
-            '✨': { icon: 'fas fa-star', color: 'star' }
-        };
-
-        // 等级徽章回退映射
-        var levelFallbackMap = {
-            'Lv.1': { icon: 'fas fa-star', color: 'lv1' },
-            'Lv.2': { icon: 'fas fa-star', color: 'lv2' },
-            'Lv.3': { icon: 'fas fa-star', color: 'lv3' },
-            'Lv.4': { icon: 'fas fa-star', color: 'lv4' },
-            'Lv.5': { icon: 'fas fa-star', color: 'lv5' },
-            'Lv.6': { icon: 'fas fa-star', color: 'lv6' },
-            'Lv.7': { icon: 'fas fa-star', color: 'lv7' },
-            'Lv.8': { icon: 'fas fa-star', color: 'lv8' },
-            'Lv.9': { icon: 'fas fa-star', color: 'lv9' }
-        };
-
-        // 生成成就徽章HTML（带回退支持）
-        function renderAchievementBadge(icon, name) {
-            if (checkEmojiSupport()) {
-                // 支持彩色emoji，直接显示
-                return '<span class="achievement-mini-badge" title="' + name + '">' + icon + '</span>';
-            } else {
-                // 不支持彩色emoji，使用Font Awesome图标
-                var fallback = achievementFallbackMap[icon] || { icon: 'fas fa-star', color: 'star' };
-                return '<span class="fa-badge ' + fallback.color + '" title="' + name + '"><i class="' + fallback.icon + '"></i></span>';
+        // 监听设置标签页切换
+        $('a[data-toggle="pill"]').on('shown.bs.tab', function(e) {
+            if (e.target.getAttribute('href') === '#settingsEntry') {
+                loadEntrySettings();
             }
-        }
+        });
 
-        // 生成等级徽章HTML（带回退支持）
-        function renderLevelBadge(level, levelBadge, levelName) {
-            if (checkEmojiSupport()) {
-                return '<span class="level-badge level-' + level + '" title="' + levelName + '">' + levelBadge + ' ' + levelName + '</span>';
-            } else {
-                var fallback = levelFallbackMap[levelBadge] || { icon: 'fas fa-star', color: 'lv' + level };
-                return '<span class="level-badge level-' + level + '" title="' + levelName + '"><span class="fa-badge-sm ' + fallback.color + '"><i class="' + fallback.icon + '"></i></span> ' + levelName + '</span>';
-            }
-        }
-
-        // 生成火焰/连续打卡徽章HTML（带回退支持）
-        function renderStreakBadge(streak) {
-            var icon = streak >= 7 ? '🔥' : streak >= 3 ? '⚡' : '💪';
-            if (checkEmojiSupport()) {
-                return '<span class="streak-fire">' + icon + '</span>';
-            } else {
-                var fallback = achievementFallbackMap[icon] || { icon: 'fas fa-bolt', color: 'bolt' };
-                return '<span class="fa-badge ' + fallback.color + '"><i class="' + fallback.icon + '"></i></span>';
-            }
-        }
-
-        function formatDate(dateStr) {
-            const d = new Date(dateStr);
-            return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
-        }
-
-        // Shutdown server function (only works in standalone exe mode)
+        // ==================== 关闭服务器 ====================
         function shutdownServer() {
             if (confirm('确定要关闭服务器吗？\n\n关闭后需要重新启动程序才能使用系统。')) {
                 $.ajax({
@@ -2642,15 +1905,18 @@
             }
         }
 
-        // Check if running as standalone exe and show shutdown button
         function checkStandaloneMode() {
             $.get('/api/system/shutdown', function(res) {
-                // If endpoint exists, we're in standalone mode
                 $('#btnShutdown').show();
             }).fail(function() {
-                // Endpoint doesn't exist, hide button
                 $('#btnShutdown').hide();
             });
+        }
+
+        // 格式化日期
+        function formatDate(dateStr) {
+            const d = new Date(dateStr);
+            return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
         }
 
         // 页面初始化
@@ -2667,15 +1933,47 @@
             loadCategories();
             loadDashboard();
             loadRecentUsed();
-            loadPatientNamesCache();  // 加载患者姓名缓存
-            loadPatientNamesFromDB(); // 从数据库加载患者姓名
             initAchievements();  // 初始化成就系统
             checkStandaloneMode(); // 检查是否为独立运行模式
+            // 🔧 修复：页面加载时立即加载设置
+            loadEntrySettings();
 
             // 初始添加5行 - 移至 checkAllDataLoaded() 中执行，确保数据加载完成
 
             // 月度统计
             $('#monthPicker').change(loadMonthlyStatistics);
+            
+            // 设置标签点击事件 - 需要密码验证
+            $('#settingsTabLink').on('click', function(e) {
+                e.preventDefault();
+                
+                if (settingsPasswordVerified) {
+                    $(this).tab('show');
+                } else {
+                    const password = prompt('请输入设置页面密码：');
+                    if (password === null) return false;
+                    
+                    $.ajax({
+                        url: '/api/settings/verify-password',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        async: false,
+                        data: JSON.stringify({ password: password }),
+                        success: function(res) {
+                            if (res.success) {
+                                settingsPasswordVerified = true;
+                                $('#settingsTabLink').tab('show');
+                            } else {
+                                showToast('密码错误，无法访问设置页面', 'error');
+                            }
+                        },
+                        error: function() {
+                            showToast('验证失败，请稍后重试', 'error');
+                        }
+                    });
+                }
+                return false;
+            });
 
             // 标签页切换时自动加载数据
             $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
@@ -2734,45 +2032,18 @@
         }
 
         // ===================== 成就系统函数 =====================
+        // 初始化成就系统
+        function initAchievements() {
+            loadLevelLeaderboard();
+            loadStreakLeaderboard();
+            loadAchievementBadges();
+        }
 
         // 加载等级排行榜
         function loadLevelLeaderboard() {
-            $.get('/api/achievements/leaderboard/level?limit=5', function(res) {
-                if (res.success && res.data.leaderboard.length > 0) {
-                    let html = '';
-                    res.data.leaderboard.forEach((item, index) => {
-                        const rankClass = index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : 'normal';
-
-                        // 生成成就徽章HTML（最多显示5个）- 使用回退支持
-                        let badgesHtml = '';
-                        if (item.achievements && item.achievements.length > 0) {
-                            const displayBadges = item.achievements.slice(0, 5);
-                            displayBadges.forEach(ach => {
-                                badgesHtml += renderAchievementBadge(ach.icon, ach.name);
-                            });
-                            if (item.achievements.length > 5) {
-                                badgesHtml += `<span class="achievement-more">+${item.achievements.length - 5}</span>`;
-                            }
-                        }
-
-                        // 生成等级徽章 - 使用回退支持
-                        var levelBadgeHtml = renderLevelBadge(item.level, item.level_badge, item.level_name);
-
-                        html += `
-                            <div class="ranking-item">
-                                <div class="rank ${rankClass}">${index + 1}</div>
-                                <div class="flex-grow-1">
-                                    <div class="font-weight-bold">
-                                        ${levelBadgeHtml}
-                                        ${item.therapist_name}
-                                    </div>
-                                    <small class="text-muted">积分: ${item.total_points} | 成就: ${item.achievements_count}</small>
-                                    <div class="therapist-badges">${badgesHtml}</div>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    $('#levelLeaderboard').html(html);
+            $.get('/api/achievements/leaderboard/level', function(res) {
+                if (res.success && res.data.leaderboard) {
+                    renderLevelLeaderboard(res.data.leaderboard);
                 } else {
                     $('#levelLeaderboard').html('<div class="text-center text-muted py-3">暂无数据</div>');
                 }
@@ -2781,28 +2052,39 @@
             });
         }
 
-        // 加载连续打卡排行榜
+        // 渲染等级排行榜
+        function renderLevelLeaderboard(items) {
+            if (!items || items.length === 0) {
+                $('#levelLeaderboard').html('<div class="text-center text-muted py-3">暂无数据</div>');
+                return;
+            }
+
+            let html = '';
+            items.slice(0, 5).forEach((item, index) => {
+                const rankClass = index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : 'normal';
+                // 使用正确的字段名：level, level_badge, level_name
+                const level = item.level || 1;
+                const levelBadge = item.level_badge || '⭐';
+                const levelName = item.level_name || '新手';
+                html += `
+                    <div class="ranking-item">
+                        <div class="rank ${rankClass}">${index + 1}</div>
+                        <div class="flex-grow-1">
+                            <div class="font-weight-bold">${item.therapist_name}</div>
+                            <span class="level-badge level-${level}">${levelBadge} ${levelName}</span>
+                            <small class="text-muted ml-2">积分: ${item.total_points || 0}</small>
+                        </div>
+                    </div>
+                `;
+            });
+            $('#levelLeaderboard').html(html);
+        }
+
+        // 加载连续打卡榜
         function loadStreakLeaderboard() {
-            $.get('/api/achievements/leaderboard/streak?limit=5', function(res) {
-                if (res.success && res.data.leaderboard.length > 0) {
-                    let html = '';
-                    res.data.leaderboard.forEach((item, index) => {
-                        const rankClass = index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : 'normal';
-                        // 使用回退支持渲染连续打卡徽章
-                        const streakBadge = renderStreakBadge(item.current_streak);
-                        html += `
-                            <div class="ranking-item">
-                                <div class="rank ${rankClass}">${index + 1}</div>
-                                <div class="flex-grow-1">
-                                    <div class="font-weight-bold">
-                                        ${streakBadge} ${item.therapist_name}
-                                    </div>
-                                    <small class="text-muted">连续: ${item.current_streak}天 | 最长: ${item.longest_streak}天</small>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    $('#streakLeaderboard').html(html);
+            $.get('/api/achievements/leaderboard/streak', function(res) {
+                if (res.success && res.data.leaderboard) {
+                    renderStreakLeaderboard(res.data.leaderboard);
                 } else {
                     $('#streakLeaderboard').html('<div class="text-center text-muted py-3">暂无数据</div>');
                 }
@@ -2811,78 +2093,72 @@
             });
         }
 
-        // 加载成就徽章展示
+        // 渲染连续打卡榜
+        function renderStreakLeaderboard(items) {
+            if (!items || items.length === 0) {
+                $('#streakLeaderboard').html('<div class="text-center text-muted py-3">暂无数据</div>');
+                return;
+            }
+
+            let html = '';
+            items.slice(0, 5).forEach((item, index) => {
+                const rankClass = index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : 'normal';
+                const streakIcon = item.longest_streak >= 7 ? '🔥' : item.longest_streak >= 3 ? '⚡' : '💪';
+                html += `
+                    <div class="ranking-item">
+                        <div class="rank ${rankClass}">${index + 1}</div>
+                        <div class="flex-grow-1">
+                            <div class="font-weight-bold">${item.therapist_name}</div>
+                            <span class="streak-fire">${streakIcon}</span>
+                            <small class="text-muted">最长连续: ${item.longest_streak || 0}天</small>
+                        </div>
+                    </div>
+                `;
+            });
+            $('#streakLeaderboard').html(html);
+        }
+
+        // 加载成就徽章
         function loadAchievementBadges() {
-            $.get('/api/achievements/', function(res) {
-                if (res.success) {
-                    const achievements = res.data.achievements;
-                    let html = '';
-
-                    // 只展示前12个成就
-                    const displayAchievements = achievements.slice(0, 12);
-                    displayAchievements.forEach(ach => {
-                        // 生成成就图标HTML - 使用回退支持
-                        var iconHtml = ach.icon;
-                        if (!checkEmojiSupport()) {
-                            var fallback = achievementFallbackMap[ach.icon] || { icon: 'fas fa-star', color: 'star' };
-                            iconHtml = '<span class="fa-badge ' + fallback.color + '" style="width:48px;height:48px;font-size:20px;"><i class="' + fallback.icon + '"></i></span>';
-                        }
-
-                        html += `
-                            <div class="col-md-2 col-sm-4 col-6 mb-3">
-                                <div class="achievement-card">
-                                    <div class="achievement-icon">${iconHtml}</div>
-                                    <div class="achievement-name">${ach.name}</div>
-                                    <div class="achievement-desc">${ach.description}</div>
-                                    ${ach.points_reward > 0 ? `<small class="text-success">+${ach.points_reward}积分</small>` : ''}
-                                </div>
-                            </div>
-                        `;
-                    });
-
-                    if (achievements.length > 12) {
-                        html += `
-                            <div class="col-12 text-center mt-2">
-                                <small class="text-muted">还有 ${achievements.length - 12} 个成就等待解锁...</small>
-                            </div>
-                        `;
-                    }
-
-                    $('#achievementBadges').html(html || '<div class="col-12 text-center text-muted py-3">暂无成就</div>');
+            $.get('/api/achievements', function(res) {
+                if (res.success && res.data.achievements) {
+                    renderAchievementBadges(res.data.achievements);
+                } else {
+                    $('#achievementBadges').html('<div class="text-center text-muted py-3 col-12">暂无成就</div>');
                 }
             }).fail(function() {
-                $('#achievementBadges').html('<div class="col-12 text-center text-muted py-3">加载失败</div>');
+                $('#achievementBadges').html('<div class="text-center text-muted py-3 col-12">加载失败</div>');
             });
         }
 
-        // 初始化成就系统
-        function initAchievements() {
-            // 初始化默认成就
-            $.post('/api/achievements/init', function(res) {
-                if (res.success) {
-                    // 加载排行榜和徽章（后端 API 会自动刷新统计数据）
-                    loadLevelLeaderboard();
-                    loadStreakLeaderboard();
-                    loadAchievementBadges();
-                }
-            }).always(function() {
-                // 即使初始化失败也尝试加载
-                loadLevelLeaderboard();
-                loadStreakLeaderboard();
-                loadAchievementBadges();
+        // 渲染成就徽章
+        function renderAchievementBadges(achievements) {
+            if (!achievements || achievements.length === 0) {
+                $('#achievementBadges').html('<div class="text-center text-muted py-3 col-12">暂无成就</div>');
+                return;
+            }
+
+            let html = '';
+            achievements.forEach(function(achievement) {
+                const locked = achievement.unlocked_count === 0;
+                html += `
+                    <div class="col-md-2 col-sm-4 col-6 mb-3">
+                        <div class="achievement-card ${locked ? 'locked' : ''}">
+                            <div class="achievement-icon">${achievement.icon}</div>
+                            <div class="achievement-name">${achievement.name}</div>
+                            <div class="achievement-desc">${achievement.description}</div>
+                            ${!locked ? `<small class="text-success">${achievement.unlocked_count || 0}人获得</small>` : '<small class="text-muted">未解锁</small>'}
+                        </div>
+                    </div>
+                `;
             });
+            $('#achievementBadges').html(html);
         }
 
-        // 显示成就解锁提示
-        function showAchievementNotification(newAchievements) {
-            if (!newAchievements || Object.keys(newAchievements).length === 0) return;
-
-            let message = '🎉 恭喜解锁新成就！\n\n';
-            Object.values(newAchievements).flat().forEach(ach => {
-                message += `${ach.icon} ${ach.name}\n`;
-            });
-
-            showToast(message, 'success');
+        // 获取等级徽章
+        function getLevelBadge(level) {
+            const badges = ['', '🌱', '🌿', '⭐', '🌟', '💫', '🔥', '👑', '💎', '🏆'];
+            return badges[level] || '⭐';
         }
 
         // 渲染排行榜
@@ -2924,12 +2200,9 @@
 
         // 加载治疗师列表
         function loadTherapists() {
-            console.log('[治疗师] 开始加载治疗师列表...');
             $.get('/api/therapists', function(res) {
-                console.log('[治疗师] API返回:', res);
                 if (res.success) {
                     therapists = res.data.therapists;
-                    console.log('[治疗师] 加载了 ' + therapists.length + ' 个治疗师');
 
                     let options = '<option value="">请选择治疗师</option>';
                     therapists.forEach(t => {
@@ -2939,11 +2212,7 @@
                     $('#filterTherapist').html(options);
 
                     renderTherapistsTable();
-                } else {
-                    console.error('[治疗师] API返回失败:', res);
                 }
-            }).fail(function(xhr, status, error) {
-                console.error('[治疗师] API请求失败:', status, error);
             }).always(function() {
                 checkAllDataLoaded();
             });
@@ -2951,7 +2220,6 @@
 
         // 渲染治疗师表格
         function renderTherapistsTable() {
-            console.log('[治疗师表格] 开始渲染，治疗师数量:', therapists.length);
             let html = '';
             therapists.forEach(t => {
                 html += `
@@ -2974,8 +2242,7 @@
                     </tr>
                 `;
             });
-            const result = $('#therapistsTable').html(html || '<tr><td colspan="4" class="text-center text-muted">暂无数据</td></tr>');
-            console.log('[治疗师表格] 渲染完成，表格行数:', $('#therapistsTable tr').length);
+            $('#therapistsTable').html(html || '<tr><td colspan="4" class="text-center text-muted">暂无数据</td></tr>');
         }
 
         // 加载治疗项目列表
@@ -3000,7 +2267,6 @@
         // 渲染治疗项目表格
         function renderItemsTable() {
             let html = '';
-            const showDelete = window.allowDelete === true;
             treatmentItems.forEach(item => {
                 html += `
                     <tr>
@@ -3018,9 +2284,9 @@
                             <button class="btn btn-sm btn-outline-primary" onclick="editItem(${item.id})" title="编辑">
                                 <i class="fas fa-edit"></i> 编辑
                             </button>
-                            ${showDelete ? `<button class="btn btn-sm btn-outline-danger" onclick="deleteItem(${item.id})" title="删除">
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteItem(${item.id})" title="删除">
                                 <i class="fas fa-trash"></i> 删除
-                            </button>` : ''}
+                            </button>
                         </td>
                     </tr>
                 `;
@@ -3040,9 +2306,8 @@
         function updateItemSelectStatus() {
             const total = $('.item-checkbox').length;
             const selected = $('.item-checkbox:checked').length;
-            const showDelete = window.allowDelete === true;
             $('#selectAllItems').prop('indeterminate', selected > 0 && selected < total);
-            $('#batchDeleteItemsBtn').toggle(selected > 0 && showDelete);
+            $('#batchDeleteItemsBtn').toggle(selected > 0);
         }
 
         // 批量删除治疗项目
@@ -3103,7 +2368,6 @@
         // 渲染类别表格
         function renderCategoriesTable() {
             let html = '';
-            const showDelete = window.allowDelete === true;
             categories.forEach(c => {
                 html += `
                     <tr>
@@ -3119,9 +2383,9 @@
                             <button class="btn btn-sm btn-outline-primary" onclick="editCategory(${c.id})" title="编辑">
                                 <i class="fas fa-edit"></i> 编辑
                             </button>
-                            ${showDelete ? `<button class="btn btn-sm btn-outline-danger" onclick="deleteCategory(${c.id})" title="删除">
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteCategory(${c.id})" title="删除">
                                 <i class="fas fa-trash"></i> 删除
-                            </button>` : ''}
+                            </button>
                         </td>
                     </tr>
                 `;
@@ -3140,8 +2404,7 @@
         // 更新批量删除按钮状态
         function updateCategoryBatchDeleteBtn() {
             const checkedCount = $('.category-checkbox:checked').length;
-            const showDelete = window.allowDelete === true;
-            if (checkedCount > 0 && showDelete) {
+            if (checkedCount > 0) {
                 $('#batchDeleteCategoriesBtn').show().html(`<i class="fas fa-trash mr-1"></i>批量删除 (${checkedCount})`);
             } else {
                 $('#batchDeleteCategoriesBtn').hide();
@@ -3185,279 +2448,6 @@
         // ==================== 快速录入功能 ====================
         let entryRowId = 0;
         let recentUsed = { therapists: [], items: [] };
-
-        // ==================== 患者姓名自动完成功能 ====================
-        let patientNamesCache = {}; // 患者姓名缓存 { name: count }
-        let activeAutocomplete = null; // 当前激活的自动完成下拉框
-        let autocompleteIndex = -1; // 当前选中项索引
-
-        // 加载患者姓名缓存
-        function loadPatientNamesCache() {
-            const saved = localStorage.getItem('workload_patientNames');
-            if (saved) {
-                patientNamesCache = JSON.parse(saved);
-            }
-        }
-
-        // 保存患者姓名缓存
-        function savePatientNamesCache() {
-            localStorage.setItem('workload_patientNames', JSON.stringify(patientNamesCache));
-        }
-
-        // 添加患者姓名到缓存
-        function addPatientName(name) {
-            if (!name || name.trim() === '') return;
-            name = name.trim();
-            if (patientNamesCache[name]) {
-                patientNamesCache[name]++;
-            } else {
-                patientNamesCache[name] = 1;
-            }
-            savePatientNamesCache();
-        }
-
-        // 批量添加患者姓名
-        function addPatientNames(names) {
-            names.forEach(name => {
-                if (name && name.trim() !== '') {
-                    name = name.trim();
-                    if (patientNamesCache[name]) {
-                        patientNamesCache[name]++;
-                    } else {
-                        patientNamesCache[name] = 1;
-                    }
-                }
-            });
-            savePatientNamesCache();
-        }
-
-        // 获取拼音首字母
-        function getPinyinInitials(text) {
-            if (!text) return '';
-            if (typeof pinyinPro !== 'undefined' && pinyinPro.pinyin) {
-                try {
-                    return pinyinPro.pinyin(text, { pattern: 'first', toneType: 'none' }).replace(/\s/g, '').toLowerCase();
-                } catch (e) {
-                    return '';
-                }
-            }
-            return '';
-        }
-
-        // 获取完整拼音
-        function getFullPinyin(text) {
-            if (!text) return '';
-            if (typeof pinyinPro !== 'undefined' && pinyinPro.pinyin) {
-                try {
-                    return pinyinPro.pinyin(text, { toneType: 'none' }).replace(/\s/g, '').toLowerCase();
-                } catch (e) {
-                    return '';
-                }
-            }
-            return '';
-        }
-
-        // 匹配患者姓名（支持首字、拼音首字母、完整拼音）
-        function matchPatientName(patientName, searchTerm) {
-            if (!searchTerm) return false;
-            searchTerm = searchTerm.toLowerCase();
-            patientName = patientName.toLowerCase();
-
-            // 1. 直接匹配（包含）
-            if (patientName.indexOf(searchTerm) > -1) return true;
-
-            // 2. 首字匹配
-            if (patientName[0] === searchTerm[0]) return true;
-
-            // 3. 拼音首字母匹配
-            const pinyinInitials = getPinyinInitials(patientName);
-            if (pinyinInitials && pinyinInitials.indexOf(searchTerm) > -1) return true;
-
-            // 4. 完整拼音匹配
-            const fullPinyin = getFullPinyin(patientName);
-            if (fullPinyin && fullPinyin.indexOf(searchTerm) > -1) return true;
-
-            return false;
-        }
-
-        // 高亮匹配文字
-        function highlightMatch(text, searchTerm) {
-            if (!searchTerm) return text;
-            const regex = new RegExp(`(${searchTerm})`, 'gi');
-            return text.replace(regex, '<span class="patient-match">$1</span>');
-        }
-
-        // 获取匹配的患者列表
-        function getMatchingPatients(searchTerm) {
-            const matches = [];
-            const sortedPatients = Object.entries(patientNamesCache)
-                .sort((a, b) => b[1] - a[1]); // 按使用次数排序
-
-            for (const [name, count] of sortedPatients) {
-                if (matchPatientName(name, searchTerm)) {
-                    matches.push({ name, count });
-                    if (matches.length >= 10) break; // 最多显示10个
-                }
-            }
-            return matches;
-        }
-
-        // 显示自动完成下拉框
-        function showPatientAutocomplete(input) {
-            const $input = $(input);
-            const value = $input.val().trim();
-            const $dropdown = $input.siblings('.patient-autocomplete-dropdown');
-
-            // 如果输入为空，显示最近使用的5个患者
-            const matches = value ? getMatchingPatients(value) : getRecentPatients(5);
-
-            if (matches.length === 0) {
-                hidePatientAutocomplete();
-                return;
-            }
-
-            let html = '';
-            matches.forEach((item, index) => {
-                const displayName = value ? highlightMatch(item.name, value) : item.name;
-                html += `
-                    <div class="patient-autocomplete-item ${index === 0 ? 'active' : ''}"
-                         data-name="${item.name}"
-                         data-index="${index}">
-                        <span class="patient-name">${displayName}</span>
-                        <span class="patient-count">${item.count}次</span>
-                    </div>
-                `;
-            });
-
-            $dropdown.html(html).addClass('show');
-
-            // 动态定位下拉框（使用fixed定位，坐标相对于视口，不需要加scrollY）
-            const inputRect = input.getBoundingClientRect();
-            $dropdown.css({
-                'top': inputRect.bottom + 2,
-                'left': inputRect.left,
-                'width': inputRect.width
-            });
-
-            activeAutocomplete = $dropdown[0];
-            autocompleteIndex = 0;
-        }
-
-        // 获取最近使用的患者
-        function getRecentPatients(limit) {
-            return Object.entries(patientNamesCache)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, limit)
-                .map(([name, count]) => ({ name, count }));
-        }
-
-        // 隐藏自动完成下拉框
-        function hidePatientAutocomplete() {
-            $('.patient-autocomplete-dropdown').removeClass('show');
-            activeAutocomplete = null;
-            autocompleteIndex = -1;
-        }
-
-        // 选择患者姓名
-        function selectPatientName(name, input) {
-            $(input).val(name);
-            hidePatientAutocomplete();
-            // 触发change事件以便其他逻辑处理
-            $(input).trigger('change');
-        }
-
-        // 绑定患者输入框自动完成事件
-        function bindPatientAutocomplete(input) {
-            const $input = $(input);
-            const $wrapper = $input.parent('.patient-autocomplete');
-            const $dropdown = $wrapper.find('.patient-autocomplete-dropdown');
-
-            // 输入事件
-            $input.on('input', function() {
-                showPatientAutocomplete(this);
-            });
-
-            // 聚焦事件
-            $input.on('focus', function() {
-                showPatientAutocomplete(this);
-            });
-
-            // 键盘导航
-            $input.on('keydown', function(e) {
-                const $items = $dropdown.find('.patient-autocomplete-item');
-                const itemCount = $items.length;
-
-                if (e.keyCode === 40) { // 下箭头
-                    e.preventDefault();
-                    autocompleteIndex = Math.min(autocompleteIndex + 1, itemCount - 1);
-                    updateAutocompleteSelection($items);
-                } else if (e.keyCode === 38) { // 上箭头
-                    e.preventDefault();
-                    autocompleteIndex = Math.max(autocompleteIndex - 1, 0);
-                    updateAutocompleteSelection($items);
-                } else if (e.keyCode === 13) { // 回车
-                    e.preventDefault();
-                    if (autocompleteIndex >= 0 && autocompleteIndex < itemCount) {
-                        const name = $items.eq(autocompleteIndex).data('name');
-                        selectPatientName(name, this);
-                    }
-                } else if (e.keyCode === 27) { // ESC
-                    hidePatientAutocomplete();
-                }
-            });
-
-            // 点击选择
-            $dropdown.on('click', '.patient-autocomplete-item', function() {
-                const name = $(this).data('name');
-                selectPatientName(name, $input[0]);
-            });
-
-            // 失焦隐藏（延迟以便点击事件可以触发）
-            $input.on('blur', function() {
-                setTimeout(hidePatientAutocomplete, 200);
-            });
-        }
-
-        // 更新自动完成选中状态
-        function updateAutocompleteSelection($items) {
-            $items.removeClass('active');
-            if (autocompleteIndex >= 0 && autocompleteIndex < $items.length) {
-                $items.eq(autocompleteIndex).addClass('active');
-                // 滚动到可见区域
-                const $selected = $items.eq(autocompleteIndex);
-                const $dropdown = $selected.parent();
-                const dropdownHeight = $dropdown.height();
-                const itemTop = $selected.position().top;
-                const itemHeight = $selected.outerHeight();
-
-                if (itemTop < 0) {
-                    $dropdown.scrollTop($dropdown.scrollTop() + itemTop);
-                } else if (itemTop + itemHeight > dropdownHeight) {
-                    $dropdown.scrollTop($dropdown.scrollTop() + itemTop + itemHeight - dropdownHeight);
-                }
-            }
-        }
-
-        // 从数据库加载患者姓名（使用真实记录数）
-        function loadPatientNamesFromDB() {
-            $.get('/api/patients/names', function(res) {
-                if (res.success && res.data && res.data.names) {
-                    // 使用数据库中的真实记录数更新缓存
-                    res.data.names.forEach(item => {
-                        // 后端返回 {name: string, count: number} 格式
-                        const name = item.name || item;
-                        const count = item.count || 1;
-                        // 总是使用数据库的真实计数
-                        patientNamesCache[name] = count;
-                    });
-                    savePatientNamesCache();
-                    console.log('[患者姓名] 已从数据库加载', res.data.names.length, '个姓名');
-                }
-            }).fail(function() {
-                // API不存在时静默失败，使用本地缓存
-                console.log('[患者姓名] API不可用，使用本地缓存');
-            });
-        }
 
         // 加载最近使用记录
         function loadRecentUsed() {
@@ -3544,7 +2534,7 @@
                     <td class="text-center text-muted">${entryRowId}</td>
                     <td><input type="date" class="form-control form-control-sm entry-date" value="${today}"></td>
                     <td><select class="form-control form-control-sm entry-therapist select2-search">${therapistOptions}</select></td>
-                    <td><div class="patient-autocomplete" style="position:relative;"><input type="text" class="form-control form-control-sm entry-patient" placeholder="患者ID/姓名" autocomplete="off"><div class="patient-autocomplete-dropdown"></div></div></td>
+                    <td><input type="text" class="form-control form-control-sm entry-patient" placeholder="患者ID/姓名"></td>
                     <td><select class="form-control form-control-sm entry-item select2-search">${itemOptions}</select></td>
                     <td><input type="text" class="form-control form-control-sm entry-weight bg-light" readonly value="-"></td>
                     <td><input type="number" class="form-control form-control-sm entry-sessions" value="1" min="1"></td>
@@ -3678,10 +2668,6 @@
         function bindEntryRowEvents(rowId) {
             const $row = $(`#${rowId}`);
 
-            // 患者输入框自动完成
-            const $patientInput = $row.find('.entry-patient');
-            bindPatientAutocomplete($patientInput);
-
             // 治疗师选择
             $row.find('.entry-therapist').on('change', function() {
                 const id = $(this).val();
@@ -3783,8 +2769,7 @@
         }
 
         // 保存全部记录
-        // ✅ V1.1: 支持每日多次治疗的确认机制
-        function saveAllEntries(forceConfirm = false) {
+        function saveAllEntries() {
             const rows = $('#quickEntryBody tr');
             const records = [];
 
@@ -3816,83 +2801,39 @@
 
             const totalWorkload = records.reduce((sum, r) => sum + r.weight_coefficient * r.session_count, 0).toFixed(2);
 
-            // ✅ V1.1: 首次保存时显示确认对话框
-            if (!forceConfirm) {
-                if (!confirm(`确定保存 ${records.length} 条记录？\n总工作量: ${totalWorkload}`)) {
-                    return;
-                }
+            if (!confirm(`确定保存 ${records.length} 条记录？\n总工作量: ${totalWorkload}`)) {
+                return;
             }
 
             // 显示保存中提示
             showToast('正在保存...', 'info');
 
-            // ✅ V1.1: 如果是强制确认，添加 force_confirm 参数
-            const requestData = forceConfirm ? records.map(r => ({...r, force_confirm: true})) : records;
-
             $.ajax({
                 url: '/api/records',
                 method: 'POST',
                 contentType: 'application/json',
-                data: JSON.stringify(requestData),
+                data: JSON.stringify(records),
                 success: function(res) {
-                    // ✅ V1.1: 处理需要确认的情况（每日多次治疗）
-                    if (res.success && res.needs_confirmation) {
-                        const dupInfo = res.duplicate_info;
-                        const confirmMsg = res.message + '\n\n' +
-                            '已有记录：\n' +
-                            '- 日期：' + dupInfo.record_date + '\n' +
-                            '- 患者：' + dupInfo.patient_info + '\n' +
-                            '- 项目：' + dupInfo.item_name + '\n\n' +
-                            '点击"确定"继续录入新的治疗记录\n' +
-                            '点击"取消"返回修改';
-
-                        if (confirm(confirmMsg)) {
-                            // 用户确认，重新调用并设置 force_confirm=true
-                            showToast('正在重新保存...', 'info');
-                            saveAllEntries(true);
-                        } else {
-                            // 用户取消
-                            showToast('已取消保存', 'warning');
-                        }
-                        return;
-                    }
-
                     if (res.success) {
-                        // 检查是否有部分失败（如重复记录）
+                        // 检查是否有错误
                         if (res.data.errors && res.data.errors.length > 0) {
-                            // 有部分记录保存失败
-                            const errorMsg = res.data.errors.join('\n');
-                            showToast(`成功保存 ${res.data.total} 条，失败 ${res.data.errors.length} 条`, 'warning');
-                            // 弹框显示详细错误
-                            alert('以下记录保存失败：\n\n' + errorMsg);
-                        } else {
+                            const errorMsg = res.data.errors.join(" ");
+                            showToast("录入失败：" + errorMsg, "error");
+                        } else if (res.data.total > 0) {
                             showToast(`成功保存 ${res.data.total} 条记录！总工作量: ${totalWorkload}`, 'success');
-                        }
-                        // 保存患者姓名到缓存
-                        const patientNames = records.map(r => r.patient_info).filter(n => n && n.trim());
-                        addPatientNames(patientNames);
                         // 清空表格并重新添加5行
                         $('#quickEntryBody').empty();
                         entryRowId = 0;
                         addMultipleRows(5);
                         updateEntryStats();
                         loadDashboard();
-                        // 刷新成就系统（排行榜和徽章）
-                        initAchievements();
-                        // 显示新解锁的成就
-                        if (res.data.new_achievements && Object.keys(res.data.new_achievements).length > 0) {
-                            showAchievementNotification(res.data.new_achievements);
                         }
                     } else {
-                        // 全部失败
                         showToast('保存失败：' + res.error, 'error');
-                        alert('保存失败：\n\n' + res.error);
                     }
                 },
-                error: function(xhr) {
-                    const errorMsg = xhr.responseJSON?.error || '请求失败，请稍后重试';
-                    showToast(errorMsg, 'error');
-                    alert('保存失败：\n\n' + errorMsg);
+                error: function() {
+                    showToast('请求失败，请稍后重试', 'error');
                 }
             });
         }
@@ -3954,13 +2895,15 @@
                 end_date: $('#filterEndDate').val(),
                 therapist_id: $('#filterTherapist').val() || null,
                 category_id: $('#filterCategory').val() || null,
-                patient_info: $('#filterPatient').val().trim() || null
+                patient_info: $('#filterPatient').val() || null
             };
 
             $.get('/api/records', params, function(res) {
                 if (res.success) {
-                    let html = '';
+                    // 检查是否允许删除
                     const showDelete = window.allowDelete === true;
+                    
+                    let html = '';
                     res.data.records.forEach(r => {
                         html += `
                             <tr>
@@ -4017,9 +2960,8 @@
         function updateRecordSelectStatus() {
             const total = $('.record-checkbox').length;
             const selected = $('.record-checkbox:checked').length;
-            const showDelete = window.allowDelete === true;
             $('#selectAllRecords').prop('indeterminate', selected > 0 && selected < total);
-            $('#batchDeleteRecordsBtn').toggle(selected > 0 && showDelete);
+            $('#batchDeleteRecordsBtn').toggle(selected > 0);
             $('#selectedRecordsCount').text(selected > 0 ? `已选中 ${selected} 条记录` : '');
         }
 
@@ -4160,18 +3102,9 @@
         // 保存治疗师
         function saveTherapist() {
             const id = $('#therapistId').val();
-            const name = $('#therapistName').val().trim();
-            const employeeId = $('#therapistEmployeeId').val().trim();
-
-            // 前端验证
-            if (!name) {
-                showToast('请输入治疗师姓名', 'error');
-                return;
-            }
-
             const data = {
-                name: name,
-                employee_id: employeeId || null
+                name: $('#therapistName').val(),
+                employee_id: $('#therapistEmployeeId').val()
             };
 
             const url = id ? `/api/therapists/${id}` : '/api/therapists';
@@ -4190,15 +3123,6 @@
                     } else {
                         showToast('保存失败：' + res.error, 'error');
                     }
-                },
-                error: function(xhr, status, error) {
-                    // 处理服务器错误
-                    let errorMsg = '服务器错误，请稍后重试';
-                    if (xhr.responseJSON && xhr.responseJSON.error) {
-                        errorMsg = xhr.responseJSON.error;
-                    }
-                    showToast('保存失败：' + errorMsg, 'error');
-                    console.error('保存治疗师失败:', xhr.status, error);
                 }
             });
         }
@@ -4294,72 +3218,12 @@
 
         // 显示类别模态框
         function showCategoryModal() {
-            $('#categoryId').val('');
-            $('#categoryName').val('');
-            $('#categoryDescription').val('');
-            $('#categorySortOrder').val(0);
-            $('#categoryModal .modal-title').text('添加治疗类别');
-            $('#categoryModal').modal('show');
+            showToast('类别管理功能开发中...', 'info');
         }
 
         // 编辑类别
         function editCategory(id) {
-            const category = categories.find(c => c.id === id);
-            if (!category) {
-                showToast('类别不存在', 'error');
-                return;
-            }
-            $('#categoryId').val(category.id);
-            $('#categoryName').val(category.name);
-            $('#categoryDescription').val(category.description || '');
-            $('#categorySortOrder').val(category.sort_order || 0);
-            $('#categoryModal .modal-title').text('编辑治疗类别');
-            $('#categoryModal').modal('show');
-        }
-
-        // 保存类别
-        function saveCategory() {
-            const id = $('#categoryId').val();
-            const name = $('#categoryName').val().trim();
-            const description = $('#categoryDescription').val().trim();
-            const sortOrder = parseInt($('#categorySortOrder').val()) || 0;
-
-            if (!name) {
-                showToast('请输入类别名称', 'error');
-                return;
-            }
-
-            const data = {
-                name: name,
-                description: description,
-                sort_order: sortOrder
-            };
-
-            const url = id ? `/api/categories/${id}` : '/api/categories';
-            const method = id ? 'PUT' : 'POST';
-
-            $.ajax({
-                url: url,
-                method: method,
-                contentType: 'application/json',
-                data: JSON.stringify(data),
-                success: function(res) {
-                    if (res.success) {
-                        showToast('类别信息已保存', 'success');
-                        $('#categoryModal').modal('hide');
-                        loadCategories();
-                    } else {
-                        showToast('保存失败：' + res.error, 'error');
-                    }
-                },
-                error: function(xhr, status, error) {
-                    let errorMsg = '服务器错误，请稍后重试';
-                    if (xhr.responseJSON && xhr.responseJSON.error) {
-                        errorMsg = xhr.responseJSON.error;
-                    }
-                    showToast('保存失败：' + errorMsg, 'error');
-                }
-            });
+            showToast('类别管理功能开发中...', 'info');
         }
 
         // 删除类别
@@ -4786,22 +3650,9 @@
                         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
                         const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
 
-                        // 检测表头判断列顺序（动态检测每列的位置）
+                        // 检测表头判断列顺序
                         const header = jsonData[0] || [];
-                        const headerLower = header.map(h => String(h || '').trim().toLowerCase());
-
-                        // 查找各列的索引位置
-                        const colIndex = {
-                            date: headerLower.findIndex(h => h.includes('日期')),
-                            therapist: headerLower.findIndex(h => h.includes('治疗师')),
-                            patient: headerLower.findIndex(h => h.includes('患者') || h.includes('患者id') || h.includes('患者姓名')),
-                            item: headerLower.findIndex(h => h.includes('治疗项目') || h.includes('项目')),
-                            weight: headerLower.findIndex(h => h.includes('权重')),
-                            sessions: headerLower.findIndex(h => h.includes('人次') || h.includes('次数')),
-                            remark: headerLower.findIndex(h => h.includes('备注') || h.includes('说明'))
-                        };
-
-                        console.log('检测到的列索引:', colIndex);
+                        const hasWeightColumn = header.includes('权重');
 
                         // 兼容WPS/Excel的日期解析函数
                         function parseDate(value) {
@@ -4809,14 +3660,13 @@
 
                             // 如果是数字（Excel/WPS日期序列号）
                             if (typeof value === 'number') {
-                                // Excel日期序列号转换
-                                // SheetJS库已经处理了Excel 1900年bug
-                                // Excel序列号1 = 1900-01-01，所以基准是1899-12-31
-                                // 使用 UTC 时间避免时区问题
-                                const date = new Date(Date.UTC(1899, 11, 31 + value - 1));
-                                const year = date.getUTCFullYear();
-                                const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-                                const day = String(date.getUTCDate()).padStart(2, '0');
+                                // Excel日期序列号转换（支持1900和1904日期系统）
+                                // 大多数情况使用1900系统（基准日期1899-12-30）
+                                const excelEpoch = new Date(1899, 11, 30);
+                                const date = new Date(excelEpoch.getTime() + value * 86400 * 1000);
+                                const year = date.getFullYear();
+                                const month = String(date.getMonth() + 1).padStart(2, '0');
+                                const day = String(date.getDate()).padStart(2, '0');
                                 return `${year}-${month}-${day}`;
                             }
 
@@ -4868,7 +3718,7 @@
                             return null;
                         }
 
-                        // 跳过表头，解析数据（使用动态列索引）
+                        // 跳过表头，解析数据
                         recordsImportData = [];
                         const previewBody = $('#recordsPreviewTable tbody');
                         previewBody.empty();
@@ -4877,16 +3727,30 @@
                             const row = jsonData[i];
                             if (!row || row.length < 4) continue;
 
-                            // 使用动态列索引获取数据，如果找不到则使用默认位置
-                            const record = {
-                                date: parseDate(colIndex.date >= 0 ? row[colIndex.date] : row[0]),
-                                therapist: String(colIndex.therapist >= 0 ? row[colIndex.therapist] : row[1] || '').trim(),
-                                patient: String(colIndex.patient >= 0 ? row[colIndex.patient] : row[2] || '').trim(),
-                                item: String(colIndex.item >= 0 ? row[colIndex.item] : row[3] || '').trim(),
-                                weight: colIndex.weight >= 0 ? (parseFloat(row[colIndex.weight]) || null) : null,
-                                sessions: colIndex.sessions >= 0 ? (parseInt(row[colIndex.sessions]) || 1) : 1,
-                                remark: String(colIndex.remark >= 0 ? row[colIndex.remark] : '').trim()
-                            };
+                            let record;
+                            if (hasWeightColumn) {
+                                // 新格式：日期, 治疗师, 患者, 治疗项目, 权重, 人次, 备注
+                                record = {
+                                    date: parseDate(row[0]),
+                                    therapist: String(row[1] || '').trim(),
+                                    patient: String(row[2] || '').trim(),
+                                    item: String(row[3] || '').trim(),
+                                    weight: parseFloat(row[4]) || null,
+                                    sessions: parseInt(row[5]) || 1,
+                                    remark: String(row[6] || '').trim()
+                                };
+                            } else {
+                                // 旧格式：日期, 治疗师, 患者, 治疗项目, 人次, 备注
+                                record = {
+                                    date: parseDate(row[0]),
+                                    therapist: String(row[1] || '').trim(),
+                                    patient: String(row[2] || '').trim(),
+                                    item: String(row[3] || '').trim(),
+                                    weight: null,
+                                    sessions: parseInt(row[4]) || 1,
+                                    remark: String(row[5] || '').trim()
+                                };
+                            }
 
                             if (record.date && record.therapist && record.item) {
                                 recordsImportData.push({
@@ -4978,27 +3842,8 @@
                         showToast('导入失败：' + res.error, 'error');
                     }
                 },
-                error: function(xhr, status, errorText) {
-                    let errorMsg = '未知错误';
-                    if (xhr.responseJSON && xhr.responseJSON.error) {
-                        errorMsg = xhr.responseJSON.error;
-                        // 如果有详细信息，也显示
-                        if (xhr.responseJSON.details) {
-                            errorMsg += ' (' + xhr.responseJSON.details + ')';
-                        }
-                    } else if (xhr.responseText) {
-                        // 尝试解析响应文本
-                        try {
-                            const parsed = JSON.parse(xhr.responseText);
-                            errorMsg = parsed.error || parsed.message || xhr.responseText.substring(0, 100);
-                        } catch (e) {
-                            errorMsg = xhr.responseText.substring(0, 100);
-                        }
-                    } else if (errorText) {
-                        errorMsg = errorText;
-                    }
-                    showToast('导入失败：' + errorMsg, 'error');
-                    console.error('导入错误详情:', xhr);
+                error: function(xhr) {
+                    showToast('导入失败：' + (xhr.responseJSON?.error || '未知错误'), 'error');
                 }
             });
         }
@@ -5012,7 +3857,7 @@
                 end_date: endDate,
                 therapist_id: $('#filterTherapist').val() || null,
                 category_id: $('#filterCategory').val() || null,
-                patient_info: $('#filterPatient').val().trim() || null
+                patient_name: $('#filterPatient').val() || null
             };
 
             showToast('正在导出...', 'info');
@@ -5324,49 +4169,21 @@
                     $(this).next('.custom-file-label').text(file.name);
                 }
             });
-        });
-
-        // ========== 浏览器关闭时自动关闭后台服务 ==========
-        // 检查是否为独立运行模式（exe）
-        let isStandaloneMode = false;
-
-        // 页面加载时检查是否为独立模式
-        $(document).ready(function() {
-            // 检查 /api/system/shutdown 端点是否存在
-            $.ajax({
-                url: '/api/system/shutdown',
-                method: 'GET',
-                timeout: 1000,
-                success: function(res) {
-                    if (res.standalone) {
-                        isStandaloneMode = true;
-                        console.log('[系统] 独立运行模式：关闭浏览器将自动停止后台服务');
-                    }
-                },
-                error: function() {
-                    // 非 standalone 模式，不处理
-                }
+            
+            // 页面关闭时自动关闭服务器（独立运行模式）
+            $.get('/api/system/shutdown', function(res) {
+                // 如果endpoint存在，说明是独立运行模式
+                console.log('[系统] 检测到独立运行模式，已启用自动关闭功能');
+                
+                window.addEventListener('beforeunload', function(e) {
+                    // 使用 sendBeacon 确保请求能发送出去（即使页面正在关闭）
+                    navigator.sendBeacon('/api/system/shutdown');
+                    console.log('[系统] 已发送关闭服务器请求');
+                });
+            }).fail(function() {
+                // endpoint不存在，说明是开发模式
+                console.log('[系统] 开发模式运行，未启用自动关闭功能');
             });
-        });
-
-        // 浏览器关闭或刷新时发送关闭请求
-        window.addEventListener('beforeunload', function(e) {
-            if (isStandaloneMode) {
-                // 使用 navigator.sendBeacon 发送异步请求（不会阻塞页面关闭）
-                navigator.sendBeacon('/api/system/shutdown', JSON.stringify({}));
-            }
-        });
-
-        // 页面隐藏时也检查是否需要关闭（处理手机切换应用等场景）
-        document.addEventListener('visibilitychange', function() {
-            if (document.visibilityState === 'hidden' && isStandaloneMode) {
-                // 延迟发送，给用户返回的机会
-                setTimeout(function() {
-                    if (document.visibilityState === 'hidden') {
-                        navigator.sendBeacon('/api/system/shutdown', JSON.stringify({}));
-                    }
-                }, 30000); // 30秒后如果还没返回，则关闭
-            }
         });
     </script>
 </body>
