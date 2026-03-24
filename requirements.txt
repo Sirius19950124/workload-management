@@ -1,0 +1,23 @@
+# Web 框架
+Flask>=2.0.0,<3.0.0
+Werkzeug>=2.0.0,<3.0.0
+Flask-SQLAlchemy>=3.0.0,<4.0.0
+SQLAlchemy>=1.4.0,<2.0.0
+
+# 数据处理
+pandas>=1.5.0,<2.1.0
+openpyxl>=3.0.0,<4.0.0
+
+# 数据库驱动
+PyMySQL>=1.0.0,<2.0.0
+mysqlclient>=2.0.0,<3.0.0
+
+# WSGI 服务器
+gunicorn>=21.0.0,<22.0.0
+waitress>=2.0.0,<3.0.0
+
+# 云存储（可选，用于存储图片）
+# cos-python-sdk-v5>=1.9.0,<2.0.0
+
+# 环境变量管理
+python-dotenv>=1.0.0,<2.0.0

@@ -1,0 +1,4190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>康复科治疗师工作量管理系统</title>
+    <!-- CSS - 本地文件 -->
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/css/font-awesome.min.css" rel="stylesheet">
+    <link href="/static/css/select2.min.css" rel="stylesheet">
+    <style>
+        /* Select2 样式优化 */
+        .select2-container--default .select2-selection--single {
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            height: 31px;
+            padding: 2px 8px;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 25px;
+            font-size: 0.85rem;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 28px;
+        }
+        .select2-dropdown {
+            font-size: 0.85rem;
+        }
+        .select2-results__option {
+            padding: 8px 10px;
+        }
+        /* 确保搜索框可见 */
+        .select2-search--dropdown {
+            padding: 8px;
+        }
+        .select2-search--dropdown .select2-search__field {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+        .select2-search--dropdown .select2-search__field:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+    </style>
+    <!-- Fallback styles if CDN fails -->
+    <style>
+        /* Critical Bootstrap-like fallbacks */
+        .container, .container-fluid { width: 100%; padding-right: 15px; padding-left: 15px; margin-right: auto; margin-left: auto; }
+        .row { display: flex; flex-wrap: wrap; margin-right: -15px; margin-left: -15px; }
+        .col-md-3, .col-md-4, .col-md-6 { position: relative; width: 100%; padding-right: 15px; padding-left: 15px; }
+        @media (min-width: 768px) {
+            .col-md-3 { flex: 0 0 25%; max-width: 25%; }
+            .col-md-4 { flex: 0 0 33.333333%; max-width: 33.333333%; }
+            .col-md-6 { flex: 0 0 50%; max-width: 50%; }
+        }
+        .col-sm-6 { flex: 0 0 50%; max-width: 50%; }
+        .d-flex { display: flex !important; }
+        .justify-content-between { justify-content: space-between !important; }
+        .align-items-center { align-items: center !important; }
+        .mb-3 { margin-bottom: 1rem !important; }
+        .mb-4 { margin-bottom: 1.5rem !important; }
+        .mr-1 { margin-right: 0.25rem !important; }
+        .mr-2 { margin-right: 0.5rem !important; }
+        .mr-3 { margin-right: 1rem !important; }
+        .ml-1 { margin-left: 0.25rem !important; }
+        .ml-2 { margin-left: 0.5rem !important; }
+        .p-2 { padding: 0.5rem !important; }
+        .p-3 { padding: 1rem !important; }
+        .text-center { text-align: center !important; }
+        .text-muted { color: #6c757d !important; }
+        .text-success { color: #28a745 !important; }
+        .text-primary { color: #007bff !important; }
+        .text-warning { color: #ffc107 !important; }
+        .font-weight-bold { font-weight: 700 !important; }
+        .table { width: 100%; margin-bottom: 1rem; color: #212529; }
+        .table th, .table td { padding: 0.75rem; vertical-align: top; border-top: 1px solid #dee2e6; }
+        .table thead th { vertical-align: bottom; border-bottom: 2px solid #dee2e6; }
+        .table tbody + tbody { border-top: 2px solid #dee2e6; }
+        .form-control { display: block; width: 100%; height: calc(1.5em + 0.75rem + 2px); padding: 0.375rem 0.75rem; font-size: 1rem; font-weight: 400; line-height: 1.5; color: #495057; background-color: #fff; background-clip: padding-box; border: 1px solid #ced4da; border-radius: 0.25rem; }
+        .form-control:focus { color: #495057; background-color: #fff; border-color: #80bdff; outline: 0; }
+        .form-control-sm { height: calc(1.5em + 0.5rem + 2px); padding: 0.25rem 0.5rem; font-size: 0.875rem; }
+        .btn { display: inline-block; font-weight: 400; text-align: center; vertical-align: middle; cursor: pointer; padding: 0.375rem 0.75rem; font-size: 1rem; line-height: 1.5; border-radius: 0.25rem; }
+        .btn-sm { padding: 0.25rem 0.5rem; font-size: 0.875rem; }
+        .btn-primary { color: #fff; background-color: #007bff; border-color: #007bff; }
+        .btn-success { color: #fff; background-color: #28a745; border-color: #28a745; }
+        .btn-outline-primary { color: #007bff; border-color: #007bff; }
+        .btn-outline-info { color: #17a2b8; border-color: #17a2b8; }
+        .btn-outline-warning { color: #ffc107; border-color: #ffc107; }
+        .btn-outline-danger { color: #dc3545; border-color: #dc3545; }
+        .badge { display: inline-block; padding: 0.25em 0.4em; font-size: 75%; font-weight: 700; line-height: 1; text-align: center; white-space: nowrap; vertical-align: baseline; border-radius: 0.25rem; }
+        .badge-success { color: #fff; background-color: #28a745; }
+        .badge-secondary { color: #fff; background-color: #6c757d; }
+        .badge-primary { color: #fff; background-color: #007bff; }
+        .badge-info { color: #fff; background-color: #17a2b8; }
+    </style>
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --secondary-color: #7c3aed;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --info-color: #3b82f6;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            margin: 10px auto;
+            max-width: 98%;
+            width: 98%;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 25px 30px;
+            border-radius: 20px 20px 0 0;
+            margin: 0;
+        }
+
+        .page-header h1 {
+            font-size: 1.8rem;
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .page-header .subtitle {
+            opacity: 0.9;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        /* 统计卡片 */
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        }
+
+        .stat-card .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .stat-card .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .stat-card .stat-label {
+            color: #6b7280;
+            font-size: 0.85rem;
+        }
+
+        /* 排行榜 */
+        .ranking-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .ranking-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            background: #f9fafb;
+            transition: background 0.2s;
+        }
+
+        .ranking-item:hover {
+            background: #f3f4f6;
+        }
+
+        .ranking-item .rank {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-right: 12px;
+        }
+
+        .ranking-item .rank.gold { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: white; }
+        .ranking-item .rank.silver { background: linear-gradient(135deg, #9ca3af, #6b7280); color: white; }
+        .ranking-item .rank.bronze { background: linear-gradient(135deg, #d97706, #b45309); color: white; }
+        .ranking-item .rank.normal { background: #e5e7eb; color: #4b5563; }
+
+        /* 标签页 */
+        .nav-tabs {
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .nav-tabs .nav-link {
+            border: none;
+            color: #6b7280;
+            font-weight: 500;
+            padding: 12px 20px;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .nav-tabs .nav-link:hover {
+            color: var(--primary-color);
+            border-bottom-color: #c7d2fe;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+            background: transparent;
+        }
+
+        /* 表单 */
+        .form-control, .form-control:focus {
+            border-radius: 10px;
+            border: 2px solid #e5e7eb;
+            box-shadow: none;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+        }
+
+        /* 按钮 */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-weight: 500;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+        }
+
+        /* 表格 */
+        .table {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .table thead th {
+            background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+            border: none;
+            font-weight: 600;
+            color: #374151;
+            padding: 12px;
+        }
+
+        .table tbody td {
+            padding: 12px;
+            vertical-align: middle;
+        }
+
+        /* 模态框 */
+        .modal-content {
+            border-radius: 20px;
+            border: none;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 20px 20px 0 0;
+            border: none;
+        }
+
+        .modal-header .close {
+            color: white;
+            opacity: 0.8;
+        }
+
+        /* 徽章 */
+        .badge {
+            border-radius: 8px;
+            padding: 5px 10px;
+            font-weight: 500;
+        }
+
+        /* 内容区 */
+        .content-area {
+            padding: 25px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .main-container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+
+            .page-header {
+                border-radius: 15px 15px 0 0;
+                padding: 20px;
+            }
+
+            .page-header h1 {
+                font-size: 1.4rem;
+            }
+        }
+
+        /* Toast 通知样式 */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        .custom-toast {
+            min-width: 280px;
+            margin-bottom: 10px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            animation: slideIn 0.3s ease-out;
+            display: flex;
+            align-items: center;
+        }
+
+        .custom-toast.success { background: linear-gradient(135deg, #10b981, #059669); }
+        .custom-toast.error { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .custom-toast.warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .custom-toast.info { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+
+        .custom-toast i { margin-right: 10px; font-size: 1.2rem; }
+        .custom-toast .toast-message { flex-grow: 1; }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+
+        /* 表格行高亮 */
+        .table-hover tbody tr:hover {
+            background-color: rgba(79, 70, 229, 0.05);
+        }
+
+        /* 快速录入表格优化 */
+        #quickEntryTable {
+            width: 100%;
+            table-layout: fixed;
+        }
+
+        #quickEntryTable th,
+        #quickEntryTable td {
+            padding: 8px 6px;
+            vertical-align: middle;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        #quickEntryTable input,
+        #quickEntryTable select {
+            font-size: 0.85rem;
+            width: 100%;
+            min-width: 0;
+        }
+
+        #quickEntryTable tbody tr {
+            transition: background-color 0.2s;
+        }
+
+        #quickEntryTable tbody tr:hover {
+            background-color: #f0f9ff;
+        }
+
+        /* 表格列宽优化 */
+        #quickEntryTable th:nth-child(1) { width: 40px; }  /* # */
+        #quickEntryTable th:nth-child(2) { width: 110px; } /* 日期 */
+        #quickEntryTable th:nth-child(3) { width: 100px; } /* 治疗师 */
+        #quickEntryTable th:nth-child(4) { width: 120px; } /* 患者 */
+        #quickEntryTable th:nth-child(5) { width: 180px; } /* 治疗项目 */
+        #quickEntryTable th:nth-child(6) { width: 70px; }  /* 权重 */
+        #quickEntryTable th:nth-child(7) { width: 60px; }  /* 人次 */
+        #quickEntryTable th:nth-child(8) { width: 80px; }  /* 工作量 */
+        #quickEntryTable th:nth-child(9) { width: 50px; }  /* 操作 */
+
+        /* 空行提示 */
+        .empty-row-hint {
+            background-color: #fef3c7 !important;
+        }
+
+        /* 键盘快捷键样式 */
+        kbd {
+            display: inline-block;
+            padding: 2px 6px;
+            font-size: 11px;
+            font-weight: bold;
+            line-height: 1.4;
+            color: #fff;
+            background-color: #374151;
+            border-radius: 4px;
+            box-shadow: inset 0 -1px 0 rgba(0,0,0,.25);
+            margin: 0 2px;
+        }
+
+        /* 加载动画 */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 排行榜折叠区域 */
+        .ranking-collapse {
+            background: #f8fafc;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .ranking-toggle {
+            padding: 12px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            border-radius: 12px;
+            transition: background 0.2s;
+        }
+
+        .ranking-toggle:hover {
+            background: #f8fafc;
+        }
+
+        .ranking-toggle i.fa-chevron-down {
+            transition: transform 0.3s;
+        }
+
+        .ranking-toggle.collapsed i.fa-chevron-down {
+            transform: rotate(-90deg);
+        }
+
+        .ranking-content {
+            padding: 15px 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        /* 成就系统样式 */
+        .achievement-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            margin-bottom: 20px;
+        }
+
+        .achievement-card {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 2px solid #fbbf24;
+        }
+
+        .achievement-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(251, 191, 36, 0.3);
+        }
+
+        .achievement-card.locked {
+            background: #f3f4f6;
+            border-color: #d1d5db;
+            opacity: 0.7;
+        }
+
+        .achievement-icon {
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+        }
+
+        .achievement-name {
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 0.9rem;
+        }
+
+        .achievement-desc {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        .level-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .level-badge.level-1 { background: #fef3c7; color: #92400e; }
+        .level-badge.level-2 { background: #e5e7eb; color: #374151; }
+        .level-badge.level-3 { background: #fde68a; color: #92400e; }
+        .level-badge.level-4 { background: #dbeafe; color: #1e40af; }
+        .level-badge.level-5 { background: #ede9fe; color: #5b21b6; }
+        .level-badge.level-6 { background: #fce7f3; color: #9d174d; }
+        .level-badge.level-7 { background: #cffafe; color: #0e7490; }
+
+        /* 治疗师个人成就徽章 */
+        .therapist-badges {
+            margin-top: 5px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3px;
+            align-items: center;
+        }
+
+        .achievement-mini-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            font-size: 14px;
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border-radius: 50%;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            cursor: help;
+            transition: transform 0.2s;
+        }
+
+        .achievement-mini-badge:hover {
+            transform: scale(1.2);
+        }
+
+        .streak-fire {
+            animation: fire-pulse 0.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes fire-pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.1); }
+        }
+
+        /* 操作栏优化 */
+        .action-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 12px;
+            margin-bottom: 15px;
+        }
+
+        .action-bar .btn-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* 底部统计优化 */
+        .entry-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+            border-radius: 12px;
+            border-left: 4px solid #10b981;
+            margin-top: 15px;
+        }
+
+        .entry-stats .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .entry-stats .stat-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        /* 最近使用优化 */
+        .recent-section {
+            padding: 10px 15px;
+            background: #f8fafc;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .recent-section .badge {
+            cursor: pointer;
+            font-size: 0.8rem;
+            padding: 5px 10px;
+        }
+
+        .recent-section .badge:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <!-- Toast 通知容器 -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <div class="main-container">
+        <!-- 页面头部 -->
+        <div class="page-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1><i class="fas fa-chart-line mr-2"></i>康复科治疗师工作量管理系统</h1>
+                    <div class="subtitle" id="currentDate"></div>
+                </div>
+                <div>
+                    <button class="btn btn-light btn-sm" onclick="exportToExcel()">
+                        <i class="fas fa-file-excel mr-1"></i>导出Excel
+                    </button>
+                    <button class="btn btn-light btn-sm ml-2" onclick="showImportModal()">
+                        <i class="fas fa-file-import mr-1"></i>导入Excel
+                    </button>
+                    <button class="btn btn-outline-light btn-sm ml-2" onclick="shutdownServer()" id="btnShutdown" style="display:none;">
+                        <i class="fas fa-power-off mr-1"></i>关闭服务
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 内容区域 -->
+        <div class="content-area">
+            <!-- 统计卡片 -->
+            <div class="row mb-4">
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="stat-card">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon mr-3" style="background: linear-gradient(135deg, #10b981, #059669);">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div>
+                                <div class="stat-value" id="todaySessions">0</div>
+                                <div class="stat-label">今日人次</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="stat-card">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon mr-3" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
+                                <i class="fas fa-weight"></i>
+                            </div>
+                            <div>
+                                <div class="stat-value" id="todayWorkload">0.00</div>
+                                <div class="stat-label">今日工作量</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="stat-card">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon mr-3" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+                            <div>
+                                <div class="stat-value" id="monthWorkload">0.00</div>
+                                <div class="stat-label">本月工作量</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="stat-card">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon mr-3" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                                <i class="fas fa-user-md"></i>
+                            </div>
+                            <div>
+                                <div class="stat-value" id="activeTherapists">0</div>
+                                <div class="stat-label">活跃治疗师</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 排行榜（可折叠） -->
+            <div class="ranking-collapse mb-4">
+                <div class="ranking-toggle" data-toggle="collapse" data-target="#rankingContent">
+                    <span><i class="fas fa-trophy text-warning mr-2"></i><strong>排行榜</strong> <small class="text-muted ml-2">点击展开/收起</small></span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="collapse" id="rankingContent">
+                    <div class="ranking-content">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="mb-0"><i class="fas fa-trophy text-warning mr-2"></i>日排行榜</h6>
+                                    <input type="date" class="form-control form-control-sm" id="rankingDate" style="width: 150px;" onchange="loadDailyRanking()">
+                                </div>
+                                <div id="todayRanking">
+                                    <div class="text-center text-muted py-3">暂无数据</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="mb-0"><i class="fas fa-medal text-info mr-2"></i>月排行榜</h6>
+                                    <input type="month" class="form-control form-control-sm" id="rankingMonth" style="width: 130px;" onchange="loadMonthlyRanking()">
+                                </div>
+                                <div id="monthRanking">
+                                    <div class="text-center text-muted py-3">暂无数据</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 成就系统（可折叠） -->
+            <div class="ranking-collapse mb-4">
+                <div class="ranking-toggle" data-toggle="collapse" data-target="#achievementContent">
+                    <span><i class="fas fa-award mr-2" style="color: #8b5cf6;"></i><strong>成就系统</strong> <small class="text-muted ml-2">点击展开/收起</small></span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="collapse" id="achievementContent">
+                    <div class="ranking-content">
+                        <!-- 成就排行榜 -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h6 class="mb-3"><i class="fas fa-crown text-warning mr-2"></i>等级排行榜</h6>
+                                <div id="levelLeaderboard">
+                                    <div class="text-center text-muted py-3">加载中...</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="mb-3"><i class="fas fa-fire text-danger mr-2"></i>连续打卡榜</h6>
+                                <div id="streakLeaderboard">
+                                    <div class="text-center text-muted py-3">加载中...</div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 成就徽章展示 -->
+                        <div class="mt-3">
+                            <h6 class="mb-3"><i class="fas fa-medal text-info mr-2"></i>成就徽章</h6>
+                            <div class="row" id="achievementBadges">
+                                <div class="text-center text-muted py-3 col-12">加载中...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 标签页 -->
+            <ul class="nav nav-tabs mb-3" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" data-toggle="tab" href="#tabRecord">
+                        <i class="fas fa-plus-circle mr-1"></i>工作量登记
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="tab" href="#tabRecords">
+                        <i class="fas fa-list mr-1"></i>记录查询
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="tab" href="#tabMonthly">
+                        <i class="fas fa-calendar mr-1"></i>月度汇总
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#tabSettings" id="settingsTabLink">
+                        <i class="fas fa-cog mr-1"></i>设置
+                    </a>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <!-- 快速录入（表格化） -->
+                <div class="tab-pane fade show active" id="tabRecord">
+                    <!-- 操作栏 -->
+                    <div class="action-bar">
+                        <div class="d-flex align-items-center">
+                            <label class="font-weight-bold mb-0 mr-2">录入日期:</label>
+                            <input type="date" class="form-control form-control-sm" id="batchDate" style="width: 140px;" onchange="syncBatchDate()">
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-outline-info btn-sm" onclick="showRecordsImportModal()" title="从Excel导入">
+                                <i class="fas fa-file-import"></i> 导入
+                            </button>
+                            <button class="btn btn-outline-success btn-sm" onclick="exportRecordsXLSX()" title="导出到Excel">
+                                <i class="fas fa-file-export"></i> 导出
+                            </button>
+                        </div>
+                        <div class="btn-group ml-auto">
+                            <button class="btn btn-outline-primary btn-sm" onclick="addEntryRow()" title="添加一行">
+                                <i class="fas fa-plus"></i> 添加行
+                            </button>
+                            <button class="btn btn-outline-info btn-sm" onclick="addMultipleRows(5)" title="批量添加5行">
+                                <i class="fas fa-layer-group"></i> +5行
+                            </button>
+                            <button class="btn btn-outline-warning btn-sm" onclick="clearEmptyRows()" title="清空未填写的行">
+                                <i class="fas fa-broom"></i> 清空空行
+                            </button>
+                            <button class="btn btn-success btn-sm" onclick="saveAllEntries()" title="保存所有记录">
+                                <i class="fas fa-save"></i> 保存全部
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 最近使用 -->
+                    <div class="recent-section">
+                        <small class="text-muted"><i class="fas fa-history mr-1"></i>最近使用:</small>
+                        <span id="recentChips"></span>
+                    </div>
+
+                    <!-- 快速录入表格 -->
+                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                        <table class="table table-bordered table-hover table-sm" id="quickEntryTable">
+                            <thead style="background: linear-gradient(135deg, #f3f4f6, #e5e7eb); position: sticky; top: 0; z-index: 10;">
+                                <tr>
+                                    <th>序号</th>
+                                    <th>日期</th>
+                                    <th>治疗师</th>
+                                    <th>患者ID/姓名</th>
+                                    <th>治疗项目</th>
+                                    <th>权重</th>
+                                    <th>人次</th>
+                                    <th>工作量</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="quickEntryBody">
+                                <!-- 动态行 -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- 底部统计 -->
+                    <div class="entry-stats">
+                        <div class="stat-item">
+                            <span class="text-muted">待保存:</span>
+                            <span class="stat-value text-success" id="pendingCount">0</span>
+                            <span class="text-muted">条</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="text-muted">涉及患者:</span>
+                            <span class="stat-value text-primary" id="pendingPatients">0</span>
+                            <span class="text-muted">人</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="text-muted">总工作量:</span>
+                            <span class="stat-value text-warning" id="pendingWorkload">0.00</span>
+                        </div>
+                        <div class="ml-auto">
+                            <small class="text-muted">
+                                <i class="fas fa-keyboard mr-1"></i>
+                                <kbd>Ctrl+Enter</kbd> 保存 |
+                                <kbd>Ctrl+N</kbd> 添加行 |
+                                <kbd>Enter</kbd> 下一行
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 记录查询 -->
+                <div class="tab-pane fade" id="tabRecords">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-2">
+                                    <label class="small text-muted mb-1">开始日期</label>
+                                    <input type="date" class="form-control" id="filterStartDate">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small text-muted mb-1">结束日期</label>
+                                    <input type="date" class="form-control" id="filterEndDate">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small text-muted mb-1">治疗师</label>
+                                    <select class="form-control" id="filterTherapist">
+                                        <option value="">所有治疗师</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small text-muted mb-1">患者姓名</label>
+                                    <input type="text" class="form-control" id="filterPatient" placeholder="输入患者姓名">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small text-muted mb-1">类别</label>
+                                    <select class="form-control" id="filterCategory">
+                                        <option value="">所有类别</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small text-muted mb-1">快捷选择</label>
+                                    <select class="form-control" id="quickDateRange" onchange="applyQuickDateRange()">
+                                        <option value="">自定义</option>
+                                        <option value="today">今天</option>
+                                        <option value="yesterday">昨天</option>
+                                        <option value="thisWeek">本周</option>
+                                        <option value="lastWeek">上周</option>
+                                        <option value="thisMonth">本月</option>
+                                        <option value="lastMonth">上月</option>
+                                        <option value="thisYear">今年</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small text-muted mb-1">&nbsp;</label>
+                                    <button class="btn btn-primary btn-block" onclick="loadRecords()">
+                                        <i class="fas fa-search mr-1"></i>查询
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <button class="btn btn-outline-success btn-sm mr-2" onclick="showRecordsImportModal()">
+                                    <i class="fas fa-file-import mr-1"></i>批量导入
+                                </button>
+                                <button class="btn btn-outline-info btn-sm mr-2" onclick="exportRecordsXLSX()">
+                                    <i class="fas fa-file-export mr-1"></i>导出Excel
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm" onclick="batchDeleteRecords()" id="batchDeleteRecordsBtn" style="display:none;">
+                                    <i class="fas fa-trash-alt mr-1"></i>批量删除选中
+                                </button>
+                                <span class="text-muted ml-2" id="selectedRecordsCount"></span>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:30px;"><input type="checkbox" id="selectAllRecords" onchange="toggleSelectAllRecords()"></th>
+                                            <th>日期</th>
+                                            <th>治疗师</th>
+                                            <th>患者</th>
+                                            <th>治疗项目</th>
+                                            <th>权重</th>
+                                            <th>人次</th>
+                                            <th>工作量</th>
+                                            <th>备注</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="recordsTable">
+                                        <tr><td colspan="10" class="text-center text-muted">暂无数据</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 月度汇总 -->
+                <div class="tab-pane fade" id="tabMonthly">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <input type="month" class="form-control" id="monthPicker">
+                                </div>
+                                <div class="col-md-4">
+                                    <button class="btn btn-primary" onclick="loadMonthlyStatistics()">
+                                        <i class="fas fa-sync mr-1"></i>刷新
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="row mb-4">
+                                <div class="col-md-4">
+                                    <div class="stat-card">
+                                        <div class="stat-value" id="monthTotalSessions">0</div>
+                                        <div class="stat-label">本月总人次</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="stat-card">
+                                        <div class="stat-value" id="monthTotalWorkload">0</div>
+                                        <div class="stat-label">本月总工作量</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="stat-card">
+                                        <div class="stat-value" id="monthWorkingDays">0</div>
+                                        <div class="stat-label">工作天数</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>治疗师</th>
+                                            <th>总人次</th>
+                                            <th>总工作量</th>
+                                            <th>工作天数</th>
+                                            <th>日均工作量</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="monthlyTable">
+                                        <tr><td colspan="5" class="text-center text-muted">暂无数据</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- 每周工作量统计 -->
+                            <div class="mt-4">
+                                <h6 class="mb-3"><i class="fas fa-chart-bar text-info mr-2"></i>每周工作量分布（用于排班参考）</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-bordered">
+                                        <thead class="thead-light">
+                                            <tr>
+                                                <th>星期</th>
+                                                <th>周一</th>
+                                                <th>周二</th>
+                                                <th>周三</th>
+                                                <th>周四</th>
+                                                <th>周五</th>
+                                                <th>周六</th>
+                                                <th>周日</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="weekdayStats">
+                                            <tr>
+                                                <td>工作量</td>
+                                                <td id="weekday_1">0</td>
+                                                <td id="weekday_2">0</td>
+                                                <td id="weekday_3">0</td>
+                                                <td id="weekday_4">0</td>
+                                                <td id="weekday_5">0</td>
+                                                <td id="weekday_6">0</td>
+                                                <td id="weekday_0">0</td>
+                                            </tr>
+                                            <tr>
+                                                <td>人次</td>
+                                                <td id="weekday_sessions_1">0</td>
+                                                <td id="weekday_sessions_2">0</td>
+                                                <td id="weekday_sessions_3">0</td>
+                                                <td id="weekday_sessions_4">0</td>
+                                                <td id="weekday_sessions_5">0</td>
+                                                <td id="weekday_sessions_6">0</td>
+                                                <td id="weekday_sessions_0">0</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div id="weekdayChart" style="height: 200px; margin-top: 15px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 设置 -->
+                <div class="tab-pane fade" id="tabSettings">
+                    <div class="card">
+                        <div class="card-body">
+                            <ul class="nav nav-pills mb-3">
+                                <li class="nav-item">
+                                    <a class="nav-link active" data-toggle="pill" href="#settingsTherapists">治疗师管理</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-toggle="pill" href="#settingsItems">治疗项目管理</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-toggle="pill" href="#settingsCategories">类别管理</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-toggle="pill" href="#settingsBackup">
+                                        <i class="fas fa-database mr-1"></i>数据备份
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-toggle="pill" href="#settingsEntry">
+                                        <i class="fas fa-edit mr-1"></i>录入设置
+                                    </a>
+                                </li>
+                            </ul>
+                            <div class="tab-content">
+                                <div class="tab-pane fade show active" id="settingsTherapists">
+                                    <div class="d-flex justify-content-between mb-3">
+                                        <h6>治疗师列表</h6>
+                                        <button class="btn btn-primary btn-sm" onclick="showTherapistModal()">
+                                            <i class="fas fa-plus mr-1"></i>添加治疗师
+                                        </button>
+                                    </div>
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>姓名</th>
+                                                <th>工号</th>
+                                                <th>状态</th>
+                                                <th>操作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="therapistsTable">
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="tab-pane fade" id="settingsItems">
+                                    <div class="d-flex justify-content-between mb-3">
+                                        <h6>治疗项目列表</h6>
+                                        <div>
+                                            <button class="btn btn-outline-danger btn-sm mr-2" onclick="batchDeleteItems()" id="batchDeleteItemsBtn" style="display:none;">
+                                                <i class="fas fa-trash-alt mr-1"></i>批量删除
+                                            </button>
+                                            <button class="btn btn-outline-info btn-sm mr-2" onclick="showItemImportModal()">
+                                                <i class="fas fa-file-import mr-1"></i>批量导入
+                                            </button>
+                                            <button class="btn btn-primary btn-sm" onclick="showItemModal()">
+                                                <i class="fas fa-plus mr-1"></i>添加治疗项目
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th style="width:30px;"><input type="checkbox" id="selectAllItems" onchange="toggleSelectAllItems()"></th>
+                                                <th>编号</th>
+                                                <th>名称</th>
+                                                <th>类别</th>
+                                                <th>权重</th>
+                                                <th>状态</th>
+                                                <th>操作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="itemsTable">
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="tab-pane fade" id="settingsCategories">
+                                    <div class="d-flex justify-content-between mb-3">
+                                        <h6>治疗类别列表</h6>
+                                        <div>
+                                            <button class="btn btn-danger btn-sm mr-2" onclick="batchDeleteCategories()" id="batchDeleteCategoriesBtn" style="display:none;">
+                                                <i class="fas fa-trash mr-1"></i>批量删除
+                                            </button>
+                                            <button class="btn btn-primary btn-sm" onclick="showCategoryModal()">
+                                                <i class="fas fa-plus mr-1"></i>添加类别
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th><input type="checkbox" id="categorySelectAll" onchange="toggleCategorySelectAll()"></th>
+                                                <th>名称</th>
+                                                <th>描述</th>
+                                                <th>状态</th>
+                                                <th>操作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="categoriesTable">
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <!-- 数据备份设置 -->
+                                <div class="tab-pane fade" id="settingsBackup">
+                                    <div class="d-flex justify-content-between mb-3">
+                                        <h6><i class="fas fa-database mr-1"></i>数据备份与恢复</h6>
+                                        <button class="btn btn-success btn-sm" onclick="showBackupModal()">
+                                            <i class="fas fa-folder-open mr-1"></i>打开备份管理
+                                        </button>
+                                    </div>
+                                    <div class="alert alert-info mb-3">
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        <strong>数据安全提示：</strong>建议定期备份系统数据，以防意外丢失。备份文件将保存为JSON格式，包含所有治疗师、治疗项目和工作量记录。
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="card bg-light">
+                                                <div class="card-body text-center">
+                                                    <i class="fas fa-download fa-2x text-success mb-2"></i>
+                                                    <h6>快速备份</h6>
+                                                    <button class="btn btn-outline-success btn-sm" onclick="createBackup()">
+                                                        立即备份
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="card bg-light">
+                                                <div class="card-body text-center">
+                                                    <i class="fas fa-upload fa-2x text-warning mb-2"></i>
+                                                    <h6>恢复数据</h6>
+                                                    <button class="btn btn-outline-warning btn-sm" onclick="showBackupModal()">
+                                                        选择备份文件
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="card bg-light">
+                                                <div class="card-body text-center">
+                                                    <i class="fas fa-clock fa-2x text-info mb-2"></i>
+                                                    <h6>自动备份</h6>
+                                                    <small class="text-muted" id="quickBackupStatus">检查中...</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- 录入设置 -->
+                                <div class="tab-pane fade" id="settingsEntry">
+                                    <div class="d-flex justify-content-between mb-3">
+                                        <h6><i class="fas fa-edit mr-1"></i>录入设置</h6>
+                                    </div>
+                                    <div class="card mb-3">
+                                        <div class="card-header bg-light">
+                                            <i class="fas fa-calendar-alt mr-1"></i>过往日期录入
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="form-group">
+                                                <div class="custom-control custom-switch">
+                                                    <input type="checkbox" class="custom-control-input" id="allowPastDate"
+                                                           onchange="updateSetting('allow_past_date', this.checked)">
+                                                    <label class="custom-control-label" for="allowPastDate">
+                                                        允许录入过往日期的记录
+                                                    </label>
+                                                </div>
+                                                <small class="text-muted">启用后，用户可以在录入时选择过去的日期（适用于补录遗漏的记录）</small>
+                                            </div>
+                                            <div class="form-group mt-3" id="pastDateDaysGroup" style="display:none;">
+                                                <label for="pastDateMaxDays">允许的最大过往天数</label>
+                                                <input type="number" class="form-control" id="pastDateMaxDays"
+                                                       min="1" max="30" value="7" style="width: 150px;"
+                                                       onchange="updateSetting('past_date_max_days', this.value)">
+                                                <small class="text-muted">从今天起，允许录入的最大过往天数（1-30天）</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card mb-3">
+                                        <div class="card-header bg-light">
+                                            <i class="fas fa-trash-alt mr-1"></i>删除功能
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="form-group">
+                                                <div class="custom-control custom-switch">
+                                                    <input type="checkbox" class="custom-control-input" id="allowDelete"
+                                                           onchange="updateSetting('allow_delete', this.checked)">
+                                                    <label class="custom-control-label" for="allowDelete">
+                                                        <span class="text-danger"><i class="fas fa-exclamation-triangle mr-1"></i>启用删除功能</span>
+                                                    </label>
+                                                </div>
+                                                <small class="text-muted">启用后，将显示删除按钮。<strong class="text-danger">注意：删除操作不可恢复，请谨慎使用！</strong></small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 治疗师模态框 -->
+    <div class="modal fade" id="therapistModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">治疗师信息</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="therapistId">
+                    <div class="form-group">
+                        <label>姓名 *</label>
+                        <input type="text" class="form-control" id="therapistName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>工号</label>
+                        <input type="text" class="form-control" id="therapistEmployeeId">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="saveTherapist()">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 治疗项目模态框 -->
+    <div class="modal fade" id="itemModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">治疗项目信息</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="itemId">
+                    <div class="form-group">
+                        <label>项目编号</label>
+                        <input type="text" class="form-control" id="itemCode" placeholder="如：PT001（可选，用于快速录入）">
+                    </div>
+                    <div class="form-group">
+                        <label>名称 *</label>
+                        <input type="text" class="form-control" id="itemName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>类别</label>
+                        <select class="form-control" id="itemCategory">
+                            <option value="">请选择类别</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>权重系数 *</label>
+                        <input type="number" class="form-control" id="itemWeight" step="0.01" value="1.0" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="saveItem()">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 导入模态框 -->
+    <div class="modal fade" id="importModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">导入Excel数据</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>选择Excel文件</label>
+                        <input type="file" class="form-control-file" id="importFile" accept=".xlsx,.xls">
+                    </div>
+                    <div id="importResult"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="doImport()">导入</button>
+                    <button type="button" class="btn btn-info" onclick="downloadTemplate()">下载模板</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 治疗项目批量导入模态框 -->
+    <div class="modal fade" id="itemImportModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-file-import mr-2"></i>批量导入治疗项目</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <!-- 导入方式选择 -->
+                    <ul class="nav nav-tabs mb-3" id="importMethodTabs">
+                        <li class="nav-item">
+                            <a class="nav-link active" data-toggle="tab" href="#excelImport">
+                                <i class="fas fa-file-excel mr-1"></i>Excel导入
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-toggle="tab" href="#textImport">
+                                <i class="fas fa-paste mr-1"></i>文本粘贴
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <!-- Excel导入 -->
+                        <div class="tab-pane fade show active" id="excelImport">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                <strong>Excel格式说明：</strong>
+                                <ul class="mb-0 mt-1">
+                                    <li>第一行为表头（会被自动跳过）</li>
+                                    <li>A列：项目编号（可选，用于快速录入）</li>
+                                    <li>B列：项目名称（必填）</li>
+                                    <li>C列：类别（可选，不存在会自动创建）</li>
+                                    <li>D列：权重系数（可选，默认1.0）</li>
+                                </ul>
+                            </div>
+                            <div class="form-group">
+                                <button type="button" class="btn btn-outline-success btn-sm mb-2" onclick="downloadItemTemplate()">
+                                    <i class="fas fa-download mr-1"></i>下载Excel模板
+                                </button>
+                            </div>
+                            <div class="form-group">
+                                <label>选择Excel文件：</label>
+                                <div class="custom-file">
+                                    <input type="file" class="custom-file-input" id="excelFileInput" accept=".xlsx,.xls">
+                                    <label class="custom-file-label" for="excelFileInput">选择文件...</label>
+                                </div>
+                                <small class="text-muted">支持 .xlsx 和 .xls 格式</small>
+                            </div>
+                            <div id="excelPreview" style="display:none;">
+                                <label>数据预览：</label>
+                                <div class="table-responsive" style="max-height: 200px; overflow-y: auto;">
+                                    <table class="table table-sm table-bordered" id="excelPreviewTable">
+                                        <thead class="thead-light">
+                                            <tr>
+                                                <th>编号</th>
+                                                <th>项目名称</th>
+                                                <th>类别</th>
+                                                <th>权重系数</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                                <small class="text-muted" id="excelRowCount"></small>
+                            </div>
+                        </div>
+
+                        <!-- 文本粘贴 -->
+                        <div class="tab-pane fade" id="textImport">
+                            <div class="alert alert-info">
+                                <strong>格式说明：</strong>每行一个项目，格式为 <code>编号, 项目名称, 类别, 权重系数</code><br>
+                                例如：<code>T001, 推拿按摩, PT, 1.5</code><br>
+                                编号可省略，类别如不存在会自动创建，权重系数默认为1.0
+                            </div>
+                            <div class="form-group">
+                                <label>粘贴项目数据（每行一个）：</label>
+                                <textarea class="form-control" id="itemImportText" rows="8" placeholder="编号, 项目名称, 类别, 权重系数&#10;例如：&#10;T001, 推拿按摩, PT, 1.5&#10;T002, 针灸治疗, OT, 1.0&#10;, 理疗, 理疗, 1.2"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="itemImportResult" class="mt-3"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="doItemImport()">
+                        <i class="fas fa-upload mr-1"></i>导入
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 数据备份模态框 -->
+    <div class="modal fade" id="backupModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-database mr-2"></i>数据备份与恢复</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <!-- 备份操作 -->
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header bg-success text-white">
+                                    <i class="fas fa-download mr-1"></i>创建备份
+                                </div>
+                                <div class="card-body">
+                                    <p>导出系统所有数据到JSON文件，包括：</p>
+                                    <ul class="text-muted small">
+                                        <li>治疗师信息</li>
+                                        <li>治疗项目</li>
+                                        <li>治疗类别</li>
+                                        <li>工作量记录</li>
+                                    </ul>
+                                    <div class="form-group">
+                                        <label>备份说明（可选）：</label>
+                                        <input type="text" class="form-control" id="backupNote" placeholder="例如：每月定期备份">
+                                    </div>
+                                    <button class="btn btn-success btn-block" onclick="createBackup()">
+                                        <i class="fas fa-file-download mr-1"></i>下载备份文件
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 恢复操作 -->
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header bg-warning">
+                                    <i class="fas fa-upload mr-1"></i>恢复数据
+                                </div>
+                                <div class="card-body">
+                                    <div class="alert alert-warning small">
+                                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                                        <strong>警告：</strong>恢复数据将覆盖当前所有数据，此操作不可撤销！
+                                    </div>
+                                    <div class="form-group">
+                                        <label>选择备份文件：</label>
+                                        <div class="custom-file">
+                                            <input type="file" class="custom-file-input" id="restoreFileInput" accept=".json">
+                                            <label class="custom-file-label" for="restoreFileInput">选择文件...</label>
+                                        </div>
+                                    </div>
+                                    <div id="restorePreview" style="display:none;" class="mb-3">
+                                        <small class="text-muted" id="restoreInfo"></small>
+                                    </div>
+                                    <button class="btn btn-warning btn-block" onclick="restoreBackup()" id="restoreBtn" disabled>
+                                        <i class="fas fa-undo mr-1"></i>恢复数据
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 自动备份设置 -->
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <i class="fas fa-clock mr-1"></i>自动备份设置
+                        </div>
+                        <div class="card-body">
+                            <div class="form-row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>自动备份间隔：</label>
+                                        <select class="form-control" id="autoBackupInterval">
+                                            <option value="0">关闭自动备份</option>
+                                            <option value="1">每天</option>
+                                            <option value="7" selected>每周</option>
+                                            <option value="30">每月</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>保留备份数量：</label>
+                                        <select class="form-control" id="backupRetention">
+                                            <option value="5">最近5个</option>
+                                            <option value="10" selected>最近10个</option>
+                                            <option value="30">最近30个</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="autoBackupDownload">
+                                <label class="form-check-label" for="autoBackupDownload">
+                                    自动下载备份文件到本地（推荐开启）
+                                </label>
+                            </div>
+                            <div class="mt-2">
+                                <small class="text-muted" id="lastBackupInfo">上次备份：从未备份</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 备份历史 -->
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <i class="fas fa-history mr-1"></i>本地备份历史
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover mb-0" id="backupHistoryTable">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th>备份时间</th>
+                                            <th>说明</th>
+                                            <th>记录数</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="4" class="text-center text-muted">暂无本地备份记录</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 工作量记录批量导入模态框 -->
+    <div class="modal fade" id="recordsImportModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-file-import mr-2"></i>批量导入工作量记录</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        <strong>Excel格式说明：</strong>
+                        <ul class="mb-0 mt-1">
+                            <li>第一行为表头（会被自动跳过）</li>
+                            <li>A列：日期（格式：2024-01-15）</li>
+                            <li>B列：治疗师姓名或工号</li>
+                            <li>C列：患者信息（可选）</li>
+                            <li>D列：治疗项目编号或名称</li>
+                            <li>E列：人次（默认1）</li>
+                            <li>F列：备注（可选）</li>
+                        </ul>
+                    </div>
+                    <div class="form-group">
+                        <button type="button" class="btn btn-outline-success btn-sm mb-2" onclick="downloadRecordsTemplate()">
+                            <i class="fas fa-download mr-1"></i>下载Excel模板
+                        </button>
+                    </div>
+                    <div class="form-group">
+                        <label>选择Excel文件：</label>
+                        <div class="custom-file">
+                            <input type="file" class="custom-file-input" id="recordsExcelFileInput" accept=".xlsx,.xls">
+                            <label class="custom-file-label" for="recordsExcelFileInput">选择文件...</label>
+                        </div>
+                        <small class="text-muted">支持 .xlsx 和 .xls 格式</small>
+                    </div>
+                    <div id="recordsImportPreview" style="display:none;">
+                        <label>数据预览：</label>
+                        <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
+                            <table class="table table-sm table-bordered" id="recordsPreviewTable">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>日期</th>
+                                        <th>治疗师</th>
+                                        <th>患者</th>
+                                        <th>治疗项目</th>
+                                        <th>权重</th>
+                                        <th>人次</th>
+                                        <th>备注</th>
+                                        <th>状态</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        <small class="text-muted" id="recordsImportRowCount"></small>
+                    </div>
+                    <div id="recordsImportResult" class="mt-3"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="doRecordsImport()">
+                        <i class="fas fa-upload mr-1"></i>确认导入
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery - 本地文件 -->
+    <script src="/static/js/jquery.min.js"></script>
+    <!-- Bootstrap -->
+    <script src="/static/js/bootstrap.bundle.min.js"></script>
+    <!-- Select2 for searchable dropdowns -->
+    <script src="/static/js/select2.min.js"></script>
+    <!-- SheetJS for Excel file reading -->
+    <script src="/static/js/xlsx.full.min.js"></script>
+    <!-- Pinyin library - 简化版内联实现 -->
+    <script>
+        // 简易拼音库（如果无法加载外部库）
+        var pinyinPro = {
+            pinyin: function(text, options) {
+                if (!text) return '';
+                // 简单的汉字拼音映射（仅包含常用字）
+                var pinyinMap = {
+                    '李': 'li', '德': 'de', '裕': 'yu', '陈': 'chen', '宇': 'yu', '凡': 'fan',
+                    '白': 'bai', '芮': 'rui', '张': 'zhang', '婷': 'ting', '林': 'lin', '凯': 'kai', '珊': 'shan',
+                    '盆': 'pen', '底': 'di', '电': 'dian', '磁': 'ci', '推': 'tui', '拿': 'na', '按': 'an', '摩': 'mo',
+                    '针': 'zhen', '灸': 'jiu', '拔': 'ba', '罐': 'guan', '刮': 'gua', '痧': 'sha',
+                    '腰': 'yao', '腿': 'tui', '颈': 'jing', '椎': 'zhui', '肩': 'jian', '背': 'bei',
+                    '手': 'shou', '足': 'zu', '头': 'tou', '面': 'mian', '腹': 'fu', '胸': 'xiong'
+                };
+                var result = '';
+                for (var i = 0; i < text.length; i++) {
+                    var char = text[i];
+                    if (pinyinMap[char]) {
+                        result += pinyinMap[char] + ' ';
+                    } else if (/[a-zA-Z0-9]/.test(char)) {
+                        result += char;
+                    }
+                }
+                return result.trim();
+            }
+        };
+    </script>
+    <script>
+        // 全局变量
+        let therapists = [];
+        let treatmentItems = [];
+        let categories = [];
+
+        // 验证拼音库是否加载（延迟到页面加载完成后）
+        window.addEventListener('load', function() {
+            console.log('Pinyin library loaded:', typeof pinyinPro !== 'undefined');
+            if (typeof pinyinPro !== 'undefined' && pinyinPro.pinyin) {
+                try {
+                    console.log('Pinyin test (李):', pinyinPro.pinyin('李', { pattern: 'first', toneType: 'none' }));
+                } catch(e) {
+                    console.log('Pinyin test error:', e);
+                }
+            }
+        });
+
+        // ==================== Toast 通知系统 ====================
+        // 设置页面密码保护
+        const SETTINGS_PASSWORD = '2026';
+        let settingsPasswordVerified = false;
+
+        // 检查设置页面密码
+        function checkSettingsPassword() {
+            if (settingsPasswordVerified) {
+                return true;
+            }
+
+            const password = prompt('请输入设置页面密码：');
+            if (password === null) {
+                return false; // 用户取消
+            }
+
+            if (password === SETTINGS_PASSWORD) {
+                settingsPasswordVerified = true;
+                return true;
+            } else {
+                showToast('密码错误，无法访问设置页面', 'error');
+                return false;
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            const icons = {
+                success: 'fa-check-circle',
+                error: 'fa-times-circle',
+                warning: 'fa-exclamation-triangle',
+                info: 'fa-info-circle'
+            };
+
+            const toast = $(`
+                <div class="custom-toast ${type}">
+                    <i class="fas ${icons[type]}"></i>
+                    <span class="toast-message">${message}</span>
+                </div>
+            `);
+
+            $('#toastContainer').append(toast);
+
+            // 3秒后自动消失
+            setTimeout(() => {
+                toast.css('animation', 'slideOut 0.3s ease-out forwards');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // ==================== 录入设置管理 ====================
+        async function loadEntrySettings() {
+            try {
+                // 初始化全局变量
+                window.allowDelete = false;
+                window.allowPastDate = false;
+                window.pastDateMaxDays = 7;
+                
+                const res = await fetch('/api/settings');
+                const data = await res.json();
+                if (data.success) {
+                    const settings = data.data.settings || {};
+                    settings.forEach(s => {
+                        if (s.key === 'allow_past_date') {
+                            document.getElementById('allowPastDate').checked = s.value === true || s.value === 'true';
+                            document.getElementById('pastDateDaysGroup').style.display = s.value === true || s.value === 'true' ? 'block' : 'none';
+                        } else if (s.key === 'past_date_max_days') {
+                            window.pastDateMaxDays = s.value || 7;
+                            document.getElementById('pastDateMaxDays').value = window.pastDateMaxDays;
+                            document.getElementById('pastDateMaxDays').value = s.value || 7;
+                        } else if (s.key === 'allow_delete') {
+                            window.allowDelete = s.value === true || s.value === 'true';
+                            document.getElementById('allowDelete').checked = window.allowDelete;
+                            document.getElementById('allowDelete').checked = s.value === true || s.value === 'true';
+                        }
+                    });
+                }
+            } catch (err) {
+                console.error('加载设置失败', err);
+            }
+        }
+
+        async function updateSetting(key, value) {
+            try {
+                const res = await fetch(`/api/settings/${key}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ value: value })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('设置已保存', 'success');
+                    // 🔧 修复：更新全局变量
+                    if (key === 'allow_delete') {
+                        window.allowDelete = value;
+                        console.log('全局变量 allowDelete 已更新为:', window.allowDelete);
+                    } else if (key === 'allow_past_date') {
+                        window.allowPastDate = value;
+                        document.getElementById('pastDateDaysGroup').style.display = value ? 'block' : 'none';
+                        console.log('全局变量 allowPastDate 已更新为:', window.allowPastDate);
+                    } else if (key === 'past_date_max_days') {
+                        window.pastDateMaxDays = value;
+                        console.log('全局变量 pastDateMaxDays 已更新为:', window.pastDateMaxDays);
+                    }
+                } else {
+                    showToast(data.error || '保存失败', 'error');
+                }
+            } catch (err) {
+                showToast('网络错误', 'error');
+            }
+        }
+
+        // 监听设置标签页切换
+        $('a[data-toggle="pill"]').on('shown.bs.tab', function(e) {
+            if (e.target.getAttribute('href') === '#settingsEntry') {
+                loadEntrySettings();
+            }
+        });
+
+        // ==================== 关闭服务器 ====================
+        function shutdownServer() {
+            if (confirm('确定要关闭服务器吗？\n\n关闭后需要重新启动程序才能使用系统。')) {
+                $.ajax({
+                    url: '/api/system/shutdown',
+                    type: 'POST',
+                    success: function(res) {
+                        if (res.success) {
+                            alert('服务器已关闭，本页面将无法继续使用。');
+                        }
+                    },
+                    error: function() {
+                        alert('关闭服务器失败，请手动关闭程序窗口。');
+                    }
+                });
+            }
+        }
+
+        function checkStandaloneMode() {
+            $.get('/api/system/shutdown', function(res) {
+                $('#btnShutdown').show();
+            }).fail(function() {
+                $('#btnShutdown').hide();
+            });
+        }
+
+        // 格式化日期
+        function formatDate(dateStr) {
+            const d = new Date(dateStr);
+            return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
+        }
+
+        // 页面初始化
+        $(document).ready(function() {
+            const today = new Date().toISOString().split('T')[0];
+            $('#currentDate').text(formatDate(today));
+            $('#monthPicker').val(today.substring(0, 7));
+            $('#filterStartDate').val(today);
+            $('#filterEndDate').val(today);
+            $('#batchDate').val(today);
+
+            loadTherapists();
+            loadTreatmentItems();
+            loadCategories();
+            loadDashboard();
+            loadRecentUsed();
+            initAchievements();  // 初始化成就系统
+            checkStandaloneMode(); // 检查是否为独立运行模式
+            // 🔧 修复：页面加载时立即加载设置
+            loadEntrySettings();
+
+            // 初始添加5行 - 移至 checkAllDataLoaded() 中执行，确保数据加载完成
+
+            // 月度统计
+            $('#monthPicker').change(loadMonthlyStatistics);
+            
+            // 设置标签点击事件 - 需要密码验证
+            $('#settingsTabLink').on('click', function(e) {
+                e.preventDefault();
+                
+                if (settingsPasswordVerified) {
+                    $(this).tab('show');
+                } else {
+                    const password = prompt('请输入设置页面密码：');
+                    if (password === null) return false;
+                    
+                    $.ajax({
+                        url: '/api/settings/verify-password',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        async: false,
+                        data: JSON.stringify({ password: password }),
+                        success: function(res) {
+                            if (res.success) {
+                                settingsPasswordVerified = true;
+                                $('#settingsTabLink').tab('show');
+                            } else {
+                                showToast('密码错误，无法访问设置页面', 'error');
+                            }
+                        },
+                        error: function() {
+                            showToast('验证失败，请稍后重试', 'error');
+                        }
+                    });
+                }
+                return false;
+            });
+
+            // 标签页切换时自动加载数据
+            $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
+                const target = $(e.target).attr('href');
+                if (target === '#tabMonthly') {
+                    loadMonthlyStatistics();
+                } else if (target === '#tabRecords') {
+                    loadRecords();
+                }
+            });
+
+            // 初始化排行榜日期选择器
+            const thisMonth = today.substring(0, 7);
+            $('#rankingDate').val(today);
+            $('#rankingMonth').val(thisMonth);
+        });
+
+        // 加载仪表盘数据
+        function loadDashboard() {
+            $.get('/api/statistics/dashboard', function(res) {
+                if (res.success) {
+                    const data = res.data;
+                    $('#todaySessions').text(data.today_sessions);
+                    $('#todayWorkload').text(data.today_workload.toFixed(2));
+                    $('#monthWorkload').text(data.month_workload.toFixed(2));
+                    $('#activeTherapists').text(data.active_therapists);
+
+                    renderRanking('#todayRanking', data.today_ranking, false);
+                    renderRanking('#monthRanking', data.month_ranking, true);
+                }
+            });
+        }
+
+        // 加载指定日期的排行榜
+        function loadDailyRanking() {
+            const selectedDate = $('#rankingDate').val();
+            if (!selectedDate) return;
+
+            $.get(`/api/statistics/ranking?type=daily&date=${selectedDate}`, function(res) {
+                if (res.success) {
+                    renderRanking('#todayRanking', res.data.ranking, false);
+                }
+            });
+        }
+
+        // 加载指定月份的排行榜
+        function loadMonthlyRanking() {
+            const selectedMonth = $('#rankingMonth').val();
+            if (!selectedMonth) return;
+
+            $.get(`/api/statistics/ranking?type=monthly&month=${selectedMonth}`, function(res) {
+                if (res.success) {
+                    renderRanking('#monthRanking', res.data.ranking, true);
+                }
+            });
+        }
+
+        // ===================== 成就系统函数 =====================
+        // 初始化成就系统
+        function initAchievements() {
+            loadLevelLeaderboard();
+            loadStreakLeaderboard();
+            loadAchievementBadges();
+        }
+
+        // 加载等级排行榜
+        function loadLevelLeaderboard() {
+            $.get('/api/achievements/leaderboard/level', function(res) {
+                if (res.success && res.data.leaderboard) {
+                    renderLevelLeaderboard(res.data.leaderboard);
+                } else {
+                    $('#levelLeaderboard').html('<div class="text-center text-muted py-3">暂无数据</div>');
+                }
+            }).fail(function() {
+                $('#levelLeaderboard').html('<div class="text-center text-muted py-3">加载失败</div>');
+            });
+        }
+
+        // 渲染等级排行榜
+        function renderLevelLeaderboard(items) {
+            if (!items || items.length === 0) {
+                $('#levelLeaderboard').html('<div class="text-center text-muted py-3">暂无数据</div>');
+                return;
+            }
+
+            let html = '';
+            items.slice(0, 5).forEach((item, index) => {
+                const rankClass = index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : 'normal';
+                // 使用正确的字段名：level, level_badge, level_name
+                const level = item.level || 1;
+                const levelBadge = item.level_badge || '⭐';
+                const levelName = item.level_name || '新手';
+                html += `
+                    <div class="ranking-item">
+                        <div class="rank ${rankClass}">${index + 1}</div>
+                        <div class="flex-grow-1">
+                            <div class="font-weight-bold">${item.therapist_name}</div>
+                            <span class="level-badge level-${level}">${levelBadge} ${levelName}</span>
+                            <small class="text-muted ml-2">积分: ${item.total_points || 0}</small>
+                        </div>
+                    </div>
+                `;
+            });
+            $('#levelLeaderboard').html(html);
+        }
+
+        // 加载连续打卡榜
+        function loadStreakLeaderboard() {
+            $.get('/api/achievements/leaderboard/streak', function(res) {
+                if (res.success && res.data.leaderboard) {
+                    renderStreakLeaderboard(res.data.leaderboard);
+                } else {
+                    $('#streakLeaderboard').html('<div class="text-center text-muted py-3">暂无数据</div>');
+                }
+            }).fail(function() {
+                $('#streakLeaderboard').html('<div class="text-center text-muted py-3">加载失败</div>');
+            });
+        }
+
+        // 渲染连续打卡榜
+        function renderStreakLeaderboard(items) {
+            if (!items || items.length === 0) {
+                $('#streakLeaderboard').html('<div class="text-center text-muted py-3">暂无数据</div>');
+                return;
+            }
+
+            let html = '';
+            items.slice(0, 5).forEach((item, index) => {
+                const rankClass = index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : 'normal';
+                const streakIcon = item.longest_streak >= 7 ? '🔥' : item.longest_streak >= 3 ? '⚡' : '💪';
+                html += `
+                    <div class="ranking-item">
+                        <div class="rank ${rankClass}">${index + 1}</div>
+                        <div class="flex-grow-1">
+                            <div class="font-weight-bold">${item.therapist_name}</div>
+                            <span class="streak-fire">${streakIcon}</span>
+                            <small class="text-muted">最长连续: ${item.longest_streak || 0}天</small>
+                        </div>
+                    </div>
+                `;
+            });
+            $('#streakLeaderboard').html(html);
+        }
+
+        // 加载成就徽章
+        function loadAchievementBadges() {
+            $.get('/api/achievements', function(res) {
+                if (res.success && res.data.achievements) {
+                    renderAchievementBadges(res.data.achievements);
+                } else {
+                    $('#achievementBadges').html('<div class="text-center text-muted py-3 col-12">暂无成就</div>');
+                }
+            }).fail(function() {
+                $('#achievementBadges').html('<div class="text-center text-muted py-3 col-12">加载失败</div>');
+            });
+        }
+
+        // 渲染成就徽章
+        function renderAchievementBadges(achievements) {
+            if (!achievements || achievements.length === 0) {
+                $('#achievementBadges').html('<div class="text-center text-muted py-3 col-12">暂无成就</div>');
+                return;
+            }
+
+            let html = '';
+            achievements.forEach(function(achievement) {
+                const locked = achievement.unlocked_count === 0;
+                html += `
+                    <div class="col-md-2 col-sm-4 col-6 mb-3">
+                        <div class="achievement-card ${locked ? 'locked' : ''}">
+                            <div class="achievement-icon">${achievement.icon}</div>
+                            <div class="achievement-name">${achievement.name}</div>
+                            <div class="achievement-desc">${achievement.description}</div>
+                            ${!locked ? `<small class="text-success">${achievement.unlocked_count || 0}人获得</small>` : '<small class="text-muted">未解锁</small>'}
+                        </div>
+                    </div>
+                `;
+            });
+            $('#achievementBadges').html(html);
+        }
+
+        // 获取等级徽章
+        function getLevelBadge(level) {
+            const badges = ['', '🌱', '🌿', '⭐', '🌟', '💫', '🔥', '👑', '💎', '🏆'];
+            return badges[level] || '⭐';
+        }
+
+        // 渲染排行榜
+        function renderRanking(containerId, items, showDailyAvg) {
+            if (!items || items.length === 0) {
+                $(containerId).html('<div class="text-center text-muted py-3">暂无数据</div>');
+                return;
+            }
+
+            let html = '';
+            items.forEach((item, index) => {
+                const rankClass = index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : 'normal';
+                html += `
+                    <div class="ranking-item">
+                        <div class="rank ${rankClass}">${index + 1}</div>
+                        <div class="flex-grow-1">
+                            <div class="font-weight-bold">${item.therapist_name}</div>
+                            <small class="text-muted">工作量: ${item.workload.toFixed(2)} | 人次: ${item.sessions}</small>
+                            ${showDailyAvg ? `<small class="text-muted d-block">日均: ${(item.daily_average || 0).toFixed(2)} | 工作日: ${item.days || 0}</small>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            $(containerId).html(html);
+        }
+
+        // 数据加载完成计数器
+        let dataLoadedCount = 0;
+        const totalDataToLoad = 2;
+
+        // 检查是否所有数据都已加载完成
+        function checkAllDataLoaded() {
+            dataLoadedCount++;
+            if (dataLoadedCount === totalDataToLoad) {
+                // 所有数据加载完成后，初始化快速录入行
+                addMultipleRows(5);
+            }
+        }
+
+        // 加载治疗师列表
+        function loadTherapists() {
+            $.get('/api/therapists', function(res) {
+                if (res.success) {
+                    therapists = res.data.therapists;
+
+                    let options = '<option value="">请选择治疗师</option>';
+                    therapists.forEach(t => {
+                        options += `<option value="${t.id}">${t.name}</option>`;
+                    });
+                    $('#therapistSelect').html(options);
+                    $('#filterTherapist').html(options);
+
+                    renderTherapistsTable();
+                }
+            }).always(function() {
+                checkAllDataLoaded();
+            });
+        }
+
+        // 渲染治疗师表格
+        function renderTherapistsTable() {
+            let html = '';
+            therapists.forEach(t => {
+                html += `
+                    <tr>
+                        <td>${t.name}</td>
+                        <td>${t.employee_id || '-'}</td>
+                        <td>
+                            <span class="badge ${t.is_active ? 'badge-success' : 'badge-secondary'}">
+                                ${t.is_active ? '在职' : '离职'}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick="editTherapist(${t.id})" title="编辑">
+                                <i class="fas fa-edit"></i> 编辑
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteTherapist(${t.id})" title="删除">
+                                <i class="fas fa-trash"></i> 删除
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            $('#therapistsTable').html(html || '<tr><td colspan="4" class="text-center text-muted">暂无数据</td></tr>');
+        }
+
+        // 加载治疗项目列表
+        function loadTreatmentItems() {
+            $.get('/api/treatment-items', function(res) {
+                if (res.success) {
+                    treatmentItems = res.data.items;
+
+                    let options = '<option value="">请选择治疗项目</option>';
+                    treatmentItems.forEach(item => {
+                        options += `<option value="${item.id}" data-weight="${item.weight_coefficient}">${item.name}</option>`;
+                    });
+                    $('#treatmentItemSelect').html(options);
+
+                    renderItemsTable();
+                }
+            }).always(function() {
+                checkAllDataLoaded();
+            });
+        }
+
+        // 渲染治疗项目表格
+        function renderItemsTable() {
+            let html = '';
+            treatmentItems.forEach(item => {
+                html += `
+                    <tr>
+                        <td><input type="checkbox" class="item-checkbox" value="${item.id}" onchange="updateItemSelectStatus()"></td>
+                        <td><code>${item.code || '-'}</code></td>
+                        <td>${item.name}</td>
+                        <td>${item.category_name || '-'}</td>
+                        <td>${item.weight_coefficient}</td>
+                        <td>
+                            <span class="badge ${item.is_active ? 'badge-success' : 'badge-secondary'}">
+                                ${item.is_active ? '启用' : '禁用'}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick="editItem(${item.id})" title="编辑">
+                                <i class="fas fa-edit"></i> 编辑
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteItem(${item.id})" title="删除">
+                                <i class="fas fa-trash"></i> 删除
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            $('#itemsTable').html(html || '<tr><td colspan="7" class="text-center text-muted">暂无数据</td></tr>');
+            updateItemSelectStatus();
+        }
+
+        // 全选/取消全选治疗项目
+        function toggleSelectAllItems() {
+            const checked = $('#selectAllItems').prop('checked');
+            $('.item-checkbox').prop('checked', checked);
+            updateItemSelectStatus();
+        }
+
+        // 更新治疗项目选择状态
+        function updateItemSelectStatus() {
+            const total = $('.item-checkbox').length;
+            const selected = $('.item-checkbox:checked').length;
+            $('#selectAllItems').prop('indeterminate', selected > 0 && selected < total);
+            $('#batchDeleteItemsBtn').toggle(selected > 0);
+        }
+
+        // 批量删除治疗项目
+        function batchDeleteItems() {
+            const selectedIds = [];
+            $('.item-checkbox:checked').each(function() {
+                selectedIds.push(parseInt($(this).val()));
+            });
+
+            if (selectedIds.length === 0) {
+                showToast('请先选择要删除的项目', 'warning');
+                return;
+            }
+
+            if (!confirm(`确定要删除选中的 ${selectedIds.length} 个治疗项目吗？\n\n注意：如果项目已被使用于工作量记录，将无法删除。`)) {
+                return;
+            }
+
+            showToast('正在删除...', 'info');
+
+            $.ajax({
+                url: '/api/treatment-items/batch-delete',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ ids: selectedIds }),
+                success: function(res) {
+                    if (res.success) {
+                        showToast(`删除成功: ${res.data.deleted} 个，失败: ${res.data.failed} 个`, res.data.failed > 0 ? 'warning' : 'success');
+                        loadTreatmentItems();
+                    } else {
+                        showToast(res.message || '删除失败', 'error');
+                    }
+                },
+                error: function() {
+                    showToast('删除失败，请重试', 'error');
+                }
+            });
+        }
+
+        // 加载类别列表
+        function loadCategories() {
+            $.get('/api/categories', function(res) {
+                if (res.success) {
+                    categories = res.data.categories;
+
+                    let options = '<option value="">所有类别</option>';
+                    categories.forEach(c => {
+                        options += `<option value="${c.id}">${c.name}</option>`;
+                    });
+                    $('#filterCategory').html(options);
+                    $('#itemCategory').html('<option value="">请选择类别</option>' + options.replace('所有类别', '请选择类别'));
+
+                    renderCategoriesTable();
+                }
+            });
+        }
+
+        // 渲染类别表格
+        function renderCategoriesTable() {
+            let html = '';
+            categories.forEach(c => {
+                html += `
+                    <tr>
+                        <td><input type="checkbox" class="category-checkbox" value="${c.id}" onchange="updateCategoryBatchDeleteBtn()"></td>
+                        <td>${c.name}</td>
+                        <td>${c.description || '-'}</td>
+                        <td>
+                            <span class="badge ${c.is_active ? 'badge-success' : 'badge-secondary'}">
+                                ${c.is_active ? '启用' : '禁用'}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick="editCategory(${c.id})" title="编辑">
+                                <i class="fas fa-edit"></i> 编辑
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteCategory(${c.id})" title="删除">
+                                <i class="fas fa-trash"></i> 删除
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            $('#categoriesTable').html(html || '<tr><td colspan="5" class="text-center text-muted">暂无数据</td></tr>');
+            updateCategoryBatchDeleteBtn();
+        }
+
+        // 全选/取消全选类别
+        function toggleCategorySelectAll() {
+            const checked = $('#categorySelectAll').prop('checked');
+            $('.category-checkbox').prop('checked', checked);
+            updateCategoryBatchDeleteBtn();
+        }
+
+        // 更新批量删除按钮状态
+        function updateCategoryBatchDeleteBtn() {
+            const checkedCount = $('.category-checkbox:checked').length;
+            if (checkedCount > 0) {
+                $('#batchDeleteCategoriesBtn').show().html(`<i class="fas fa-trash mr-1"></i>批量删除 (${checkedCount})`);
+            } else {
+                $('#batchDeleteCategoriesBtn').hide();
+            }
+        }
+
+        // 批量删除类别
+        function batchDeleteCategories() {
+            const ids = $('.category-checkbox:checked').map(function() {
+                return $(this).val();
+            }).get();
+
+            if (ids.length === 0) {
+                showToast('请先选择要删除的类别', 'warning');
+                return;
+            }
+
+            if (!confirm(`确定要删除选中的 ${ids.length} 个类别吗？\n\n注意：如果类别下有治疗项目，将无法删除。`)) {
+                return;
+            }
+
+            $.ajax({
+                url: '/api/categories/batch-delete',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ ids: ids }),
+                success: function(res) {
+                    if (res.success) {
+                        showToast(`删除成功：${res.data.deleted} 个，失败：${res.data.failed} 个`, res.data.failed > 0 ? 'warning' : 'success');
+                        loadCategories();
+                    } else {
+                        showToast('删除失败：' + res.error, 'error');
+                    }
+                },
+                error: function(xhr) {
+                    showToast('删除失败：' + (xhr.responseJSON?.error || '未知错误'), 'error');
+                }
+            });
+        }
+
+        // ==================== 快速录入功能 ====================
+        let entryRowId = 0;
+        let recentUsed = { therapists: [], items: [] };
+
+        // 加载最近使用记录
+        function loadRecentUsed() {
+            const saved = localStorage.getItem('workload_recentUsed');
+            if (saved) {
+                recentUsed = JSON.parse(saved);
+                renderRecentChips();
+            }
+        }
+
+        // 保存最近使用记录
+        function saveRecentUsed() {
+            localStorage.setItem('workload_recentUsed', JSON.stringify(recentUsed));
+            renderRecentChips();
+        }
+
+        // 渲染最近使用标签
+        function renderRecentChips() {
+            let html = '';
+            recentUsed.therapists.slice(0, 3).forEach(t => {
+                html += `<span class="badge badge-primary mr-1" style="cursor:pointer" onclick="fillRecentTherapist(${t.id})">${t.name}</span>`;
+            });
+            recentUsed.items.slice(0, 5).forEach(item => {
+                html += `<span class="badge badge-info mr-1" style="cursor:pointer" onclick="fillRecentItem(${item.id}, ${item.weight})">${item.name}</span>`;
+            });
+            $('#recentChips').html(html || '<span class="text-muted">暂无记录</span>');
+        }
+
+        // 添加到最近使用
+        function addToRecent(type, item) {
+            recentUsed[type] = recentUsed[type].filter(i => i.id !== item.id);
+            recentUsed[type].unshift(item);
+            recentUsed[type] = recentUsed[type].slice(0, 10);
+            saveRecentUsed();
+        }
+
+        // 快速填充治疗师
+        function fillRecentTherapist(id) {
+            const emptySelect = $('.entry-therapist').filter(function() { return !$(this).val(); }).first();
+            if (emptySelect.length) emptySelect.val(id).trigger('change');
+        }
+
+        // 快速填充治疗项目
+        function fillRecentItem(id, weight) {
+            const emptySelect = $('.entry-item').filter(function() { return !$(this).val(); }).first();
+            if (emptySelect.length) {
+                emptySelect.val(id).trigger('change');
+            }
+        }
+
+        // 添加单行
+        function addEntryRow() {
+            entryRowId++;
+            const rowId = `entry_row_${entryRowId}`;
+            const today = $('#batchDate').val();
+
+            // 构建治疗师选项
+            let therapistOptions = '<option value="">输入姓名搜索...</option>';
+            therapists.forEach(t => {
+                const displayText = t.employee_id ? `[${t.employee_id}] ${t.name}` : t.name;
+                therapistOptions += `<option value="${t.id}" data-code="${t.employee_id || ''}">${displayText}</option>`;
+            });
+
+            // 构建治疗项目选项（按类别分组）
+            let itemOptions = '<option value="">输入编号/名称/拼音搜索...</option>';
+            // 按类别分组
+            const groupedItems = {};
+            treatmentItems.forEach(item => {
+                const category = item.category_name || '其他';
+                if (!groupedItems[category]) groupedItems[category] = [];
+                groupedItems[category].push(item);
+            });
+            Object.keys(groupedItems).forEach(category => {
+                itemOptions += `<optgroup label="${category}">`;
+                groupedItems[category].forEach(item => {
+                    const displayText = item.code ? `[${item.code}] ${item.name}` : item.name;
+                    itemOptions += `<option value="${item.id}" data-weight="${item.weight_coefficient}" data-code="${item.code || ''}">${displayText}</option>`;
+                });
+                itemOptions += `</optgroup>`;
+            });
+
+            const row = `
+                <tr id="${rowId}">
+                    <td class="text-center text-muted">${entryRowId}</td>
+                    <td><input type="date" class="form-control form-control-sm entry-date" value="${today}"></td>
+                    <td><select class="form-control form-control-sm entry-therapist select2-search">${therapistOptions}</select></td>
+                    <td><input type="text" class="form-control form-control-sm entry-patient" placeholder="患者ID/姓名"></td>
+                    <td><select class="form-control form-control-sm entry-item select2-search">${itemOptions}</select></td>
+                    <td><input type="text" class="form-control form-control-sm entry-weight bg-light" readonly value="-"></td>
+                    <td><input type="number" class="form-control form-control-sm entry-sessions" value="1" min="1"></td>
+                    <td><input type="text" class="form-control form-control-sm entry-workload font-weight-bold" readonly style="background:#ecfdf5;color:#059669" value="0.00"></td>
+                    <td><button class="btn btn-sm btn-outline-danger" onclick="removeEntryRow('${rowId}')" title="删除此行"><i class="fas fa-times"></i> 删</button></td>
+                </tr>
+            `;
+
+            $('#quickEntryBody').append(row);
+
+            // 初始化 Select2 并支持编号、拼音搜索
+            const $row = $(`#${rowId}`);
+
+            // 匹配单个选项的辅助函数
+            function matchOption(term, optionData) {
+                const text = (optionData.text || '').toLowerCase();
+
+                // 直接匹配（包括编号和名称）
+                if (text.indexOf(term) > -1) return true;
+
+                // 检查编号（从data-code属性）
+                if (optionData.element) {
+                    const code = $(optionData.element).data('code') || '';
+                    if (code && code.toLowerCase().indexOf(term) > -1) return true;
+                }
+
+                // 拼音匹配
+                if (typeof pinyinPro !== 'undefined' && pinyinPro.pinyin) {
+                    try {
+                        // 提取纯名称（去掉编号前缀）
+                        const pureName = text.replace(/^\[.*?\]\s*/, '');
+
+                        // 获取拼音首字母（去掉空格）
+                        const pinyinFirst = pinyinPro.pinyin(pureName, { pattern: 'first', toneType: 'none' }).replace(/\s/g, '').toLowerCase();
+                        if (pinyinFirst.indexOf(term) > -1) return true;
+
+                        // 获取完整拼音（去掉空格）
+                        const fullPinyin = pinyinPro.pinyin(pureName, { toneType: 'none' }).replace(/\s/g, '').toLowerCase();
+                        if (fullPinyin.indexOf(term) > -1) return true;
+                    } catch (e) {
+                        // 拼音匹配失败，忽略
+                    }
+                }
+
+                return false;
+            }
+
+            $row.find('.select2-search').select2({
+                placeholder: "输入搜索...",
+                allowClear: true,
+                width: '100%',
+                minimumInputLength: 0,
+                minimumResultsForSearch: 0,
+                language: {
+                    inputTooShort: function() { return '请输入关键字'; },
+                    searching: function() { return '搜索中...'; },
+                    noResults: function() { return '未找到结果'; }
+                },
+                matcher: function(params, data) {
+                    // 如果没有搜索词，显示所有选项
+                    if (!params.term || params.term.trim() === '') return data;
+
+                    const term = params.term.toLowerCase().trim();
+
+                    // 如果是 optgroup，检查是否有任何子元素匹配
+                    if (data.children) {
+                        // 过滤子元素，只保留匹配的
+                        const filteredChildren = data.children.filter(function(child) {
+                            return matchOption(term, child);
+                        });
+                        // 如果有匹配的子元素，返回带有过滤后子元素的optgroup
+                        if (filteredChildren.length > 0) {
+                            return {
+                                text: data.text,
+                                children: filteredChildren
+                            };
+                        }
+                        return null;
+                    }
+
+                    // 普通选项匹配
+                    return matchOption(term, data) ? data : null;
+                }
+            });
+
+            bindEntryRowEvents(rowId);
+            updateEntryStats();
+        }
+
+        // 批量添加行
+        function addMultipleRows(count) {
+            for (let i = 0; i < count; i++) {
+                addEntryRow();
+            }
+        }
+
+        // 删除行
+        function removeEntryRow(rowId) {
+            $(`#${rowId}`).remove();
+            updateEntryStats();
+        }
+
+        // 同步批量日期到所有行
+        function syncBatchDate() {
+            const batchDate = $('#batchDate').val();
+            $('.entry-date').val(batchDate);
+        }
+
+        // 清空空行
+        function clearEmptyRows() {
+            const rows = $('#quickEntryBody tr');
+            let cleared = 0;
+            rows.each(function() {
+                const $row = $(this);
+                const therapistId = $row.find('.entry-therapist').val();
+                const itemId = $row.find('.entry-item').val();
+                const patient = $row.find('.entry-patient').val();
+
+                if (!therapistId && !itemId && !patient) {
+                    $row.remove();
+                    cleared++;
+                }
+            });
+            if (cleared > 0) {
+                showToast(`已清除 ${cleared} 个空行`, 'info');
+            }
+            updateEntryStats();
+        }
+
+        // 绑定行事件
+        function bindEntryRowEvents(rowId) {
+            const $row = $(`#${rowId}`);
+
+            // 治疗师选择
+            $row.find('.entry-therapist').on('change', function() {
+                const id = $(this).val();
+                const name = $(this).find('option:selected').text();
+                if (id) addToRecent('therapists', { id: parseInt(id), name });
+            });
+
+            // 治疗项目选择 - 自动填充权重
+            $row.find('.entry-item').on('change', function() {
+                const selected = $(this).find(':selected');
+                const weight = selected.data('weight') || 0;
+                $row.find('.entry-weight').val(weight.toFixed(2));
+                calculateRowWorkload(rowId);
+
+                const id = $(this).val();
+                const name = selected.text();
+                if (id) addToRecent('items', { id: parseInt(id), name, weight });
+
+                // 自动跳到下一个空行的患者输入框
+                const nextEmptyPatient = $('.entry-patient').filter(function() { return !$(this).val(); }).first();
+                if (nextEmptyPatient.length) {
+                    nextEmptyPatient.focus();
+                }
+            });
+
+            // 人次变化
+            $row.find('.entry-sessions').on('input', function() {
+                calculateRowWorkload(rowId);
+            });
+
+            // 回车键跳转到下一行
+            $row.find('.entry-sessions').on('keydown', function(e) {
+                if (e.keyCode === 13) { // Enter
+                    e.preventDefault();
+                    const currentRowIndex = $('#quickEntryBody tr').index($row);
+                    const nextRow = $('#quickEntryBody tr').eq(currentRowIndex + 1);
+                    if (nextRow.length) {
+                        nextRow.find('.entry-therapist').focus();
+                    } else {
+                        // 如果是最后一行，自动添加新行
+                        addEntryRow();
+                        setTimeout(() => {
+                            $('#quickEntryBody tr:last .entry-therapist').focus();
+                        }, 100);
+                    }
+                }
+            });
+
+            // 患者输入框回车跳到治疗项目
+            $row.find('.entry-patient').on('keydown', function(e) {
+                if (e.keyCode === 13) {
+                    e.preventDefault();
+                    $row.find('.entry-item').focus();
+                }
+            });
+        }
+
+        // 全局键盘快捷键
+        $(document).on('keydown', function(e) {
+            // Ctrl+Enter 保存
+            if (e.ctrlKey && e.keyCode === 13) {
+                e.preventDefault();
+                saveAllEntries();
+            }
+            // Ctrl+N 添加新行
+            if (e.ctrlKey && e.keyCode === 78) {
+                e.preventDefault();
+                addEntryRow();
+            }
+        });
+
+        // 计算行工作量
+        function calculateRowWorkload(rowId) {
+            const $row = $(`#${rowId}`);
+            const weight = parseFloat($row.find('.entry-weight').val()) || 0;
+            const sessions = parseInt($row.find('.entry-sessions').val()) || 0;
+            const workload = (weight * sessions).toFixed(2);
+            $row.find('.entry-workload').val(workload);
+            updateEntryStats();
+        }
+
+        // 更新统计
+        function updateEntryStats() {
+            const rows = $('#quickEntryBody tr');
+            let totalWorkload = 0;
+            const patients = new Set();
+
+            rows.each(function() {
+                const $row = $(this);
+                const workload = parseFloat($row.find('.entry-workload').val()) || 0;
+                const patient = $row.find('.entry-patient').val();
+                totalWorkload += workload;
+                if (patient) patients.add(patient);
+            });
+
+            $('#pendingCount').text(rows.length);
+            $('#pendingPatients').text(patients.size);
+            $('#pendingWorkload').text(totalWorkload.toFixed(2));
+        }
+
+        // 保存全部记录
+        function saveAllEntries() {
+            const rows = $('#quickEntryBody tr');
+            const records = [];
+
+            rows.each(function() {
+                const $row = $(this);
+                const date = $row.find('.entry-date').val();
+                const therapistId = $row.find('.entry-therapist').val();
+                const patientInfo = $row.find('.entry-patient').val();
+                const itemId = $row.find('.entry-item').val();
+                const weight = parseFloat($row.find('.entry-weight').val()) || 0;
+                const sessions = parseInt($row.find('.entry-sessions').val()) || 0;
+
+                if (date && therapistId && itemId && sessions > 0) {
+                    records.push({
+                        record_date: date,
+                        therapist_id: parseInt(therapistId),
+                        patient_info: patientInfo,
+                        treatment_item_id: parseInt(itemId),
+                        weight_coefficient: weight,
+                        session_count: sessions
+                    });
+                }
+            });
+
+            if (records.length === 0) {
+                showToast('请至少填写一条完整记录（日期、治疗师、治疗项目、人次）', 'warning');
+                return;
+            }
+
+            const totalWorkload = records.reduce((sum, r) => sum + r.weight_coefficient * r.session_count, 0).toFixed(2);
+
+            if (!confirm(`确定保存 ${records.length} 条记录？\n总工作量: ${totalWorkload}`)) {
+                return;
+            }
+
+            // 显示保存中提示
+            showToast('正在保存...', 'info');
+
+            $.ajax({
+                url: '/api/records',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(records),
+                success: function(res) {
+                    if (res.success) {
+                        // 检查是否有错误
+                        if (res.data.errors && res.data.errors.length > 0) {
+                            const errorMsg = res.data.errors.join(" ");
+                            showToast("录入失败：" + errorMsg, "error");
+                        } else if (res.data.total > 0) {
+                            showToast(`成功保存 ${res.data.total} 条记录！总工作量: ${totalWorkload}`, 'success');
+                        // 清空表格并重新添加5行
+                        $('#quickEntryBody').empty();
+                        entryRowId = 0;
+                        addMultipleRows(5);
+                        updateEntryStats();
+                        loadDashboard();
+                        }
+                    } else {
+                        showToast('保存失败：' + res.error, 'error');
+                    }
+                },
+                error: function() {
+                    showToast('请求失败，请稍后重试', 'error');
+                }
+            });
+        }
+
+        // 快捷日期范围选择
+        function applyQuickDateRange() {
+            const range = $('#quickDateRange').val();
+            if (!range) return;
+
+            const today = new Date();
+            let startDate, endDate;
+
+            switch(range) {
+                case 'today':
+                    startDate = endDate = today;
+                    break;
+                case 'yesterday':
+                    const yesterday = new Date(today);
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    startDate = endDate = yesterday;
+                    break;
+                case 'thisWeek':
+                    const weekStart = new Date(today);
+                    weekStart.setDate(today.getDate() - today.getDay() + 1); // 周一
+                    startDate = weekStart;
+                    endDate = today;
+                    break;
+                case 'lastWeek':
+                    const lastWeekStart = new Date(today);
+                    lastWeekStart.setDate(today.getDate() - today.getDay() - 6); // 上周一
+                    const lastWeekEnd = new Date(lastWeekStart);
+                    lastWeekEnd.setDate(lastWeekStart.getDate() + 6); // 上周日
+                    startDate = lastWeekStart;
+                    endDate = lastWeekEnd;
+                    break;
+                case 'thisMonth':
+                    startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+                    endDate = today;
+                    break;
+                case 'lastMonth':
+                    startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                    endDate = new Date(today.getFullYear(), today.getMonth(), 0);
+                    break;
+                case 'thisYear':
+                    startDate = new Date(today.getFullYear(), 0, 1);
+                    endDate = today;
+                    break;
+            }
+
+            const formatDate = (d) => d.toISOString().split('T')[0];
+            $('#filterStartDate').val(formatDate(startDate));
+            $('#filterEndDate').val(formatDate(endDate));
+        }
+
+        // 加载记录列表
+        function loadRecords() {
+            const params = {
+                start_date: $('#filterStartDate').val(),
+                end_date: $('#filterEndDate').val(),
+                therapist_id: $('#filterTherapist').val() || null,
+                category_id: $('#filterCategory').val() || null,
+                patient_info: $('#filterPatient').val() || null
+            };
+
+            $.get('/api/records', params, function(res) {
+                if (res.success) {
+                    // 检查是否允许删除
+                    const showDelete = window.allowDelete === true;
+                    
+                    let html = '';
+                    res.data.records.forEach(r => {
+                        html += `
+                            <tr>
+                                <td><input type="checkbox" class="record-checkbox" value="${r.id}" onchange="updateRecordSelectStatus()"></td>
+                                <td>${r.record_date}</td>
+                                <td>${r.therapist_name}</td>
+                                <td>${r.patient_info || '-'}</td>
+                                <td>${r.treatment_item_name}</td>
+                                <td>${r.weight_coefficient}</td>
+                                <td>${r.session_count}</td>
+                                <td>${r.weighted_workload}</td>
+                                <td>${r.remark || '-'}</td>
+                                <td>
+                                    ${showDelete ? `<button class="btn btn-sm btn-outline-danger" onclick="deleteRecord(${r.id})" title="删除记录">
+                                        <i class="fas fa-trash"></i> 删除
+                                    </button>` : '<span class="text-muted">-</span>'}
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    $('#recordsTable').html(html || '<tr><td colspan="10" class="text-center text-muted">暂无数据</td></tr>');
+                    updateRecordSelectStatus();
+                }
+            });
+        }
+
+        // 删除记录
+        function deleteRecord(id) {
+            if (!confirm('确定要删除这条记录吗？')) return;
+
+            $.ajax({
+                url: `/api/records/${id}`,
+                method: 'DELETE',
+                success: function(res) {
+                    if (res.success) {
+                        showToast('记录已删除', 'success');
+                        loadRecords();
+                        loadDashboard();
+                    } else {
+                        showToast('删除失败：' + res.error, 'error');
+                    }
+                }
+            });
+        }
+
+        // 全选/取消全选记录
+        function toggleSelectAllRecords() {
+            const checked = $('#selectAllRecords').prop('checked');
+            $('.record-checkbox').prop('checked', checked);
+            updateRecordSelectStatus();
+        }
+
+        // 更新记录选择状态
+        function updateRecordSelectStatus() {
+            const total = $('.record-checkbox').length;
+            const selected = $('.record-checkbox:checked').length;
+            $('#selectAllRecords').prop('indeterminate', selected > 0 && selected < total);
+            $('#batchDeleteRecordsBtn').toggle(selected > 0);
+            $('#selectedRecordsCount').text(selected > 0 ? `已选中 ${selected} 条记录` : '');
+        }
+
+        // 批量删除记录
+        function batchDeleteRecords() {
+            const selectedIds = [];
+            $('.record-checkbox:checked').each(function() {
+                selectedIds.push(parseInt($(this).val()));
+            });
+
+            if (selectedIds.length === 0) {
+                showToast('请先选择要删除的记录', 'warning');
+                return;
+            }
+
+            if (!confirm(`确定要删除选中的 ${selectedIds.length} 条工作量记录吗？此操作不可恢复！`)) {
+                return;
+            }
+
+            showToast('正在删除...', 'info');
+
+            $.ajax({
+                url: '/api/records/batch-delete',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ ids: selectedIds }),
+                success: function(res) {
+                    if (res.success) {
+                        showToast(`成功删除 ${res.data.deleted} 条记录`, 'success');
+                        loadRecords();
+                        loadDashboard();
+                    } else {
+                        showToast(res.message || '删除失败', 'error');
+                    }
+                },
+                error: function() {
+                    showToast('删除失败，请重试', 'error');
+                }
+            });
+        }
+
+        // 加载月度统计
+        function loadMonthlyStatistics() {
+            const month = $('#monthPicker').val();
+
+            $.get('/api/statistics/monthly', { month: month }, function(res) {
+                if (res.success) {
+                    const data = res.data;
+                    $('#monthTotalSessions').text(data.total_sessions);
+                    $('#monthTotalWorkload').text(data.total_workload.toFixed(2));
+                    $('#monthWorkingDays').text(data.working_days);
+
+                    let html = '';
+                    data.therapist_statistics.forEach(t => {
+                        html += `
+                            <tr>
+                                <td>${t.therapist_name}</td>
+                                <td>${t.sessions}</td>
+                                <td>${t.workload.toFixed(2)}</td>
+                                <td>${t.days}</td>
+                                <td>${t.daily_average.toFixed(2)}</td>
+                            </tr>
+                        `;
+                    });
+                    $('#monthlyTable').html(html || '<tr><td colspan="5" class="text-center text-muted">暂无数据</td></tr>');
+
+                    // 更新每周统计
+                    if (data.weekday_statistics) {
+                        for (let day = 0; day <= 6; day++) {
+                            const stats = data.weekday_statistics[day] || { workload: 0, sessions: 0 };
+                            $(`#weekday_${day}`).text(stats.workload.toFixed(2));
+                            $(`#weekday_sessions_${day}`).text(stats.sessions);
+                        }
+
+                        // 绘制简单的柱状图
+                        renderWeekdayChart(data.weekday_statistics);
+                    }
+                }
+            });
+        }
+
+        // 绘制每周工作量柱状图
+        function renderWeekdayChart(weekdayStats) {
+            const days = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+            const workloads = [];
+            let maxWorkload = 0;
+
+            // 按周一到周日顺序排列
+            [1, 2, 3, 4, 5, 6, 0].forEach(day => {
+                const stats = weekdayStats[day] || { workload: 0 };
+                workloads.push(stats.workload);
+                if (stats.workload > maxWorkload) maxWorkload = stats.workload;
+            });
+
+            if (maxWorkload === 0) {
+                $('#weekdayChart').html('<div class="text-center text-muted py-3">暂无数据</div>');
+                return;
+            }
+
+            let barsHtml = '<div style="display: flex; align-items: flex-end; justify-content: space-around; height: 100%; padding: 10px;">';
+            const dayLabels = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+
+            workloads.forEach((w, i) => {
+                const height = maxWorkload > 0 ? (w / maxWorkload * 150) : 0;
+                const color = w === Math.max(...workloads) ? '#ef4444' : '#4f46e5';
+                barsHtml += `
+                    <div style="text-align: center; flex: 1;">
+                        <div style="background: ${color}; width: 40px; height: ${height}px; margin: 0 auto; border-radius: 4px 4px 0 0; transition: height 0.3s;"></div>
+                        <div style="font-size: 0.75rem; margin-top: 5px;">${dayLabels[i]}</div>
+                        <div style="font-size: 0.7rem; color: #6b7280;">${w.toFixed(1)}</div>
+                    </div>
+                `;
+            });
+            barsHtml += '</div>';
+
+            $('#weekdayChart').html(barsHtml);
+        }
+
+        // 显示治疗师模态框
+        function showTherapistModal() {
+            $('#therapistId').val('');
+            $('#therapistName').val('');
+            $('#therapistEmployeeId').val('');
+            $('#therapistModal').modal('show');
+        }
+
+        // 编辑治疗师
+        function editTherapist(id) {
+            const t = therapists.find(x => x.id === id);
+            if (t) {
+                $('#therapistId').val(t.id);
+                $('#therapistName').val(t.name);
+                $('#therapistEmployeeId').val(t.employee_id || '');
+                $('#therapistModal').modal('show');
+            }
+        }
+
+        // 保存治疗师
+        function saveTherapist() {
+            const id = $('#therapistId').val();
+            const data = {
+                name: $('#therapistName').val(),
+                employee_id: $('#therapistEmployeeId').val()
+            };
+
+            const url = id ? `/api/therapists/${id}` : '/api/therapists';
+            const method = id ? 'PUT' : 'POST';
+
+            $.ajax({
+                url: url,
+                method: method,
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function(res) {
+                    if (res.success) {
+                        showToast('治疗师信息已保存', 'success');
+                        $('#therapistModal').modal('hide');
+                        loadTherapists();
+                    } else {
+                        showToast('保存失败：' + res.error, 'error');
+                    }
+                }
+            });
+        }
+
+        // 删除治疗师
+        function deleteTherapist(id) {
+            if (!confirm('确定要删除这个治疗师吗？')) return;
+
+            $.ajax({
+                url: `/api/therapists/${id}`,
+                method: 'DELETE',
+                success: function(res) {
+                    if (res.success) {
+                        showToast('治疗师已删除', 'success');
+                        loadTherapists();
+                    } else {
+                        showToast('删除失败：' + res.error, 'error');
+                    }
+                }
+            });
+        }
+
+        // 显示治疗项目模态框
+        function showItemModal() {
+            $('#itemId').val('');
+            $('#itemCode').val('');
+            $('#itemName').val('');
+            $('#itemCategory').val('');
+            $('#itemWeight').val(1.0);
+            $('#itemModal').modal('show');
+        }
+
+        // 编辑治疗项目
+        function editItem(id) {
+            const item = treatmentItems.find(x => x.id === id);
+            if (item) {
+                $('#itemId').val(item.id);
+                $('#itemCode').val(item.code || '');
+                $('#itemName').val(item.name);
+                $('#itemCategory').val(item.category_id || '');
+                $('#itemWeight').val(item.weight_coefficient);
+                $('#itemModal').modal('show');
+            }
+        }
+
+        // 保存治疗项目
+        function saveItem() {
+            const id = $('#itemId').val();
+            const data = {
+                code: $('#itemCode').val() || null,
+                name: $('#itemName').val(),
+                category_id: $('#itemCategory').val() || null,
+                weight_coefficient: parseFloat($('#itemWeight').val())
+            };
+
+            const url = id ? `/api/treatment-items/${id}` : '/api/treatment-items';
+            const method = id ? 'PUT' : 'POST';
+
+            $.ajax({
+                url: url,
+                method: method,
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function(res) {
+                    if (res.success) {
+                        showToast('治疗项目已保存', 'success');
+                        $('#itemModal').modal('hide');
+                        loadTreatmentItems();
+                    } else {
+                        showToast('保存失败：' + res.error, 'error');
+                    }
+                }
+            });
+        }
+
+        // 删除治疗项目
+        function deleteItem(id) {
+            if (!confirm('确定要删除这个治疗项目吗？')) return;
+
+            $.ajax({
+                url: `/api/treatment-items/${id}`,
+                method: 'DELETE',
+                success: function(res) {
+                    if (res.success) {
+                        showToast('治疗项目已删除', 'success');
+                        loadTreatmentItems();
+                    } else {
+                        showToast('删除失败：' + res.error, 'error');
+                    }
+                }
+            });
+        }
+
+        // 显示类别模态框
+        function showCategoryModal() {
+            showToast('类别管理功能开发中...', 'info');
+        }
+
+        // 编辑类别
+        function editCategory(id) {
+            showToast('类别管理功能开发中...', 'info');
+        }
+
+        // 删除类别
+        function deleteCategory(id) {
+            if (!confirm('确定要删除这个类别吗？')) return;
+
+            $.ajax({
+                url: `/api/categories/${id}`,
+                method: 'DELETE',
+                success: function(res) {
+                    if (res.success) {
+                        showToast('类别已删除', 'success');
+                        loadCategories();
+                    } else {
+                        showToast('删除失败：' + res.error, 'error');
+                    }
+                }
+            });
+        }
+
+        // 导出Excel
+        function exportToExcel() {
+            const month = $('#monthPicker').val() || new Date().toISOString().substring(0, 7);
+            window.location.href = `/api/excel/export?month=${month}`;
+        }
+
+        // 显示导入模态框
+        function showImportModal() {
+            $('#importFile').val('');
+            $('#importResult').html('');
+            $('#importModal').modal('show');
+        }
+
+        // 执行导入
+        function doImport() {
+            const file = $('#importFile')[0].files[0];
+            if (!file) {
+                showToast('请选择文件', 'warning');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            showToast('正在导入...', 'info');
+
+            $.ajax({
+                url: '/api/excel/import',
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(res) {
+                    if (res.success) {
+                        const data = res.data;
+                        showToast(`导入完成！治疗师: ${data.therapists_created}, 项目: ${data.treatment_items_created}, 记录: ${data.records_created}`, 'success');
+                        $('#importResult').html(`
+                            <div class="alert alert-success">
+                                <p><strong>导入完成！</strong></p>
+                                <p>治疗师创建: ${data.therapists_created}</p>
+                                <p>治疗项目创建: ${data.treatment_items_created}</p>
+                                <p>工作量记录创建: ${data.records_created}</p>
+                                ${data.errors.length > 0 ? `<p class="text-danger">错误: ${data.errors.join('<br>')}</p>` : ''}
+                            </div>
+                        `);
+
+                        loadTherapists();
+                        loadTreatmentItems();
+                        loadDashboard();
+                    } else {
+                        showToast('导入失败：' + res.error, 'error');
+                    }
+                },
+                error: function(xhr) {
+                    showToast('导入失败：' + (xhr.responseJSON?.error || '未知错误'), 'error');
+                }
+            });
+        }
+
+        // 下载模板
+        function downloadTemplate() {
+            window.location.href = '/api/excel/template';
+        }
+
+        // ==================== 治疗项目批量导入 ====================
+
+        // Excel导入数据存储
+        let excelImportData = [];
+
+        // 显示项目导入模态框
+        function showItemImportModal() {
+            $('#itemImportText').val('');
+            $('#itemImportResult').html('');
+            $('#excelFileInput').val('');
+            $('#excelPreview').hide();
+            $('.custom-file-label').text('选择文件...');
+            excelImportData = [];
+            // 重置到Excel导入标签
+            $('#importMethodTabs a:first').tab('show');
+            $('#itemImportModal').modal('show');
+        }
+
+        // Excel文件选择处理
+        $(document).ready(function() {
+            // Excel文件选择
+            $('#excelFileInput').on('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                $('.custom-file-label').text(file.name);
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                        const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+                        // 跳过表头，解析数据
+                        excelImportData = [];
+                        const previewBody = $('#excelPreviewTable tbody');
+                        previewBody.empty();
+
+                        // 自动检测列索引
+                        const header = jsonData[0] || [];
+                        const colMap = {};
+                        header.forEach((col, idx) => {
+                            const colStr = String(col || '').trim();
+                            colMap[colStr] = idx;
+                        });
+
+                        // 查找各列索引
+                        let codeCol = null, nameCol = null, categoryCol = null, weightCol = null;
+                        for (const [colName, idx] of Object.entries(colMap)) {
+                            if (colName.match(/^(编号|项目编号|代码|code|Code)$/i)) {
+                                codeCol = idx;
+                            } else if (colName.match(/^(项目名称|治疗项目|名称|name|Name|item)$/i)) {
+                                nameCol = idx;
+                            } else if (colName.match(/^(治疗类别|类别|分类|项目类别|category|Category)$/i)) {
+                                categoryCol = idx;
+                            } else if (colName.match(/^(权重|权重系数|综合权重系数|weight|Weight)$/i)) {
+                                weightCol = idx;
+                            }
+                        }
+
+                        // 如果没找到名称列，尝试模糊匹配
+                        if (nameCol === null) {
+                            for (const [colName, idx] of Object.entries(colMap)) {
+                                if (colName.includes('项目') || colName.includes('名称')) {
+                                    nameCol = idx;
+                                    break;
+                                }
+                            }
+                        }
+
+                        console.log('检测到的列映射:', colMap);
+                        console.log('编号列:', codeCol, '名称列:', nameCol, '类别列:', categoryCol, '权重列:', weightCol);
+
+                        for (let i = 1; i < jsonData.length; i++) {
+                            const row = jsonData[i];
+                            if (!row || row.length === 0) continue;
+
+                            let code, name, category, weight;
+
+                            // 根据检测到的列索引获取值
+                            if (nameCol !== null) {
+                                // 使用自动检测的列
+                                code = codeCol !== null ? String(row[codeCol] || '').trim() : '';
+                                name = String(row[nameCol] || '').trim();
+                                category = categoryCol !== null ? String(row[categoryCol] || '').trim() : '';
+                                weight = weightCol !== null ? (parseFloat(row[weightCol]) || 1.0) : 1.0;
+                            } else {
+                                // 没有检测到表头，按位置推断
+                                if (row.length >= 4) {
+                                    // 4列格式：A=编号, B=名称, C=类别, D=权重
+                                    code = String(row[0] || '').trim();
+                                    name = String(row[1] || '').trim();
+                                    category = String(row[2] || '').trim();
+                                    weight = parseFloat(row[3]) || 1.0;
+                                } else {
+                                    // 3列格式：A=名称, B=类别, C=权重
+                                    code = '';
+                                    name = String(row[0] || '').trim();
+                                    category = String(row[1] || '').trim();
+                                    weight = parseFloat(row[2]) || 1.0;
+                                }
+                            }
+
+                            if (name) {
+                                const item = {
+                                    code: code || '',
+                                    name: name,
+                                    category: category,
+                                    weight: weight
+                                };
+                                excelImportData.push(item);
+                                previewBody.append(`
+                                    <tr>
+                                        <td>${item.code || '-'}</td>
+                                        <td>${item.name}</td>
+                                        <td>${item.category || '-'}</td>
+                                        <td>${item.weight}</td>
+                                    </tr>
+                                `);
+                            }
+                        }
+
+                        if (excelImportData.length > 0) {
+                            $('#excelPreview').show();
+                            $('#excelRowCount').text(`共 ${excelImportData.length} 个项目待导入`);
+                        } else {
+                            $('#excelPreview').hide();
+                            showToast('Excel文件中没有有效数据', 'warning');
+                        }
+                    } catch (err) {
+                        showToast('Excel文件解析失败：' + err.message, 'error');
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            });
+
+            // 恢复文件选择
+            $('#restoreFileInput').on('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                $('.custom-file-label').text(file.name);
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const backupData = JSON.parse(e.target.result);
+                        if (backupData && backupData.version && backupData.data) {
+                            const info = backupData.data;
+                            $('#restoreInfo').html(`
+                                备份时间: ${backupData.timestamp}<br>
+                                治疗师: ${info.therapists?.length || 0} 人 |
+                                治疗项目: ${info.treatment_items?.length || 0} 个 |
+                                工作量记录: ${info.records?.length || 0} 条
+                            `);
+                            $('#restorePreview').show();
+                            $('#restoreBtn').prop('disabled', false);
+                        } else {
+                            showToast('无效的备份文件格式', 'error');
+                        }
+                    } catch (err) {
+                        showToast('备份文件解析失败：' + err.message, 'error');
+                    }
+                };
+                reader.readAsText(file);
+            });
+
+            // 加载备份历史
+            loadBackupHistory();
+
+            // 检查是否需要自动备份
+            checkAutoBackup();
+        });
+
+        // 下载治疗项目导入模板
+        function downloadItemTemplate() {
+            const templateData = [
+                ['项目编号', '项目名称', '类别', '权重系数'],
+                ['T001', '盆底电', '仪器治疗', 1.83],
+                ['T002', '盆底磁', '仪器治疗', 0.83],
+                ['T003', '推拿按摩', '手法治疗', 1.5],
+                ['T004', '针灸治疗', '针灸', 1.0],
+                ['', '示例项目5', '理疗', 1.2]
+            ];
+
+            const ws = XLSX.utils.aoa_to_sheet(templateData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, '治疗项目导入模板');
+
+            // 设置列宽
+            ws['!cols'] = [{ wch: 12 }, { wch: 20 }, { wch: 15 }, { wch: 10 }];
+
+            XLSX.writeFile(wb, '治疗项目导入模板.xlsx');
+            showToast('模板下载成功', 'success');
+        }
+
+        // 执行项目导入
+        function doItemImport() {
+            let items = [];
+
+            // 检查当前选中的导入方式
+            const activeTab = $('#importMethodTabs .nav-link.active').attr('href');
+
+            if (activeTab === '#excelImport') {
+                // Excel导入
+                if (excelImportData.length === 0) {
+                    showToast('请先选择Excel文件', 'warning');
+                    return;
+                }
+                items = excelImportData;
+            } else {
+                // 文本粘贴导入
+                const text = $('#itemImportText').val().trim();
+                if (!text) {
+                    showToast('请输入项目数据或选择Excel文件', 'warning');
+                    return;
+                }
+
+                const lines = text.split('\n').filter(line => line.trim());
+                lines.forEach(line => {
+                    const parts = line.split(',').map(p => p.trim());
+                    if (parts.length >= 2 && parts[1]) {
+                        // 新格式：编号, 名称, 类别, 权重
+                        items.push({
+                            code: parts[0] || '',
+                            name: parts[1],
+                            category: parts[2] || '',
+                            weight: parseFloat(parts[3]) || 1.0
+                        });
+                    } else if (parts.length >= 1 && parts[0]) {
+                        // 兼容旧格式：名称, 类别, 权重
+                        items.push({
+                            code: '',
+                            name: parts[0],
+                            category: parts[1] || '',
+                            weight: parseFloat(parts[2]) || 1.0
+                        });
+                    }
+                });
+            }
+
+            if (items.length === 0) {
+                showToast('没有有效的项目数据', 'warning');
+                return;
+            }
+
+            showToast(`正在导入 ${items.length} 个项目...`, 'info');
+
+            $.ajax({
+                url: '/api/treatment-items/batch',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ items: items }),
+                success: function(res) {
+                    if (res.success) {
+                        const data = res.data;
+                        showToast(`导入完成！创建: ${data.created}, 跳过(已存在): ${data.skipped}`, 'success');
+                        $('#itemImportResult').html(`
+                            <div class="alert alert-success">
+                                <p><strong>导入完成！</strong></p>
+                                <p>创建项目: ${data.created}</p>
+                                <p>跳过(已存在): ${data.skipped}</p>
+                                <p>创建类别: ${data.categories_created}</p>
+                                ${data.errors.length > 0 ? `<p class="text-danger">错误: ${data.errors.join('<br>')}</p>` : ''}
+                            </div>
+                        `);
+                        loadTreatmentItems();
+                        loadCategories();
+                        // 清空已导入的Excel数据
+                        excelImportData = [];
+                    } else {
+                        showToast('导入失败：' + res.error, 'error');
+                    }
+                },
+                error: function(xhr) {
+                    showToast('导入失败：' + (xhr.responseJSON?.error || '未知错误'), 'error');
+                }
+            });
+        }
+
+        // ==================== 工作量记录批量导入 ====================
+
+        // 记录导入数据存储
+        let recordsImportData = [];
+
+        // 显示记录导入模态框
+        function showRecordsImportModal() {
+            $('#recordsExcelFileInput').val('');
+            $('#recordsImportPreview').hide();
+            $('#recordsImportResult').html('');
+            $('.custom-file-label').text('选择文件...');
+            recordsImportData = [];
+            $('#recordsImportModal').modal('show');
+        }
+
+        // 下载工作量记录导入模板
+        function downloadRecordsTemplate() {
+            const templateData = [
+                ['日期', '治疗师', '患者', '治疗项目', '权重', '人次', '备注'],
+                ['2024-01-15', '李德裕', '张三', '盆底电', 1.0, 1, ''],
+                ['2024-01-15', '李德裕', '李四', '盆底磁', 1.5, 2, '复诊'],
+                ['2024-01-16', '陈宇凡', '王五', '推拿按摩', '', 1, ''],
+                ['2024-01-16', '陈宇凡', '赵六', '[T003]针灸治疗', 0.8, 1, '首次']
+            ];
+
+            const ws = XLSX.utils.aoa_to_sheet(templateData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, '工作量记录导入模板');
+
+            // 设置列宽
+            ws['!cols'] = [
+                { wch: 12 },  // 日期
+                { wch: 12 },  // 治疗师
+                { wch: 15 },  // 患者
+                { wch: 20 },  // 治疗项目
+                { wch: 8 },   // 权重
+                { wch: 8 },   // 人次
+                { wch: 20 }   // 备注
+            ];
+
+            XLSX.writeFile(wb, '工作量记录导入模板.xlsx');
+            showToast('模板下载成功', 'success');
+        }
+
+        // Excel文件选择处理（记录导入）
+        $(document).ready(function() {
+            $('#recordsExcelFileInput').on('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                $('.custom-file-label').text(file.name);
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                        const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+                        // 检测表头判断列顺序
+                        const header = jsonData[0] || [];
+                        const hasWeightColumn = header.includes('权重');
+
+                        // 兼容WPS/Excel的日期解析函数
+                        function parseDate(value) {
+                            if (!value && value !== 0) return null;
+
+                            // 如果是数字（Excel/WPS日期序列号）
+                            if (typeof value === 'number') {
+                                // Excel日期序列号转换（支持1900和1904日期系统）
+                                // 大多数情况使用1900系统（基准日期1899-12-30）
+                                const excelEpoch = new Date(1899, 11, 30);
+                                const date = new Date(excelEpoch.getTime() + value * 86400 * 1000);
+                                const year = date.getFullYear();
+                                const month = String(date.getMonth() + 1).padStart(2, '0');
+                                const day = String(date.getDate()).padStart(2, '0');
+                                return `${year}-${month}-${day}`;
+                            }
+
+                            // 转换为字符串处理
+                            let dateStr = String(value).trim();
+                            if (!dateStr) return null;
+
+                            // 已经是标准格式 YYYY-MM-DD
+                            if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(dateStr)) {
+                                const parts = dateStr.split('-');
+                                return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+                            }
+
+                            // WPS/Excel 常见格式：YYYY/MM/DD
+                            if (/^\d{4}\/\d{1,2}\/\d{1,2}$/.test(dateStr)) {
+                                const parts = dateStr.split('/');
+                                return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+                            }
+
+                            // 中文格式：YYYY年MM月DD日
+                            const cnMatch = dateStr.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
+                            if (cnMatch) {
+                                return `${cnMatch[1]}-${cnMatch[2].padStart(2, '0')}-${cnMatch[3].padStart(2, '0')}`;
+                            }
+
+                            // 格式：MM/DD/YYYY（美国格式）
+                            if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(dateStr)) {
+                                const parts = dateStr.split('/');
+                                return `${parts[2]}-${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}`;
+                            }
+
+                            // 格式：DD-MM-YYYY
+                            if (/^\d{1,2}-\d{1,2}-\d{4}$/.test(dateStr)) {
+                                const parts = dateStr.split('-');
+                                return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+                            }
+
+                            // 尝试使用Date对象解析
+                            const parsed = new Date(dateStr);
+                            if (!isNaN(parsed.getTime())) {
+                                const year = parsed.getFullYear();
+                                const month = String(parsed.getMonth() + 1).padStart(2, '0');
+                                const day = String(parsed.getDate()).padStart(2, '0');
+                                if (year > 1900) {
+                                    return `${year}-${month}-${day}`;
+                                }
+                            }
+
+                            return null;
+                        }
+
+                        // 跳过表头，解析数据
+                        recordsImportData = [];
+                        const previewBody = $('#recordsPreviewTable tbody');
+                        previewBody.empty();
+
+                        for (let i = 1; i < jsonData.length; i++) {
+                            const row = jsonData[i];
+                            if (!row || row.length < 4) continue;
+
+                            let record;
+                            if (hasWeightColumn) {
+                                // 新格式：日期, 治疗师, 患者, 治疗项目, 权重, 人次, 备注
+                                record = {
+                                    date: parseDate(row[0]),
+                                    therapist: String(row[1] || '').trim(),
+                                    patient: String(row[2] || '').trim(),
+                                    item: String(row[3] || '').trim(),
+                                    weight: parseFloat(row[4]) || null,
+                                    sessions: parseInt(row[5]) || 1,
+                                    remark: String(row[6] || '').trim()
+                                };
+                            } else {
+                                // 旧格式：日期, 治疗师, 患者, 治疗项目, 人次, 备注
+                                record = {
+                                    date: parseDate(row[0]),
+                                    therapist: String(row[1] || '').trim(),
+                                    patient: String(row[2] || '').trim(),
+                                    item: String(row[3] || '').trim(),
+                                    weight: null,
+                                    sessions: parseInt(row[4]) || 1,
+                                    remark: String(row[5] || '').trim()
+                                };
+                            }
+
+                            if (record.date && record.therapist && record.item) {
+                                recordsImportData.push({
+                                    ...record,
+                                    status: 'pending'  // pending, ok, error
+                                });
+                            }
+                        }
+
+                        if (recordsImportData.length > 0) {
+                            $('#recordsImportPreview').show();
+                            $('#recordsImportRowCount').text(`共 ${recordsImportData.length} 条记录待导入`);
+
+                            // 预览数据
+                            recordsImportData.forEach((record, idx) => {
+                                previewBody.append(`
+                                    <tr>
+                                        <td>${record.date}</td>
+                                        <td>${record.therapist}</td>
+                                        <td>${record.patient || '-'}</td>
+                                        <td>${record.item}</td>
+                                        <td>${record.weight !== null ? record.weight : '(默认)'}</td>
+                                        <td>${record.sessions}</td>
+                                        <td>${record.remark || '-'}</td>
+                                        <td class="status-cell"><span class="badge badge-secondary">待验证</span></td>
+                                    </tr>
+                                `);
+                            });
+                        } else {
+                            $('#recordsImportPreview').hide();
+                            showToast('Excel文件中没有有效数据', 'warning');
+                        }
+                    } catch (err) {
+                        showToast('Excel文件解析失败：' + err.message, 'error');
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            });
+        });
+
+        // 执行工作量记录导入
+        function doRecordsImport() {
+            if (recordsImportData.length === 0) {
+                showToast('请先选择Excel文件', 'warning');
+                return;
+            }
+
+            // 清理数据，只发送需要的字段
+            const cleanRecords = recordsImportData.map(r => ({
+                date: r.date,
+                therapist: r.therapist,
+                patient: r.patient,
+                item: r.item,
+                weight: r.weight,
+                sessions: r.sessions,
+                remark: r.remark
+            }));
+
+            showToast(`正在导入 ${cleanRecords.length} 条记录...`, 'info');
+
+            $.ajax({
+                url: '/api/records/batch-import',
+                method: 'POST',
+                contentType: 'application/json; charset=utf-8',
+                data: JSON.stringify({ records: cleanRecords }),
+                success: function(res) {
+                    if (res.success) {
+                        const data = res.data;
+                        showToast(`导入完成！成功: ${data.imported}, 失败: ${data.failed}`, data.failed > 0 ? 'warning' : 'success');
+                        $('#recordsImportResult').html(`
+                            <div class="alert alert-${data.failed > 0 ? 'warning' : 'success'}">
+                                <p><strong>导入完成！</strong></p>
+                                <p>成功导入: ${data.imported}</p>
+                                <p>失败: ${data.failed}</p>
+                                ${data.errors && data.errors.length > 0 ? `
+                                    <details>
+                                        <summary>查看错误详情</summary>
+                                        <ul class="mb-0 mt-2">
+                                            ${data.errors.map(e => `<li>${e}</li>`).join('')}
+                                        </ul>
+                                    </details>
+                                ` : ''}
+                            </div>
+                        `);
+                        loadRecords();
+                        loadDashboard();
+                        recordsImportData = [];
+                    } else {
+                        showToast('导入失败：' + res.error, 'error');
+                    }
+                },
+                error: function(xhr) {
+                    showToast('导入失败：' + (xhr.responseJSON?.error || '未知错误'), 'error');
+                }
+            });
+        }
+
+        // 导出工作量记录到Excel
+        function exportRecordsXLSX() {
+            const startDate = $('#filterStartDate').val();
+            const endDate = $('#filterEndDate').val();
+            const params = {
+                start_date: startDate,
+                end_date: endDate,
+                therapist_id: $('#filterTherapist').val() || null,
+                category_id: $('#filterCategory').val() || null,
+                patient_name: $('#filterPatient').val() || null
+            };
+
+            showToast('正在导出...', 'info');
+
+            $.get('/api/records', params, function(res) {
+                if (res.success && res.data.records.length > 0) {
+                    const records = res.data.records;
+
+                    // 准备Excel数据
+                    const excelData = [
+                        ['日期', '治疗师', '患者', '治疗项目', '权重系数', '人次', '工作量', '备注']
+                    ];
+
+                    records.forEach(r => {
+                        excelData.push([
+                            r.record_date,
+                            r.therapist_name,
+                            r.patient_info || '',
+                            r.treatment_item_name,
+                            r.weight_coefficient,
+                            r.session_count,
+                            r.weighted_workload,
+                            r.remark || ''
+                        ]);
+                    });
+
+                    const ws = XLSX.utils.aoa_to_sheet(excelData);
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, '工作量记录');
+
+                    // 设置列宽
+                    ws['!cols'] = [
+                        { wch: 12 },  // 日期
+                        { wch: 10 },  // 治疗师
+                        { wch: 15 },  // 患者
+                        { wch: 20 },  // 治疗项目
+                        { wch: 10 },  // 权重
+                        { wch: 8 },   // 人次
+                        { wch: 10 },  // 工作量
+                        { wch: 20 }   // 备注
+                    ];
+
+                    const filename = `工作量记录_${startDate || 'start'}_${endDate || 'end'}.xlsx`;
+                    XLSX.writeFile(wb, filename);
+                    showToast(`成功导出 ${records.length} 条记录`, 'success');
+                } else {
+                    showToast('没有可导出的记录', 'warning');
+                }
+            });
+        }
+
+        // ==================== 数据备份与恢复 ====================
+
+        // 显示备份模态框
+        function showBackupModal() {
+            $('#backupNote').val('');
+            $('#restoreFileInput').val('');
+            $('#restorePreview').hide();
+            $('#restoreBtn').prop('disabled', true);
+            loadBackupHistory();
+            loadBackupSettings();
+            $('#backupModal').modal('show');
+        }
+
+        // 创建备份
+        function createBackup() {
+            const note = $('#backupNote').val().trim();
+
+            showToast('正在创建备份...', 'info');
+
+            // 获取所有数据
+            Promise.all([
+                $.get('/api/therapists?active_only=false'),
+                $.get('/api/treatment-items?active_only=false'),
+                $.get('/api/categories?active_only=false'),
+                $.get('/api/records')
+            ]).then(function(responses) {
+                const backupData = {
+                    version: '1.0',
+                    timestamp: new Date().toLocaleString('zh-CN'),
+                    note: note,
+                    data: {
+                        therapists: responses[0].data.therapists,
+                        treatment_items: responses[0].data?.items || responses[1].data.items,
+                        categories: responses[2].data.categories,
+                        records: responses[3].data.records
+                    }
+                };
+
+                // 如果有治疗项目数据需要修正
+                if (responses[1].success && responses[1].data.items) {
+                    backupData.data.treatment_items = responses[1].data.items;
+                }
+
+                // 下载JSON文件
+                const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `workload_backup_${new Date().toISOString().slice(0,10)}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                // 保存到本地存储
+                saveBackupToHistory(backupData);
+
+                showToast('备份文件已下载', 'success');
+
+                // 更新上次备份时间
+                localStorage.setItem('lastBackupTime', new Date().toLocaleString('zh-CN'));
+                $('#lastBackupInfo').text('上次备份：' + new Date().toLocaleString('zh-CN'));
+            }).catch(function(err) {
+                showToast('创建备份失败：' + (err.responseJSON?.error || '未知错误'), 'error');
+            });
+        }
+
+        // 保存备份到历史记录
+        function saveBackupToHistory(backupData) {
+            let history = JSON.parse(localStorage.getItem('backupHistory') || '[]');
+            history.unshift({
+                timestamp: backupData.timestamp,
+                note: backupData.note,
+                recordCount: backupData.data.records?.length || 0,
+                therapistCount: backupData.data.therapists?.length || 0,
+                itemCount: backupData.data.treatment_items?.length || 0,
+                data: backupData
+            });
+
+            // 保留指定数量
+            const retention = parseInt($('#backupRetention').val()) || 10;
+            if (history.length > retention) {
+                history = history.slice(0, retention);
+            }
+
+            localStorage.setItem('backupHistory', JSON.stringify(history));
+            loadBackupHistory();
+        }
+
+        // 加载备份历史
+        function loadBackupHistory() {
+            const history = JSON.parse(localStorage.getItem('backupHistory') || '[]');
+            const tbody = $('#backupHistoryTable tbody');
+            tbody.empty();
+
+            if (history.length === 0) {
+                tbody.append('<tr><td colspan="4" class="text-center text-muted">暂无本地备份记录</td></tr>');
+                return;
+            }
+
+            history.forEach((backup, index) => {
+                tbody.append(`
+                    <tr>
+                        <td>${backup.timestamp}</td>
+                        <td>${backup.note || '-'}</td>
+                        <td>治疗师${backup.therapistCount} / 项目${backup.itemCount} / 记录${backup.recordCount}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick="downloadBackupFromHistory(${index})" title="下载">
+                                <i class="fas fa-download"></i> 下载
+                            </button>
+                            <button class="btn btn-sm btn-outline-warning" onclick="restoreBackupFromHistory(${index})" title="恢复">
+                                <i class="fas fa-undo"></i> 恢复
+                            </button>
+                        </td>
+                    </tr>
+                `);
+            });
+
+            // 更新上次备份时间
+            const lastBackup = localStorage.getItem('lastBackupTime');
+            if (lastBackup) {
+                $('#lastBackupInfo').text('上次备份：' + lastBackup);
+            }
+        }
+
+        // 从历史记录下载备份
+        function downloadBackupFromHistory(index) {
+            const history = JSON.parse(localStorage.getItem('backupHistory') || '[]');
+            if (history[index]) {
+                const backupData = history[index].data;
+                const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `workload_backup_${new Date().toISOString().slice(0,10)}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showToast('备份文件已下载', 'success');
+            }
+        }
+
+        // 从历史记录恢复
+        function restoreBackupFromHistory(index) {
+            if (!confirm('确定要恢复此备份吗？当前数据将被覆盖！')) return;
+
+            const history = JSON.parse(localStorage.getItem('backupHistory') || '[]');
+            if (history[index]) {
+                doRestoreBackup(history[index].data);
+            }
+        }
+
+        // 恢复备份
+        function restoreBackup() {
+            if (!confirm('确定要恢复备份吗？当前数据将被覆盖，此操作不可撤销！')) return;
+
+            const file = $('#restoreFileInput')[0].files[0];
+            if (!file) {
+                showToast('请选择备份文件', 'warning');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const backupData = JSON.parse(e.target.result);
+                    doRestoreBackup(backupData);
+                } catch (err) {
+                    showToast('备份文件解析失败：' + err.message, 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // 执行恢复
+        function doRestoreBackup(backupData) {
+            showToast('正在恢复数据...', 'info');
+
+            $.ajax({
+                url: '/api/backup/restore',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(backupData),
+                success: function(res) {
+                    if (res.success) {
+                        showToast('数据恢复成功！', 'success');
+                        // 刷新页面数据
+                        loadTherapists();
+                        loadTreatmentItems();
+                        loadCategories();
+                        loadDashboard();
+                        $('#backupModal').modal('hide');
+                    } else {
+                        showToast('恢复失败：' + res.error, 'error');
+                    }
+                },
+                error: function(xhr) {
+                    showToast('恢复失败：' + (xhr.responseJSON?.error || '未知错误'), 'error');
+                }
+            });
+        }
+
+        // 加载备份设置
+        function loadBackupSettings() {
+            const settings = JSON.parse(localStorage.getItem('backupSettings') || '{}');
+            $('#autoBackupInterval').val(settings.interval || 7);
+            $('#backupRetention').val(settings.retention || 10);
+            $('#autoBackupDownload').prop('checked', settings.autoDownload !== false);
+        }
+
+        // 保存备份设置
+        function saveBackupSettings() {
+            const settings = {
+                interval: parseInt($('#autoBackupInterval').val()),
+                retention: parseInt($('#backupRetention').val()),
+                autoDownload: $('#autoBackupDownload').is(':checked'),
+                lastCheck: new Date().toISOString()
+            };
+            localStorage.setItem('backupSettings', JSON.stringify(settings));
+        }
+
+        // 检查自动备份
+        function checkAutoBackup() {
+            const settings = JSON.parse(localStorage.getItem('backupSettings') || '{}');
+            if (!settings.interval || settings.interval === 0) return;
+
+            const lastBackup = localStorage.getItem('lastBackupTime');
+            if (!lastBackup) {
+                // 从未备份过，提示用户
+                setTimeout(() => {
+                    if (confirm('检测到您尚未备份过数据。是否现在创建备份？\n\n建议定期备份数据以防丢失。')) {
+                        showBackupModal();
+                    }
+                }, 5000);
+                return;
+            }
+
+            const lastBackupDate = new Date(lastBackup);
+            const now = new Date();
+            const daysSinceBackup = Math.floor((now - lastBackupDate) / (1000 * 60 * 60 * 24));
+
+            if (daysSinceBackup >= settings.interval) {
+                if (confirm(`距上次备份已过去 ${daysSinceBackup} 天，建议创建新的备份。\n\n是否现在创建备份？`)) {
+                    showBackupModal();
+                }
+            }
+        }
+
+        // 备份设置变更时保存
+        $(document).ready(function() {
+            $('#autoBackupInterval, #backupRetention, #autoBackupDownload').on('change', saveBackupSettings);
+
+            // 工作量记录导入文件选择
+            $('#recordsImportFile').on('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    $(this).next('.custom-file-label').text(file.name);
+                }
+            });
+            
+            // 页面关闭时自动关闭服务器（独立运行模式）
+            $.get('/api/system/shutdown', function(res) {
+                // 如果endpoint存在，说明是独立运行模式
+                console.log('[系统] 检测到独立运行模式，已启用自动关闭功能');
+                
+                window.addEventListener('beforeunload', function(e) {
+                    // 使用 sendBeacon 确保请求能发送出去（即使页面正在关闭）
+                    navigator.sendBeacon('/api/system/shutdown');
+                    console.log('[系统] 已发送关闭服务器请求');
+                });
+            }).fail(function() {
+                // endpoint不存在，说明是开发模式
+                console.log('[系统] 开发模式运行，未启用自动关闭功能');
+            });
+        });
+    </script>
+</body>
+</html>

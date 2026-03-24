@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#4F46E5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="工作量录入">
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+    <title>工作量录入</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --primary: #4F46E5;
+            --primary-dark: #4338CA;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --gray-100: #F3F4F6;
+            --gray-200: #E5E7EB;
+            --gray-500: #6B7280;
+            --gray-700: #374151;
+            --gray-900: #111827;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--gray-100);
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+
+        /* 顶部导航 */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 16px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(79, 70, 229, 0.3);
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .header .subtitle {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 4px;
+        }
+
+        /* 主容器 */
+        .container {
+            padding: 16px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        /* 卡片 */
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-title::before {
+            content: '';
+            width: 4px;
+            height: 16px;
+            background: var(--primary);
+            border-radius: 2px;
+        }
+
+        /* 表单元素 */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--gray-700);
+            margin-bottom: 8px;
+        }
+
+        .form-select, .form-input, .form-control {
+            width: 100%;
+            padding: 14px 16px;
+            font-size: 16px;
+            border: 2px solid var(--gray-200);
+            border-radius: 12px;
+            background: white;
+            transition: all 0.2s;
+            appearance: none;
+        }
+
+        .form-select:focus, .form-input:focus, .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+
+        .select-wrapper {
+            position: relative;
+        }
+
+        .select-wrapper::after {
+            content: '▼';
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 10px;
+            color: var(--gray-500);
+            pointer-events: none;
+        }
+
+        /* 数量输入 */
+        .quantity-input {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .qty-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            border: 2px solid var(--gray-200);
+            background: white;
+            font-size: 24px;
+            color: var(--gray-700);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .qty-btn:active {
+            background: var(--gray-100);
+            transform: scale(0.95);
+        }
+
+        .qty-display {
+            flex: 1;
+            text-align: center;
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+
+        /* 提交按钮 */
+        .btn-submit {
+            width: 100%;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-submit:active {
+            transform: scale(0.98);
+        }
+
+        .btn-submit:disabled {
+            background: var(--gray-200);
+            color: var(--gray-500);
+            box-shadow: none;
+        }
+
+        /* 统计区域样式 */
+        .stats-tabs {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .stats-tab {
+            padding: 6px 16px;
+            border: 1px solid var(--gray-300);
+            background: white;
+            border-radius: 20px;
+            font-size: 13px;
+            color: var(--gray-600);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .stats-tab.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .date-picker-row {
+            margin: 12px 0;
+        }
+
+        .date-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+        }
+
+        .stats-summary {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin: 16px 0;
+        }
+
+        .stats-summary.three-col {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .summary-item {
+            text-align: center;
+            padding: 16px 8px;
+            background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%);
+            border-radius: 12px;
+        }
+
+        .summary-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .summary-label {
+            font-size: 12px;
+            color: var(--gray-500);
+            margin-top: 4px;
+        }
+
+        .therapist-ranking {
+            margin-top: 16px;
+        }
+
+        .ranking-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .ranking-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .ranking-item:last-child {
+            border-bottom: none;
+        }
+
+        .ranking-position {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            margin-right: 12px;
+        }
+
+        .ranking-position.gold {
+            background: linear-gradient(135deg, #FEF3C7 0%, #FCD34D 100%);
+            color: #92400E;
+        }
+
+        .ranking-position.silver {
+            background: linear-gradient(135deg, #F3F4F6 0%, #D1D5DB 100%);
+            color: #4B5563;
+        }
+
+        .ranking-position.bronze {
+            background: linear-gradient(135deg, #FED7AA 0%, #FDBA74 100%);
+            color: #9A3412;
+        }
+
+        .ranking-position.normal {
+            background: var(--gray-100);
+            color: var(--gray-500);
+        }
+
+        .ranking-info {
+            flex: 1;
+        }
+
+        .ranking-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--gray-800);
+        }
+
+        .ranking-meta {
+            font-size: 12px;
+            color: var(--gray-500);
+            margin-top: 2px;
+        }
+
+        .ranking-value {
+            text-align: right;
+        }
+
+        .ranking-workload {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--success);
+        }
+
+        .ranking-sessions {
+            font-size: 11px;
+            color: var(--gray-500);
+        }
+
+        /* 旧统计样式保留 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 12px 8px;
+            background: var(--gray-100);
+            border-radius: 12px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--gray-500);
+            margin-top: 4px;
+        }
+
+        /* 最近记录 */
+        .record-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .record-item:last-child {
+            border-bottom: none;
+        }
+
+        .record-info {
+            flex: 1;
+        }
+
+        .record-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--gray-900);
+        }
+
+        .record-meta {
+            font-size: 12px;
+            color: var(--gray-500);
+            margin-top: 2px;
+        }
+
+        .record-qty {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--success);
+        }
+
+        /* 底部导航 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--gray-500);
+            text-decoration: none;
+            font-size: 12px;
+            transition: color 0.2s;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        .nav-icon {
+            font-size: 24px;
+        }
+
+        /* PWA 安装提示 */
+        .pwa-prompt {
+            position: fixed;
+            bottom: 80px;
+            left: 16px;
+            right: 16px;
+            background: var(--gray-900);
+            color: white;
+            padding: 16px;
+            border-radius: 16px;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            z-index: 200;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .pwa-prompt.show {
+            display: flex;
+        }
+
+        .pwa-prompt-text {
+            flex: 1;
+            font-size: 14px;
+        }
+
+        .pwa-prompt-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .pwa-prompt-btn.install {
+            background: var(--success);
+            color: white;
+        }
+
+        .pwa-prompt-btn.close {
+            background: transparent;
+            color: var(--gray-500);
+        }
+
+        /* Toast 提示 */
+        .toast {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--gray-900);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 24px;
+            font-size: 14px;
+            z-index: 300;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        /* 加载状态 */
+        .loading {
+            display: flex;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--gray-200);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* PC端提示 */
+        .pc-notice {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: var(--gray-500);
+        }
+
+        @media (min-width: 768px) {
+            .pc-notice {
+                display: block;
+            }
+            .mobile-content {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <div class="header">
+        <h1>工作量录入</h1>
+        <div class="subtitle" id="currentDate"></div>
+    </div>
+
+    <!-- PC端提示 -->
+    <div class="pc-notice">
+        <p>当前为手机端页面</p>
+        <p><a href="/">点击访问完整版</a></p>
+    </div>
+
+    <!-- 手机端内容 -->
+    <div class="mobile-content">
+        <div class="container">
+            <!-- 统计区域 -->
+            <div class="card" id="statsSection">
+                <div class="card-title">
+                    📊 工作量统计
+                    <div class="stats-tabs">
+                        <button class="stats-tab active" onclick="switchStatsMode('daily')">今日</button>
+                        <button class="stats-tab" onclick="switchStatsMode('monthly')">本月</button>
+                    </div>
+                </div>
+
+                <!-- 日期选择 -->
+                <div class="date-picker-row" id="datePickerRow">
+                    <input type="date" id="statsDate" class="date-input" onchange="loadStatsByDate()">
+                </div>
+
+                <!-- 汇总统计 -->
+                <div class="stats-summary">
+                    <div class="summary-item">
+                        <div class="summary-value" id="statSessions">0</div>
+                        <div class="summary-label">人次</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-value" id="statWorkload">0</div>
+                        <div class="summary-label">工作量</div>
+                    </div>
+                    <div class="summary-item" id="daysItem" style="display:none;">
+                        <div class="summary-value" id="statDays">0</div>
+                        <div class="summary-label">工作天数</div>
+                    </div>
+                </div>
+
+                <!-- 治疗师排行 -->
+                <div class="therapist-ranking">
+                    <div class="ranking-title">治疗师排行</div>
+                    <div id="therapistRanking">
+                        <div class="loading"><div class="spinner"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 录入表单 -->
+            <div class="card">
+                <div class="card-title">新建记录</div>
+
+                <div class="form-group">
+                    <label class="form-label">治疗师</label>
+                    <div class="select-wrapper">
+                        <select class="form-select" id="therapistSelect">
+                            <option value="">请选择治疗师</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">患者姓名 <span style="color:#9CA3AF;font-size:12px;">(可选)</span></label>
+                    <input type="text" class="form-control" id="patientInput" placeholder="输入患者ID或姓名">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">治疗类别</label>
+                    <div class="select-wrapper">
+                        <select class="form-select" id="categorySelect">
+                            <option value="">请选择类别</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">治疗项目</label>
+                    <div class="select-wrapper">
+                        <select class="form-select" id="itemSelect">
+                            <option value="">请先选择类别</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">数量</label>
+                    <div class="quantity-input">
+                        <button class="qty-btn" onclick="changeQty(-1)">−</button>
+                        <div class="qty-display" id="qtyDisplay">1</div>
+                        <button class="qty-btn" onclick="changeQty(1)">+</button>
+                    </div>
+                </div>
+
+                <!-- 录入日期（可配置显示） -->
+                <div class="form-group" id="recordDateGroup" style="display:none;">
+                    <label class="form-label">录入日期 <span style="color:#9CA3AF;font-size:12px;">(可选)</span></label>
+                    <input type="date" class="form-control" id="recordDateInput">
+                    <small class="text-muted" id="recordDateHint"></small>
+                </div>
+
+                <button class="btn-submit" id="submitBtn" onclick="submitRecord()">
+                    提交记录
+                </button>
+            </div>
+
+            <!-- 最近记录 -->
+            <div class="card">
+                <div class="card-title">最近记录</div>
+                <div id="recentRecords">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部导航 -->
+    <div class="bottom-nav">
+        <a href="javascript:void(0)" class="nav-item active" id="navEntry" onclick="scrollToEntry()">
+            <span class="nav-icon">📝</span>
+            <span>录入</span>
+        </a>
+        <a href="javascript:void(0)" class="nav-item" id="navStats" onclick="scrollToStats()">
+            <span class="nav-icon">📊</span>
+            <span>统计</span>
+        </a>
+    </div>
+
+    <!-- PWA 安装提示 -->
+    <div class="pwa-prompt" id="pwaPrompt">
+        <span style="font-size: 32px;">📱</span>
+        <div class="pwa-prompt-text">
+            添加到主屏幕，像App一样使用
+        </div>
+        <button class="pwa-prompt-btn install" id="installBtn">安装</button>
+        <button class="pwa-prompt-btn close" onclick="closePWAPrompt()">关闭</button>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // 全局变量
+        let currentQty = 1;
+        let therapists = [];
+        let categories = [];
+        let items = [];
+        let deferredPrompt = null;
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 显示当前日期
+            const now = new Date();
+            document.getElementById('currentDate').textContent =
+                now.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
+
+            // 设置统计日期选择器默认值
+            document.getElementById('statsDate').value = now.toISOString().split('T')[0];
+
+            // 加载数据
+            loadTherapists();
+            loadCategories();
+            loadTodayStats();
+            loadRecentRecords();
+            loadEntrySettings();  // 加载录入设置
+
+            // 注册 Service Worker
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/static/sw.js')
+                    .then(reg => console.log('SW registered'))
+                    .catch(err => console.log('SW failed', err));
+            }
+
+            // PWA 安装提示
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                document.getElementById('pwaPrompt').classList.add('show');
+            });
+
+            document.getElementById('installBtn').addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    deferredPrompt = null;
+                    document.getElementById('pwaPrompt').classList.remove('show');
+                }
+            });
+        });
+
+        // 加载治疗师
+        async function loadTherapists() {
+            try {
+                const res = await fetch('/api/therapists?active_only=true');
+                const data = await res.json();
+                if (data.success) {
+                    therapists = data.data.therapists;
+                    const select = document.getElementById('therapistSelect');
+                    select.innerHTML = '<option value="">请选择治疗师</option>';
+                    therapists.forEach(t => {
+                        select.innerHTML += `<option value="${t.id}">${t.name}</option>`;
+                    });
+                }
+            } catch (err) {
+                console.error('加载治疗师失败', err);
+            }
+        }
+
+        // 加载类别
+        async function loadCategories() {
+            try {
+                const res = await fetch('/api/categories?active_only=true');
+                const data = await res.json();
+                if (data.success) {
+                    categories = data.data.categories;
+                    const select = document.getElementById('categorySelect');
+                    select.innerHTML = '<option value="">请选择类别</option>';
+                    categories.forEach(c => {
+                        select.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+                    });
+
+                    // 绑定变化事件
+                    select.addEventListener('change', loadItems);
+                }
+            } catch (err) {
+                console.error('加载类别失败', err);
+            }
+        }
+
+        // 加载项目
+        async function loadItems() {
+            const categoryId = document.getElementById('categorySelect').value;
+            const select = document.getElementById('itemSelect');
+
+            if (!categoryId) {
+                select.innerHTML = '<option value="">请先选择类别</option>';
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/treatment-items?category_id=${categoryId}&active_only=true`);
+                const data = await res.json();
+                if (data.success) {
+                    items = data.data.items;
+                    select.innerHTML = '<option value="">请选择项目</option>';
+                    items.forEach(item => {
+                        select.innerHTML += `<option value="${item.id}">${item.name}</option>`;
+                    });
+                }
+            } catch (err) {
+                console.error('加载项目失败', err);
+            }
+        }
+
+        // 统计模式：daily 或 monthly
+        let statsMode = 'daily';
+
+        // 切换统计模式
+        function switchStatsMode(mode) {
+            statsMode = mode;
+            // 更新标签状态
+            document.querySelectorAll('.stats-tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // 显示/隐藏日期选择器和工作天数
+            document.getElementById('datePickerRow').style.display = mode === 'daily' ? 'block' : 'none';
+            document.getElementById('daysItem').style.display = mode === 'monthly' ? 'block' : 'none';
+
+            // 重新加载统计
+            if (mode === 'daily') {
+                loadDailyStats();
+            } else {
+                loadMonthlyStats();
+            }
+        }
+
+        // 按日期加载统计
+        function loadStatsByDate() {
+            const date = document.getElementById('statsDate').value;
+            if (date && statsMode === 'daily') {
+                loadDailyStats(date);
+            }
+        }
+
+        // 加载今日/指定日期统计
+        async function loadDailyStats(targetDate) {
+            try {
+                const date = targetDate || new Date().toISOString().split('T')[0];
+                if (!targetDate) {
+                    document.getElementById('statsDate').value = date;
+                }
+
+                const res = await fetch(`/api/statistics/daily?date=${date}`);
+                const data = await res.json();
+                if (data.success) {
+                    const stats = data.data;
+
+                    // 更新汇总
+                    document.getElementById('statSessions').textContent = stats.total_sessions || 0;
+                    document.getElementById('statWorkload').textContent = (stats.total_workload || 0).toFixed(1);
+
+                    // 渲染治疗师排行
+                    renderTherapistRanking(stats.therapist_statistics || []);
+                }
+            } catch (err) {
+                console.error('加载统计失败', err);
+            }
+        }
+
+        // 加载本月统计
+        async function loadMonthlyStats() {
+            try {
+                const month = new Date().toISOString().slice(0, 7); // YYYY-MM
+                const res = await fetch(`/api/statistics/monthly?month=${month}`);
+                const data = await res.json();
+                if (data.success) {
+                    const stats = data.data;
+
+                    // 更新汇总
+                    document.getElementById('statSessions').textContent = stats.total_sessions || 0;
+                    document.getElementById('statWorkload').textContent = (stats.total_workload || 0).toFixed(1);
+                    document.getElementById('statDays').textContent = stats.working_days || 0;
+
+                    // 渲染治疗师排行
+                    renderTherapistRanking(stats.therapist_statistics || []);
+                }
+            } catch (err) {
+                console.error('加载月度统计失败', err);
+            }
+        }
+
+        // 渲染治疗师排行
+        function renderTherapistRanking(therapistStats) {
+            const container = document.getElementById('therapistRanking');
+
+            if (!therapistStats || therapistStats.length === 0) {
+                container.innerHTML = '<p style="text-align:center;color:#9CA3AF;padding:20px;">暂无数据</p>';
+                return;
+            }
+
+            // 按工作量排序
+            const sorted = [...therapistStats].sort((a, b) => (b.workload || 0) - (a.workload || 0));
+
+            container.innerHTML = sorted.map((t, index) => {
+                let positionClass = 'normal';
+                if (index === 0) positionClass = 'gold';
+                else if (index === 1) positionClass = 'silver';
+                else if (index === 2) positionClass = 'bronze';
+
+                return `
+                    <div class="ranking-item">
+                        <div class="ranking-position ${positionClass}">${index + 1}</div>
+                        <div class="ranking-info">
+                            <div class="ranking-name">${t.therapist_name || '未知'}</div>
+                            <div class="ranking-meta">${t.sessions || 0} 人次${t.days ? ` · ${t.days} 天` : ''}</div>
+                        </div>
+                        <div class="ranking-value">
+                            <div class="ranking-workload">${(t.workload || 0).toFixed(1)}</div>
+                            <div class="ranking-sessions">工作量</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 加载今日统计（兼容旧调用）
+        async function loadTodayStats() {
+            await loadDailyStats();
+        }
+
+        // 加载最近记录
+        async function loadRecentRecords() {
+            try {
+                const res = await fetch('/api/records?limit=10');
+                const data = await res.json();
+                if (data.success) {
+                    renderRecords(data.data.records);
+                }
+            } catch (err) {
+                console.error('加载记录失败', err);
+            }
+        }
+
+        // 加载录入设置
+        let entrySettings = {
+            allow_past_date: false,
+            past_date_max_days: 7
+        };
+
+        async function loadEntrySettings() {
+            try {
+                const res = await fetch('/api/settings');
+                const data = await res.json();
+                if (data.success && data.data.settings) {
+                    data.data.settings.forEach(s => {
+                        if (s.key === 'allow_past_date') {
+                            entrySettings.allow_past_date = s.value;
+                        } else if (s.key === 'past_date_max_days') {
+                            entrySettings.past_date_max_days = s.value;
+                        }
+                    });
+
+                    // 根据设置显示/隐藏日期选择器
+                    const dateGroup = document.getElementById('recordDateGroup');
+                    const dateInput = document.getElementById('recordDateInput');
+                    const dateHint = document.getElementById('recordDateHint');
+
+                    if (entrySettings.allow_past_date) {
+                        dateGroup.style.display = 'block';
+
+                        // 设置日期范围：最多允许过去N天
+                        const today = new Date();
+                        const maxPastDate = new Date(today);
+                        maxPastDate.setDate(maxPastDate.getDate() - entrySettings.past_date_max_days);
+
+                        dateInput.max = today.toISOString().split('T')[0];
+                        dateInput.min = maxPastDate.toISOString().split('T')[0];
+                        dateInput.value = today.toISOString().split('T')[0];
+
+                        dateHint.textContent = `可选过去${entrySettings.past_date_max_days}天内的日期`;
+                    } else {
+                        dateGroup.style.display = 'none';
+                    }
+                }
+            } catch (err) {
+                console.error('加载设置失败', err);
+            }
+        }
+
+        // 渲染记录
+        function renderRecords(records) {
+            const container = document.getElementById('recentRecords');
+
+            if (!records || records.length === 0) {
+                container.innerHTML = '<p style="text-align:center;color:#6B7280;padding:20px;">暂无记录</p>';
+                return;
+            }
+
+            container.innerHTML = records.map(r => `
+                <div class="record-item">
+                    <div class="record-info">
+                        <div class="record-title">${r.therapist_name || ''} - ${r.treatment_item_name || r.item_name || ''}</div>
+                        <div class="record-meta">${r.patient_info ? '患者: ' + r.patient_info + ' | ' : ''}${r.category_name || ''} | ${r.created_at || ''}</div>
+                    </div>
+                    <div class="record-qty">×${r.session_count || 1}</div>
+                </div>
+            `).join('');
+        }
+
+        // 修改数量
+        function changeQty(delta) {
+            currentQty = Math.max(1, currentQty + delta);
+            document.getElementById('qtyDisplay').textContent = currentQty;
+        }
+
+        // 滚动到统计区域
+        function scrollToStats() {
+            const statsSection = document.getElementById('statsSection');
+            if (statsSection) {
+                statsSection.scrollIntoView({ behavior: 'smooth' });
+                // 更新导航激活状态
+                document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+                document.getElementById('navStats').classList.add('active');
+            }
+        }
+
+        // 滚动到录入区域
+        function scrollToEntry() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            // 更新导航激活状态
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            document.getElementById('navEntry').classList.add('active');
+        }
+
+        // 提交记录
+        async function submitRecord() {
+            const therapistId = document.getElementById('therapistSelect').value;
+            const itemId = document.getElementById('itemSelect').value;
+
+            if (!therapistId) {
+                showToast('请选择治疗师');
+                return;
+            }
+            if (!itemId) {
+                showToast('请选择治疗项目');
+                return;
+            }
+
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.textContent = '提交中...';
+
+            try {
+                const res = await fetch('/api/records', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        therapist_id: parseInt(therapistId),
+                        treatment_item_id: parseInt(itemId),
+                        session_count: currentQty,
+                        patient_info: document.getElementById('patientInput').value.trim() || null,
+                        record_date: document.getElementById('recordDateInput').value || new Date().toISOString().split('T')[0]
+                    })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    showToast('提交成功！');
+                    // 重置表单
+                    currentQty = 1;
+                    document.getElementById('qtyDisplay').textContent = '1';
+                    document.getElementById('itemSelect').value = '';
+                    document.getElementById('patientInput').value = '';
+                    // 刷新数据
+                    loadTodayStats();
+                    loadRecentRecords();
+                } else {
+                    showToast(data.error || '提交失败');
+                }
+            } catch (err) {
+                showToast('网络错误，请重试');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '提交记录';
+            }
+        }
+
+        // 显示提示
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // 关闭 PWA 提示
+        function closePWAPrompt() {
+            document.getElementById('pwaPrompt').classList.remove('show');
+        }
+    </script>
+</body>
+</html>
