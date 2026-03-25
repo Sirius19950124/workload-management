@@ -1,0 +1,28 @@
+{
+  "version": "2.0",
+  "$schema": "https://framework-1258016615.tcloudbaseapp.com/schema/latest.json",
+  "functionRoot": "./functions",
+  "functions": [],
+  "framework": {
+    "name": "workload-management",
+    "plugins": {}
+  },
+  "services": [
+    {
+      "name": "workload-management",
+      "type": "container",
+      "containerPort": 80,
+      "cpu": 0.5,
+      "mem": 512,
+      "minNum": 0,
+      "maxNum": 5,
+      "policyType": "cpu",
+      "policyThreshold": 60,
+      "dockerfile": "./Dockerfile",
+      "envVariables": {
+        "FLASK_ENV": "production",
+        "PYTHONUNBUFFERED": "1"
+      }
+    }
+  ]
+}

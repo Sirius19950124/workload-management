@@ -1921,7 +1921,9 @@
 
         // 页面初始化
         $(document).ready(function() {
-            const today = new Date().toISOString().split('T')[0];
+            // 使用本地时间而非UTC，避免时区问题
+            const now = new Date();
+            const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
             $('#currentDate').text(formatDate(today));
             $('#monthPicker').val(today.substring(0, 7));
             $('#filterStartDate').val(today);
@@ -2883,7 +2885,7 @@
                     break;
             }
 
-            const formatDate = (d) => d.toISOString().split('T')[0];
+            const formatDate = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
             $('#filterStartDate').val(formatDate(startDate));
             $('#filterEndDate').val(formatDate(endDate));
         }
