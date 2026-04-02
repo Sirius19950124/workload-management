@@ -985,6 +985,11 @@
                         <i class="fas fa-star mr-1"></i>评价管理
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="tab" href="#tabPatientQuery">
+                        <i class="fas fa-user-tag mr-1"></i>项目查患者
+                    </a>
+                </li>
             </ul>
 
             <div class="tab-content">
@@ -1157,6 +1162,44 @@
                                     </tbody>
                                 </table>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 按项目查患者 -->
+                <div class="tab-pane fade" id="tabPatientQuery">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="mb-3"><i class="fas fa-user-tag mr-2"></i>按治疗项目查询患者</h6>
+                            <div class="row mb-3">
+                                <div class="col-md-3">
+                                    <label class="small text-muted mb-1">治疗项目</label>
+                                    <select class="form-control" id="queryTreatmentItem">
+                                        <option value="">请选择项目</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small text-muted mb-1">最少治疗次数</label>
+                                    <input type="number" class="form-control" id="queryMinSessions" value="1" min="1">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="small text-muted mb-1">患者姓名（可选）</label>
+                                    <input type="text" class="form-control" id="queryPatientName" placeholder="输入姓名模糊搜索">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small text-muted mb-1">&nbsp;</label>
+                                    <button class="btn btn-primary btn-block" onclick="searchPatientsByItem()">
+                                        <i class="fas fa-search mr-1"></i>查询
+                                    </button>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="small text-muted mb-1">&nbsp;</label>
+                                    <button class="btn btn-outline-success btn-block" onclick="exportPatientQueryXLSX()">
+                                        <i class="fas fa-file-export mr-1"></i>导出Excel
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="patientQueryResult" class="text-muted">选择治疗项目后点击查询</div>
                         </div>
                     </div>
                 </div>
@@ -2344,6 +2387,7 @@
             loadCategories();
             loadDashboard();
             loadRecentUsed();
+            loadTreatmentItemsForQuery();
             initAchievements();  // 初始化成就系统
             checkStandaloneMode(); // 检查是否为独立运行模式
             // 🔧 修复：页面加载时立即加载设置
@@ -3344,6 +3388,132 @@
             const formatDate = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
             $('#filterStartDate').val(formatDate(startDate));
             $('#filterEndDate').val(formatDate(endDate));
+        }
+
+        // ==================== 按项目查患者 ====================
+
+        let patientQueryData = null; // 缓存查询结果用于导出
+
+        function loadTreatmentItemsForQuery() {
+            // 加载所有治疗项目到下拉框
+            $.get('/api/treatment-items', function(res) {
+                if (res.success && res.data) {
+                    let html = '<option value="">请选择项目</option>';
+                    res.data.items.forEach(item => {
+                        html += `<option value="${item.id}">${item.category_name ? item.category_name + ' - ' : ''}${item.name}</option>`;
+                    });
+                    $('#queryTreatmentItem').html(html);
+                }
+            });
+        }
+
+        function searchPatientsByItem() {
+            const treatmentItemId = $('#queryTreatmentItem').val();
+            const minSessions = $('#queryMinSessions').val() || 1;
+            const search = $('#queryPatientName').val() || '';
+
+            if (!treatmentItemId) {
+                showToast('请先选择治疗项目', 'warning');
+                return;
+            }
+
+            const params = {
+                treatment_item_id: treatmentItemId,
+                min_sessions: minSessions
+            };
+            if (search) params.search = search;
+
+            $.get('/api/patients/by-treatment-item', params, function(res) {
+                if (res.success) {
+                    patientQueryData = res.data;
+                    renderPatientQueryResult(res.data);
+                } else {
+                    showToast(res.message || '查询失败', 'danger');
+                }
+            }).fail(function() {
+                showToast('请求失败', 'danger');
+            });
+        }
+
+        function renderPatientQueryResult(data) {
+            if (!data.patients || data.patients.length === 0) {
+                $('#patientQueryResult').html(`<div class="text-center text-muted py-3">没有找到符合条件的患者（${data.treatment_item_name}，最少${data.min_sessions}次）</div>`);
+                return;
+            }
+
+            let html = `
+                <div class="alert alert-info py-2">
+                    <strong>${data.treatment_item_name}</strong> — 共找到 <strong>${data.total}</strong> 位患者（治疗次数 ≥ ${data.min_sessions}）
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>#</th>
+                                <th>患者姓名</th>
+                                <th>治疗次数</th>
+                                <th>记录条数</th>
+                                <th>首次治疗</th>
+                                <th>最近治疗</th>
+                                <th>距今天数</th>
+                                <th>治疗师</th>
+                                <th>状态</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
+            data.patients.forEach((p, i) => {
+                const statusBadge = p.status === 'active' ? '<span class="badge badge-success">在治</span>' :
+                                    p.status === 'completed' ? '<span class="badge badge-secondary">已结束</span>' :
+                                    p.status === 'paused' ? '<span class="badge badge-warning">暂停</span>' :
+                                    '<span class="text-muted">-</span>';
+                const daysBadge = p.days_since_last_treatment != null ?
+                    (p.days_since_last_treatment > 14 ? `<span class="text-danger font-weight-bold">${p.days_since_last_treatment}天</span>` :
+                     p.days_since_last_treatment > 7 ? `<span class="text-warning">${p.days_since_last_treatment}天</span>` :
+                     `${p.days_since_last_treatment}天`) :
+                    '-';
+
+                html += `
+                    <tr>
+                        <td>${i + 1}</td>
+                        <td><strong>${p.patient_name}</strong></td>
+                        <td><span class="badge badge-primary badge-pill">${p.total_sessions}次</span></td>
+                        <td>${p.record_count}</td>
+                        <td>${p.first_treatment_date || '-'}</td>
+                        <td>${p.last_treatment_date || '-'}</td>
+                        <td>${daysBadge}</td>
+                        <td><small>${(p.therapists || []).join('、')}</small></td>
+                        <td>${statusBadge}</td>
+                    </tr>`;
+            });
+
+            html += '</tbody></table></div>';
+            $('#patientQueryResult').html(html);
+        }
+
+        function exportPatientQueryXLSX() {
+            if (!patientQueryData || !patientQueryData.patients || patientQueryData.patients.length === 0) {
+                showToast('请先查询出数据再导出', 'warning');
+                return;
+            }
+
+            const rows = patientQueryData.patients.map((p, i) => ({
+                '序号': i + 1,
+                '患者姓名': p.patient_name,
+                '治疗次数': p.total_sessions,
+                '记录条数': p.record_count,
+                '首次治疗日期': p.first_treatment_date || '',
+                '最近治疗日期': p.last_treatment_date || '',
+                '距今天数': p.days_since_last_treatment || '',
+                '治疗师': (p.therapists || []).join('、'),
+                '状态': p.status_display || ''
+            }));
+
+            const ws = XLSX.utils.json_to_sheet(rows);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, `按项目查患者-${patientQueryData.treatment_item_name}`);
+            XLSX.writeFile(wb, `患者查询_${patientQueryData.treatment_item_name}_${patientQueryData.min_sessions}次起.xlsx`);
+            showToast('导出成功', 'success');
         }
 
         // 加载记录列表
