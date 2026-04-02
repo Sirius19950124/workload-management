@@ -139,10 +139,18 @@ def check_and_award_achievements(therapist_id):
 def get_all_achievements():
     """获取所有成就列表"""
     achievements = Achievement.query.filter_by(is_active=True).order_by(Achievement.sort_order, Achievement.id).all()
+
+    # 批量查询每个成就的解锁人数
+    achievement_list = []
+    for a in achievements:
+        ach_dict = a.to_dict()
+        ach_dict['unlocked_count'] = TherapistAchievement.query.filter_by(achievement_id=a.id).count()
+        achievement_list.append(ach_dict)
+
     return jsonify({
         'success': True,
         'data': {
-            'achievements': [a.to_dict() for a in achievements],
+            'achievements': achievement_list,
             'total': len(achievements)
         }
     })

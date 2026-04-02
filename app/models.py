@@ -559,6 +559,137 @@ class Patient(db.Model):
         return f'<Patient {self.name} (主管: {self.primary_therapist.name if self.primary_therapist else "无"})>'
 
 
+# ===================== 评价系统（小程序用） =====================
+
+class Rating(db.Model):
+    """治疗评价表"""
+    __tablename__ = 'ratings'
+
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('patients.id'), nullable=False, comment='患者ID')
+    record_id = db.Column(db.Integer, db.ForeignKey('workload_records.id'), nullable=True, comment='治疗记录ID（可选）')
+    therapist_id = db.Column(db.Integer, db.ForeignKey('workload_therapists.id'), nullable=True, comment='治疗师ID')
+    treatment_item_id = db.Column(db.Integer, db.ForeignKey('workload_treatment_items.id'), nullable=True, comment='治疗项目ID')
+
+    star_rating = db.Column(db.Integer, nullable=False, comment='星级评分(1-5)')
+    comment = db.Column(db.Text, comment='评价内容')
+    tags = db.Column(db.String(200), comment='评价标签(逗号分隔)')
+
+    # 微信相关
+    openid = db.Column(db.String(64), comment='微信openid')
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # 关联
+    patient = db.relationship('Patient', backref='ratings')
+    record = db.relationship('WorkloadRecord', backref='ratings')
+    therapist = db.relationship('WorkloadTherapist', backref='ratings')
+
+    __table_args__ = (
+        db.Index('idx_ratings_patient', 'patient_id'),
+        db.Index('idx_ratings_therapist', 'therapist_id'),
+        db.Index('idx_ratings_record', 'record_id'),
+    )
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'patient_id': self.patient_id,
+            'patient_name': self.patient.name if self.patient else None,
+            'record_id': self.record_id,
+            'therapist_id': self.therapist_id,
+            'therapist_name': self.therapist.name if self.therapist else None,
+            'treatment_item_id': self.treatment_item_id,
+            'treatment_item_name': self.record.treatment_item_rel.name if self.record and self.record.treatment_item_rel else None,
+            'star_rating': self.star_rating,
+            'comment': self.comment,
+            'tags': self.tags.split(',') if self.tags else [],
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+    def __repr__(self):
+        return f'<Rating id={self.id} patient={self.patient_id} stars={self.star_rating}>'
+
+
+# ===================== 评价问卷配置 =====================
+
+class RatingQuestion(db.Model):
+    """评价问卷题目配置表"""
+    __tablename__ = 'rating_questions'
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False, comment='问题标题')
+    question_type = db.Column(db.String(20), nullable=False, default='star', comment='类型: star/radio/text')
+    options = db.Column(db.Text, comment='选项(JSON数组, 用于radio类型)')
+    is_required = db.Column(db.Boolean, default=True, comment='是否必填')
+    sort_order = db.Column(db.Integer, default=0, comment='排序顺序')
+    is_active = db.Column(db.Boolean, default=True, comment='是否启用')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def to_dict(self):
+        options_list = []
+        if self.options:
+            import json
+            try:
+                options_list = json.loads(self.options)
+            except:
+                options_list = []
+        return {
+            'id': self.id,
+            'title': self.title,
+            'question_type': self.question_type,
+            'options': options_list,
+            'is_required': self.is_required,
+            'sort_order': self.sort_order,
+            'is_active': self.is_active
+        }
+
+    def __repr__(self):
+        return f'<RatingQuestion id={self.id} title={self.title} type={self.question_type}>'
+
+
+class RatingAnswer(db.Model):
+    """评价答案表（支持多维度问卷）"""
+    __tablename__ = 'rating_answers'
+
+    id = db.Column(db.Integer, primary_key=True)
+    rating_id = db.Column(db.Integer, db.ForeignKey('ratings.id'), nullable=False, comment='评价ID')
+    question_id = db.Column(db.Integer, db.ForeignKey('rating_questions.id'), nullable=False, comment='问题ID')
+    answer_value = db.Column(db.String(500), comment='答案值(星级存数字, 单选存选项文本, 文本存内容)')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # 关联
+    rating = db.relationship('Rating', backref='answers')
+    question = db.relationship('RatingQuestion')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'question_id': self.question_id,
+            'question_title': self.question.title if self.question else None,
+            'question_type': self.question.question_type if self.question else None,
+            'answer_value': self.answer_value
+        }
+
+    def __repr__(self):
+        return f'<RatingAnswer rating={self.rating_id} question={self.question_id}>'
+
+
+# 默认评价问卷题目
+import json as _json
+DEFAULT_RATING_QUESTIONS = [
+    {'title': '服务态度', 'question_type': 'star', 'is_required': True, 'sort_order': 1},
+    {'title': '治疗效果', 'question_type': 'star', 'is_required': True, 'sort_order': 2},
+    {'title': '整体满意度', 'question_type': 'star', 'is_required': True, 'sort_order': 3},
+    {'title': '是否愿意该治疗师继续为您治疗？', 'question_type': 'radio',
+     'options': _json.dumps(['愿意', '暂不考虑'], ensure_ascii=False), 'is_required': True, 'sort_order': 4},
+    {'title': '其他建议', 'question_type': 'text', 'is_required': False, 'sort_order': 5},
+]
+
+
 # 默认设置常量
 DEFAULT_SETTINGS = {
     'allow_past_date': {

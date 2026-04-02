@@ -264,6 +264,90 @@ def auto_migrate():
         else:
             print(f"[AutoMigrate] Found {existing_count} existing achievements")
 
+        # 检查评价表是否存在
+        result = db.session.execute(text(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='ratings'"
+        ))
+        ratings_exists = result.fetchone() is not None
+
+        if not ratings_exists:
+            print("[AutoMigrate] Creating ratings table...")
+            db.session.execute(text("""
+                CREATE TABLE IF NOT EXISTS ratings (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    patient_id INTEGER NOT NULL,
+                    record_id INTEGER,
+                    therapist_id INTEGER,
+                    treatment_item_id INTEGER,
+                    star_rating INTEGER NOT NULL,
+                    comment TEXT,
+                    tags VARCHAR(200),
+                    openid VARCHAR(64),
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (patient_id) REFERENCES patients(id),
+                    FOREIGN KEY (record_id) REFERENCES workload_records(id),
+                    FOREIGN KEY (therapist_id) REFERENCES workload_therapists(id),
+                    FOREIGN KEY (treatment_item_id) REFERENCES workload_treatment_items(id)
+                )
+            """))
+            db.session.execute(text("CREATE INDEX idx_ratings_patient ON ratings(patient_id)"))
+            db.session.execute(text("CREATE INDEX idx_ratings_therapist ON ratings(therapist_id)"))
+            db.session.execute(text("CREATE INDEX idx_ratings_record ON ratings(record_id)"))
+            db.session.commit()
+            print("[AutoMigrate] Ratings table created successfully")
+        else:
+            print("[AutoMigrate] Ratings table already exists")
+
+        # 检查评价问卷题目表是否存在
+        result = db.session.execute(text(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='rating_questions'"
+        ))
+        questions_exists = result.fetchone() is not None
+
+        if not questions_exists:
+            print("[AutoMigrate] Creating rating_questions and rating_answers tables...")
+            db.session.execute(text("""
+                CREATE TABLE IF NOT EXISTS rating_questions (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    title VARCHAR(100) NOT NULL,
+                    question_type VARCHAR(20) NOT NULL DEFAULT 'star',
+                    options TEXT,
+                    is_required BOOLEAN DEFAULT 1,
+                    sort_order INTEGER DEFAULT 0,
+                    is_active BOOLEAN DEFAULT 1,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            """))
+            db.session.execute(text("""
+                CREATE TABLE IF NOT EXISTS rating_answers (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    rating_id INTEGER NOT NULL REFERENCES ratings(id),
+                    question_id INTEGER NOT NULL REFERENCES rating_questions(id),
+                    answer_value VARCHAR(500),
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            """))
+            db.session.execute(text("CREATE INDEX idx_rating_answers_rating ON rating_answers(rating_id)"))
+            db.session.commit()
+            print("[AutoMigrate] Rating question/answer tables created successfully")
+        else:
+            print("[AutoMigrate] Rating question/answer tables already exist")
+
+        # 初始化默认评价问卷题目
+        from app.models import RatingQuestion, DEFAULT_RATING_QUESTIONS
+        existing_questions = RatingQuestion.query.count()
+        if existing_questions == 0:
+            print(f"[AutoMigrate] Initializing {len(DEFAULT_RATING_QUESTIONS)} default rating questions...")
+            for q_data in DEFAULT_RATING_QUESTIONS:
+                question = RatingQuestion(**q_data)
+                db.session.add(question)
+            db.session.commit()
+            print(f"[AutoMigrate] Created {len(DEFAULT_RATING_QUESTIONS)} default rating questions")
+        else:
+            print(f"[AutoMigrate] Found {existing_questions} existing rating questions")
+
         # 检查并添加 allow_delete 设置
         from app.models import WorkloadSettings
         allow_delete_exists = WorkloadSettings.query.filter_by(setting_key='allow_delete').first()
@@ -330,11 +414,13 @@ def create_app():
     from .api.workload_excel_bp import workload_excel_bp
     from .api.achievement_bp import achievement_bp
     from .api.patient_bp import patient_bp
+    from .api.rating_bp import rating_bp
 
     app.register_blueprint(workload_bp)
     app.register_blueprint(workload_excel_bp)
     app.register_blueprint(achievement_bp)
     app.register_blueprint(patient_bp)
+    app.register_blueprint(rating_bp)
 
     # PC端首页路由
     @app.route('/')

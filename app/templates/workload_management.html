@@ -95,6 +95,42 @@
         .badge-secondary { color: #fff; background-color: #6c757d; }
         .badge-primary { color: #fff; background-color: #007bff; }
         .badge-info { color: #fff; background-color: #17a2b8; }
+        .progress { height: 1rem; border-radius: 0.25rem; background-color: #e9ecef; }
+        .progress-bar { height: 100%; border-radius: 0.25rem; }
+        .bg-warning { background-color: #ffc107 !important; }
+        .bg-info { background-color: #17a2b8 !important; }
+        .bg-success { background-color: #28a745 !important; }
+        .bg-danger { background-color: #dc3545 !important; }
+        .bg-orange { background-color: #fd7e14 !important; }
+        .bg-light { background-color: #f8f9fa !important; }
+        .thead-light th { background-color: #f8f9fa; color: #495057; }
+        .card { border: 1px solid rgba(0,0,0,.125); border-radius: 0.25rem; }
+        .card-body { padding: 1.25rem; }
+        .card-header { padding: 0.75rem 1.25rem; background-color: rgba(0,0,0,.03); border-bottom: 1px solid rgba(0,0,0,.125); }
+        .collapse:not(.show) { display: none; }
+        .custom-file { position: relative; display: inline-block; width: 100%; height: calc(2.25rem + 2px); margin-bottom: 0; }
+        .custom-file-input { position: relative; z-index: 2; width: 100%; height: calc(2.25rem + 2px); margin: 0; opacity: 0; }
+        .custom-file-label { position: absolute; top: 0; right: 0; left: 0; z-index: 1; height: calc(2.25rem + 2px); padding: 0.375rem 0.75rem; line-height: 1.5; color: #495057; background-color: #fff; border: 1px solid #ced4da; border-radius: 0.25rem; }
+        .alert { padding: 0.75rem 1.25rem; margin-bottom: 1rem; border: 1px solid transparent; border-radius: 0.25rem; }
+        .alert-info { color: #0c5460; background-color: #d1ecf1; border-color: #bee5eb; }
+        .nav-pills .nav-link { border-radius: 0.25rem; }
+        .nav-pills .nav-link.active { background-color: #007bff; color: #fff; }
+        .nav { display: flex; flex-wrap: wrap; padding-left: 0; margin-bottom: 0; list-style: none; }
+        .nav-link { display: block; padding: 0.5rem 1rem; }
+        .tab-content > .tab-pane { display: none; }
+        .tab-content > .active { display: block; }
+        .modal { position: fixed; top: 0; left: 0; z-index: 1050; display: none; width: 100%; height: 100%; overflow: hidden; outline: 0; }
+        .modal.show { display: block; }
+        .modal-dialog { position: relative; width: auto; margin: 1.75rem auto; max-width: 500px; pointer-events: none; }
+        .modal.fade .modal-dialog { transition: transform 0.3s ease-out; transform: translateY(-50px); }
+        .modal.show .modal-dialog { transform: none; }
+        .modal-content { position: relative; display: flex; flex-direction: column; width: 100%; pointer-events: auto; background-color: #fff; border-radius: 0.3rem; outline: 0; }
+        .modal-header { display: flex; align-items: flex-start; justify-content: space-between; padding: 1rem 1.25rem; border-bottom: 1px solid #dee2e6; border-top-left-radius: 0.3rem; border-top-right-radius: 0.3rem; }
+        .modal-title { line-height: 1.5; }
+        .modal-footer { display: flex; align-items: center; justify-content: flex-end; padding: 0.75rem 1.25rem; border-top: 1px solid #dee2e6; }
+        .modal-lg { max-width: 800px; }
+        .form-group { margin-bottom: 1rem; }
+        .close { float: right; font-size: 1.5rem; font-weight: 700; line-height: 1; color: #000; text-shadow: 0 1px 0 #fff; opacity: 0.5; padding: 0; background: 0 0; border: 0; cursor: pointer; }
     </style>
     <style>
         :root {
@@ -662,6 +698,90 @@
         .recent-section .badge:hover {
             opacity: 0.8;
         }
+
+        /* 评价管理图表样式 */
+        .rating-chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            margin-bottom: 20px;
+        }
+        /* 问卷配置拖拽样式 */
+        .question-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            background: #f9fafb;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            border: 1px solid #e5e7eb;
+            transition: all 0.2s;
+            cursor: grab;
+        }
+        .question-item:hover {
+            background: #f0f9ff;
+            border-color: #bfdbfe;
+        }
+        .question-item.disabled {
+            opacity: 0.5;
+            background: #f3f4f6;
+        }
+        .question-item .drag-handle {
+            cursor: grab;
+            color: #9ca3af;
+            margin-right: 12px;
+            font-size: 1.1rem;
+        }
+        .question-type-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .question-type-badge.star { background: #fef3c7; color: #92400e; }
+        .question-type-badge.radio { background: #dbeafe; color: #1e40af; }
+        .question-type-badge.text { background: #dcfce7; color: #166534; }
+        .question-actions .btn {
+            padding: 2px 8px;
+            font-size: 0.75rem;
+        }
+        /* 评价子标签页 */
+        .rating-sub-tabs .nav-link {
+            padding: 8px 16px;
+            font-size: 0.85rem;
+        }
+        .rating-sub-tabs .nav-link.active {
+            font-weight: 600;
+        }
+        /* 维度评分雷达图容器 */
+        .dimension-chart-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .dimension-stat-card {
+            flex: 1;
+            min-width: 150px;
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid #bae6fd;
+        }
+        .dimension-stat-card .dim-score {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #0369a1;
+        }
+        .dimension-stat-card .dim-label {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: 4px;
+        }
     </style>
 </head>
 <body>
@@ -834,6 +954,11 @@
                 <li class="nav-item">
                     <a class="nav-link" href="#tabSettings" id="settingsTabLink">
                         <i class="fas fa-cog mr-1"></i>设置
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="tab" href="#tabRatings">
+                        <i class="fas fa-star mr-1"></i>评价管理
                     </a>
                 </li>
             </ul>
@@ -1310,6 +1435,222 @@
                         </div>
                     </div>
                 </div>
+                <!-- 评价管理面板 -->
+                <div class="tab-pane fade" id="tabRatings">
+                    <!-- 评价子标签页 -->
+                    <ul class="nav nav-tabs mb-3 rating-sub-tabs" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" data-toggle="tab" href="#ratingTabStats">
+                                <i class="fas fa-chart-pie mr-1"></i>评价统计
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-toggle="tab" href="#ratingTabList">
+                                <i class="fas fa-list mr-1"></i>评价列表
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-toggle="tab" href="#ratingTabQuestions">
+                                <i class="fas fa-edit mr-1"></i>问卷配置
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <!-- ========= 评价统计 ========= -->
+                        <div class="tab-pane fade show active" id="ratingTabStats">
+                            <!-- 统计卡片 -->
+                            <div class="row mb-3" id="ratingStats">
+                                <div class="col-md-3">
+                                    <div class="stat-card" style="background: linear-gradient(135deg, #fef3c7, #fde68a);">
+                                        <div class="d-flex align-items-center">
+                                            <div class="stat-icon mr-3" style="background: #f59e0b; color: white;"><i class="fas fa-comments"></i></div>
+                                            <div>
+                                                <div class="stat-value" id="ratingTotalCount">0</div>
+                                                <div class="stat-label">总评价数</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="stat-card" style="background: linear-gradient(135deg, #dcfce7, #bbf7d0);">
+                                        <div class="d-flex align-items-center">
+                                            <div class="stat-icon mr-3" style="background: #22c55e; color: white;"><i class="fas fa-star"></i></div>
+                                            <div>
+                                                <div class="stat-value" id="ratingAvgScore">0.0</div>
+                                                <div class="stat-label">平均评分</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="stat-card" style="background: linear-gradient(135deg, #fce7f3, #fbcfe8);">
+                                        <div class="d-flex align-items-center">
+                                            <div class="stat-icon mr-3" style="background: #ec4899; color: white;"><i class="fas fa-smile"></i></div>
+                                            <div>
+                                                <div class="stat-value" id="ratingFiveStarCount">0</div>
+                                                <div class="stat-label">5星好评</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="stat-card" style="background: linear-gradient(135deg, #fee2e2, #fecaca);">
+                                        <div class="d-flex align-items-center">
+                                            <div class="stat-icon mr-3" style="background: #ef4444; color: white;"><i class="fas fa-exclamation-circle"></i></div>
+                                            <div>
+                                                <div class="stat-value" id="ratingLowStarCount">0</div>
+                                                <div class="stat-label">低分评价(≤2星)</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 多维度评分卡片 -->
+                            <div class="dimension-chart-row mb-3" id="dimensionStats" style="display:none;"></div>
+
+                            <!-- 图表行 -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="rating-chart-container">
+                                        <h6><i class="fas fa-chart-bar text-info mr-2"></i>评分分布</h6>
+                                        <div id="ratingDistChart" style="padding:10px 0;"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="rating-chart-container">
+                                        <h6><i class="fas fa-chart-line text-success mr-2"></i>月度趋势</h6>
+                                        <div id="ratingTrendChart" style="padding:10px 0;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="rating-chart-container">
+                                        <h6><i class="fas fa-chart-pie text-warning mr-2"></i>评分占比</h6>
+                                        <div id="ratingPieChart" style="padding:10px 0;"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="rating-chart-container">
+                                        <h6><i class="fas fa-user-md text-primary mr-2"></i>治疗师评分排行</h6>
+                                        <div id="ratingTherapistChart" style="padding:10px 0;"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 最近评价 -->
+                            <div class="rating-chart-container">
+                                <h6><i class="fas fa-comment-dots text-success mr-2"></i>最近评价</h6>
+                                <div id="recentRatingComments" style="max-height: 200px; overflow-y: auto;">
+                                    <span class="text-muted">暂无评价</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ========= 评价列表 ========= -->
+                        <div class="tab-pane fade" id="ratingTabList">
+                            <div class="card">
+                                <div class="card-body">
+                                    <!-- 筛选栏 -->
+                                    <div class="row mb-3">
+                                        <div class="col-md-2">
+                                            <label class="small text-muted mb-1">治疗师</label>
+                                            <select class="form-control" id="ratingFilterTherapist">
+                                                <option value="">所有治疗师</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="small text-muted mb-1">评分</label>
+                                            <select class="form-control" id="ratingFilterStars">
+                                                <option value="">所有评分</option>
+                                                <option value="5">⭐⭐⭐⭐⭐ 5星</option>
+                                                <option value="4">⭐⭐⭐⭐ 4星</option>
+                                                <option value="3">⭐⭐⭐ 3星</option>
+                                                <option value="2">⭐⭐ 2星</option>
+                                                <option value="1">⭐ 1星</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="small text-muted mb-1">患者姓名</label>
+                                            <input type="text" class="form-control" id="ratingFilterPatient" placeholder="搜索患者">
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="small text-muted mb-1">&nbsp;</label>
+                                            <button class="btn btn-primary btn-block" onclick="loadRatings()">
+                                                <i class="fas fa-search mr-1"></i>查询
+                                            </button>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="small text-muted mb-1">&nbsp;</label>
+                                            <button class="btn btn-outline-success btn-block" onclick="exportRatingsXLSX()">
+                                                <i class="fas fa-file-export mr-1"></i>导出Excel
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <!-- 评价列表表格 -->
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-hover">
+                                            <thead class="thead-light">
+                                                <tr>
+                                                    <th>患者</th>
+                                                    <th>治疗师</th>
+                                                    <th>治疗项目</th>
+                                                    <th>评分</th>
+                                                    <th>评价内容</th>
+                                                    <th>标签</th>
+                                                    <th>时间</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="ratingsTableBody">
+                                                <tr><td colspan="7" class="text-center text-muted py-4">暂无评价数据</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <!-- 分页 -->
+                                    <div class="d-flex justify-content-between align-items-center mt-2">
+                                        <small class="text-muted" id="ratingsPageInfo">共 0 条</small>
+                                        <div class="btn-group" id="ratingsPagination"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ========= 问卷配置 ========= -->
+                        <div class="tab-pane fade" id="ratingTabQuestions">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div>
+                                            <h5 class="mb-1"><i class="fas fa-clipboard-list text-primary mr-2"></i>评价问卷配置</h5>
+                                            <small class="text-muted">配置小程序端展示的评价题目，修改后实时生效</small>
+                                        </div>
+                                        <button class="btn btn-primary btn-sm" onclick="showQuestionModal()">
+                                            <i class="fas fa-plus mr-1"></i>添加题目
+                                        </button>
+                                    </div>
+
+                                    <div class="alert alert-info mb-3">
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        <strong>提示：</strong>
+                                        <ul class="mb-0 mt-1 small">
+                                            <li>题目类型：<strong>星级评分</strong>（1-5星）、<strong>单选</strong>（自定义选项）、<strong>文本</strong>（自由输入）</li>
+                                            <li>拖拽题目左侧 <i class="fas fa-grip-vertical"></i> 图标可调整顺序</li>
+                                            <li>禁用的题目不会在小程序端显示，但已有评价数据会保留</li>
+                                            <li>已有评价答案的题目无法删除，只能禁用</li>
+                                        </ul>
+                                    </div>
+
+                                    <!-- 题目列表 -->
+                                    <div id="questionsList">
+                                        <div class="text-center text-muted py-4">加载中...</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -1715,6 +2056,50 @@
         </div>
     </div>
 
+    <!-- 评价题目编辑模态框 -->
+    <div class="modal fade" id="questionModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="questionModalTitle">添加评价题目</h5>
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="questionEditId">
+                    <div class="form-group">
+                        <label>题目标题 *</label>
+                        <input type="text" class="form-control" id="questionTitle" placeholder="如：服务态度、治疗效果">
+                    </div>
+                    <div class="form-group">
+                        <label>题目类型 *</label>
+                        <select class="form-control" id="questionType" onchange="onQuestionTypeChange()">
+                            <option value="star">星级评分（1-5星）</option>
+                            <option value="radio">单选题</option>
+                            <option value="text">文本输入</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="questionOptionsGroup" style="display:none;">
+                        <label>选项（每行一个）*</label>
+                        <textarea class="form-control" id="questionOptions" rows="4" placeholder="愿意&#10;暂不考虑"></textarea>
+                        <small class="text-muted">每行一个选项，适用于单选题</small>
+                    </div>
+                    <div class="form-group">
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="questionRequired" checked>
+                            <label class="custom-control-label" for="questionRequired">必填</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="saveQuestion()">
+                        <i class="fas fa-save mr-1"></i>保存
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- jQuery - 本地文件 -->
     <script src="/static/js/jquery.min.js"></script>
     <!-- Bootstrap -->
@@ -1939,6 +2324,7 @@
             checkStandaloneMode(); // 检查是否为独立运行模式
             // 🔧 修复：页面加载时立即加载设置
             loadEntrySettings();
+            initRatingPanel();  // 初始化评价面板
 
             // 初始添加5行 - 移至 checkAllDataLoaded() 中执行，确保数据加载完成
 
@@ -2068,11 +2454,27 @@
                 const level = item.level || 1;
                 const levelBadge = item.level_badge || '⭐';
                 const levelName = item.level_name || '新手';
+
+                // 渲染个人成就徽章
+                let badgesHtml = '';
+                if (item.achievements && item.achievements.length > 0) {
+                    const badges = item.achievements.slice(0, 10); // 最多显示10个
+                    badgesHtml = '<div class="therapist-badges">';
+                    badges.forEach(a => {
+                        badgesHtml += `<span class="achievement-mini-badge" title="${a.name} - ${a.unlocked_at ? new Date(a.unlocked_at).toLocaleDateString('zh-CN') : ''}">${a.icon}</span>`;
+                    });
+                    if (item.achievements.length > 10) {
+                        badgesHtml += `<span class="text-muted" style="font-size:12px;">+${item.achievements.length - 10}</span>`;
+                    }
+                    badgesHtml += '</div>';
+                }
+
                 html += `
                     <div class="ranking-item">
                         <div class="rank ${rankClass}">${index + 1}</div>
                         <div class="flex-grow-1">
                             <div class="font-weight-bold">${item.therapist_name}</div>
+                            ${badgesHtml}
                             <span class="level-badge level-${level}">${levelBadge} ${levelName}</span>
                             <small class="text-muted ml-2">积分: ${item.total_points || 0}</small>
                         </div>
@@ -2810,34 +3212,62 @@
             // 显示保存中提示
             showToast('正在保存...', 'info');
 
-            $.ajax({
-                url: '/api/records',
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify(records),
-                success: function(res) {
-                    if (res.success) {
-                        // 检查是否有错误
-                        if (res.data.errors && res.data.errors.length > 0) {
-                            const errorMsg = res.data.errors.join(" ");
-                            showToast("录入失败：" + errorMsg, "error");
-                        } else if (res.data.total > 0) {
-                            showToast(`成功保存 ${res.data.total} 条记录！总工作量: ${totalWorkload}`, 'success');
-                        // 清空表格并重新添加5行
-                        $('#quickEntryBody').empty();
-                        entryRowId = 0;
-                        addMultipleRows(5);
-                        updateEntryStats();
-                        loadDashboard();
+            // 保存函数（支持强制确认）
+            function doSave(forceConfirm = false) {
+                const dataToSend = forceConfirm ? records.map(r => ({...r, force_confirm: true})) : records;
+                
+                $.ajax({
+                    url: '/api/records',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(dataToSend),
+                    success: function(res) {
+                        if (res.success) {
+                            // ✅ 检查是否需要确认重复记录
+                            if (res.needs_confirmation && !forceConfirm) {
+                                const confirmMsg = res.message || '该患者今日已有相同治疗记录，是否继续录入？';
+                                if (confirm(confirmMsg + '\n\n点击"确定"继续录入，点击"取消"放弃')) {
+                                    // 用户确认后，带上 force_confirm=true 重新提交
+                                    showToast('正在重新提交...', 'info');
+                                    doSave(true);
+                                } else {
+                                    showToast('已取消录入', 'warning');
+                                }
+                                return;
+                            }
+                            
+                            // 检查是否有错误
+                            if (res.data && res.data.errors && res.data.errors.length > 0) {
+                                const errorMsg = res.data.errors.join(" ");
+                                showToast("录入失败：" + errorMsg, "error");
+                            } else if (res.data && res.data.total > 0) {
+                                showToast(`成功保存 ${res.data.total} 条记录！总工作量: ${totalWorkload}`, 'success');
+                                // 清空表格并重新添加5行
+                                $('#quickEntryBody').empty();
+                                entryRowId = 0;
+                                addMultipleRows(5);
+                                updateEntryStats();
+                                loadDashboard();
+                            } else if (res.data && res.data.records && res.data.records.length > 0) {
+                                showToast(`成功保存 ${res.data.records.length} 条记录！总工作量: ${totalWorkload}`, 'success');
+                                $('#quickEntryBody').empty();
+                                entryRowId = 0;
+                                addMultipleRows(5);
+                                updateEntryStats();
+                                loadDashboard();
+                            }
+                        } else {
+                            showToast('保存失败：' + res.error, 'error');
                         }
-                    } else {
-                        showToast('保存失败：' + res.error, 'error');
+                    },
+                    error: function() {
+                        showToast('请求失败，请稍后重试', 'error');
                     }
-                },
-                error: function() {
-                    showToast('请求失败，请稍后重试', 'error');
-                }
-            });
+                });
+            }
+            
+            // 首次提交（不强制确认）
+            doSave(false);
         }
 
         // 快捷日期范围选择
@@ -3652,9 +4082,58 @@
                         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
                         const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
 
-                        // 检测表头判断列顺序
+                        // 智能检测表头，识别各列位置
                         const header = jsonData[0] || [];
-                        const hasWeightColumn = header.includes('权重');
+                        const colMap = {};
+                        header.forEach((col, idx) => {
+                            const colStr = String(col || '').trim();
+                            colMap[colStr] = idx;
+                        });
+
+                        // 查找各列的位置（默认值）
+                        let dateCol = 0, therapistCol = 1, patientCol = 2, itemCol = 3;
+                        let weightCol = null, sessionsCol = 4, remarkCol = 5;
+
+                        for (const [colName, idx] of Object.entries(colMap)) {
+                            const col = colName.toLowerCase();
+                            // 日期列
+                            if (col.match(/日期|date/)) {
+                                dateCol = idx;
+                            }
+                            // 治疗师列
+                            else if (col.match(/治疗师|therapist/)) {
+                                therapistCol = idx;
+                            }
+                            // 患者列
+                            else if (col.match(/患者|patient|病人/)) {
+                                patientCol = idx;
+                            }
+                            // 治疗项目列
+                            else if (col.match(/治疗项目|项目|item|treatment/)) {
+                                itemCol = idx;
+                            }
+                            // 权重列
+                            else if (col.match(/权重|权值|weight|系数/)) {
+                                weightCol = idx;
+                            }
+                            // 人次列
+                            else if (col.match(/人次|次数|sessions|count/)) {
+                                sessionsCol = idx;
+                            }
+                            // 备注列
+                            else if (col.match(/备注|说明|remark|note/)) {
+                                remarkCol = idx;
+                            }
+                        }
+
+                        // 如果找到了权重列，说明是7列格式；否则是6列格式
+                        const hasWeightColumn = (weightCol !== null);
+                        
+                        // 如果没有找到人次列，根据格式推断位置
+                        if (sessionsCol === 4 && hasWeightColumn) {
+                            sessionsCol = 5;  // 7列格式：人次在第6列
+                            remarkCol = 6;    // 备注在第7列
+                        }
 
                         // 兼容WPS/Excel的日期解析函数
                         function parseDate(value) {
@@ -3731,26 +4210,26 @@
 
                             let record;
                             if (hasWeightColumn) {
-                                // 新格式：日期, 治疗师, 患者, 治疗项目, 权重, 人次, 备注
+                                // 新格式（7列）：日期, 治疗师, 患者, 治疗项目, 权重, 人次, 备注
                                 record = {
-                                    date: parseDate(row[0]),
-                                    therapist: String(row[1] || '').trim(),
-                                    patient: String(row[2] || '').trim(),
-                                    item: String(row[3] || '').trim(),
-                                    weight: parseFloat(row[4]) || null,
-                                    sessions: parseInt(row[5]) || 1,
-                                    remark: String(row[6] || '').trim()
+                                    date: parseDate(row[dateCol]),
+                                    therapist: String(row[therapistCol] || '').trim(),
+                                    patient: String(row[patientCol] || '').trim(),
+                                    item: String(row[itemCol] || '').trim(),
+                                    weight: parseFloat(row[weightCol]) || null,
+                                    sessions: parseInt(row[sessionsCol]) || 1,
+                                    remark: String(row[remarkCol] || '').trim()
                                 };
                             } else {
-                                // 旧格式：日期, 治疗师, 患者, 治疗项目, 人次, 备注
+                                // 旧格式（6列）：日期, 治疗师, 患者, 治疗项目, 人次, 备注
                                 record = {
-                                    date: parseDate(row[0]),
-                                    therapist: String(row[1] || '').trim(),
-                                    patient: String(row[2] || '').trim(),
-                                    item: String(row[3] || '').trim(),
+                                    date: parseDate(row[dateCol]),
+                                    therapist: String(row[therapistCol] || '').trim(),
+                                    patient: String(row[patientCol] || '').trim(),
+                                    item: String(row[itemCol] || '').trim(),
                                     weight: null,
-                                    sessions: parseInt(row[4]) || 1,
-                                    remark: String(row[5] || '').trim()
+                                    sessions: parseInt(row[sessionsCol]) || 1,
+                                    remark: String(row[remarkCol] || '').trim()
                                 };
                             }
 
@@ -3859,7 +4338,7 @@
                 end_date: endDate,
                 therapist_id: $('#filterTherapist').val() || null,
                 category_id: $('#filterCategory').val() || null,
-                patient_name: $('#filterPatient').val() || null
+                patient_info: $('#filterPatient').val() || null
             };
 
             showToast('正在导出...', 'info');
@@ -4186,6 +4665,621 @@
                 // endpoint不存在，说明是开发模式
                 console.log('[系统] 开发模式运行，未启用自动关闭功能');
             });
+        });
+
+        // ==================== 评价管理面板 ====================
+
+        let ratingsPage = 1;
+        let ratingsPerPage = 20;
+        let ratingsAllData = [];
+
+        // ---- 评价统计图表 ----
+        function loadRatingStats() {
+            $.get('/api/ratings/stats', function(res) {
+                if (!res.success) return;
+                const d = res.data;
+
+                // 更新统计卡片
+                $('#ratingTotalCount').text(d.total_count);
+                $('#ratingAvgScore').text(d.avg_score);
+                $('#ratingFiveStarCount').text(d.five_star_count);
+                $('#ratingLowStarCount').text(d.low_star_count);
+
+                // 多维度评分
+                if (d.question_stats && d.question_stats.length > 0) {
+                    let dimHtml = '';
+                    d.question_stats.forEach(qs => {
+                        dimHtml += `<div class="dimension-stat-card">
+                            <div class="dim-score">${qs.avg_score}</div>
+                            <div class="dim-label">${qs.title}<br><small>(${qs.count}条评价)</small></div>
+                        </div>`;
+                    });
+                    $('#dimensionStats').html(dimHtml).show();
+                } else {
+                    $('#dimensionStats').hide();
+                }
+
+                // 评分分布柱状图
+                renderDistChart(d.distribution);
+                // 月度趋势折线图
+                renderTrendChart(d.monthly_trend);
+                // 评分占比饼图
+                renderPieChart(d.distribution, d.total_count);
+                // 治疗师排行横向柱状图
+                renderTherapistChart(d.therapist_stats);
+                // 最近评价
+                renderRecentComments(d.recent_comments);
+            }).fail(function() {
+                console.log('评价统计接口不可用');
+            });
+        }
+
+        function renderDistChart(distribution) {
+            const container = $('#ratingDistChart');
+            const total = Object.values(distribution).reduce((a, b) => a + b, 0);
+            if (total === 0) { container.html('<div class="text-center text-muted py-3">暂无数据</div>'); return; }
+            const colors = ['#ef4444', '#f97316', '#eab308', '#3b82f6', '#22c55e'];
+            const labels = ['1星', '2星', '3星', '4星', '5星'];
+            const maxVal = Math.max(...Object.values(distribution), 1);
+            let html = '';
+            for (let i = 1; i <= 5; i++) {
+                const count = distribution[i] || 0;
+                const pct = (count / maxVal * 100).toFixed(0);
+                const realPct = (count / total * 100).toFixed(1);
+                html += `<div style="display:flex;align-items:center;margin-bottom:8px;">
+                    <span style="width:40px;font-size:0.85rem;font-weight:600;">${labels[i-1]}</span>
+                    <div style="flex:1;height:24px;background:#f3f4f6;border-radius:12px;overflow:hidden;margin:0 10px;">
+                        <div style="height:100%;width:${pct}%;background:${colors[i-1]};border-radius:12px;transition:width 0.5s;min-width:${count > 0 ? '2px' : '0'};"></div>
+                    </div>
+                    <span style="width:60px;text-align:right;font-size:0.8rem;color:#6b7280;">${count} (${realPct}%)</span>
+                </div>`;
+            }
+            container.html(html);
+        }
+
+        function renderTrendChart(trend) {
+            const container = $('#ratingTrendChart');
+            if (!trend || trend.length === 0) { container.html('<div class="text-center text-muted py-3">暂无数据</div>'); return; }
+            const maxCount = Math.max(...trend.map(t => t.count), 1);
+            let html = '<div style="display:flex;align-items:flex-end;gap:8px;height:160px;padding-top:10px;">';
+            trend.forEach(t => {
+                const barH = Math.max((t.count / maxCount * 130), t.count > 0 ? 20 : 0);
+                const barColor = t.avg_score >= 4 ? '#22c55e' : t.avg_score >= 3 ? '#eab308' : '#ef4444';
+                html += `<div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+                    <span style="font-size:0.7rem;font-weight:700;color:#374151;">${t.count}</span>
+                    <div style="width:100%;max-width:40px;height:${barH}px;background:${barColor};border-radius:6px 6px 0 0;transition:height 0.5s;margin:4px 0;"></div>
+                    <span style="font-size:0.65rem;color:#6b7280;">${t.month.slice(5)}</span>
+                </div>`;
+            });
+            html += '</div>';
+            html += '<div style="margin-top:8px;font-size:0.75rem;color:#6b7280;">';
+            html += '<i class="fas fa-square" style="color:#22c55e;font-size:10px;"></i> ≥4分 ';
+            html += '<i class="fas fa-square" style="color:#eab308;font-size:10px;margin-left:8px;"></i> 3-4分 ';
+            html += '<i class="fas fa-square" style="color:#ef4444;font-size:10px;margin-left:8px;"></i> &lt;3分';
+            html += '</div>';
+            container.html(html);
+        }
+
+        function renderPieChart(distribution, total) {
+            const container = $('#ratingPieChart');
+            const data = [distribution[5]||0, distribution[4]||0, distribution[3]||0, distribution[2]||0, distribution[1]||0];
+            const sum = data.reduce((a, b) => a + b, 0);
+            if (sum === 0) { container.html('<div class="text-center text-muted py-3">暂无数据</div>'); return; }
+            const labels = ['5星好评', '4星', '3星', '2星', '1星差评'];
+            const colors = ['#22c55e', '#3b82f6', '#eab308', '#f97316', '#ef4444'];
+            let html = '<div style="display:flex;gap:12px;flex-wrap:wrap;">';
+            data.forEach((count, i) => {
+                const pct = (count / sum * 100).toFixed(1);
+                html += `<div style="flex:1;min-width:80px;text-align:center;padding:10px;background:${colors[i]}15;border-radius:10px;border:2px solid ${colors[i]}40;">
+                    <div style="font-size:1.4rem;font-weight:700;color:${colors[i]};">${pct}%</div>
+                    <div style="font-size:0.75rem;color:#6b7280;">${labels[i]}</div>
+                    <div style="font-size:0.7rem;color:#9ca3af;">${count}条</div>
+                </div>`;
+            });
+            html += '</div>';
+            container.html(html);
+        }
+
+        function renderTherapistChart(therapistStats) {
+            const container = $('#ratingTherapistChart');
+            if (!therapistStats || therapistStats.length === 0) { container.html('<div class="text-center text-muted py-3">暂无数据</div>'); return; }
+            const colors = ['#22c55e', '#3b82f6', '#8b5cf6', '#f59e0b', '#ec4899', '#06b6d4', '#f97316', '#14b8a6', '#a855f7', '#ef4444', '#6366f1'];
+            let html = '';
+            therapistStats.slice(0, 10).forEach((t, i) => {
+                const pct = (t.weighted_score / 5 * 100).toFixed(0);
+                const stars = t.avg_score >= 4.5 ? '⭐⭐⭐⭐⭐' : t.avg_score >= 3.5 ? '⭐⭐⭐⭐' : t.avg_score >= 2.5 ? '⭐⭐⭐' : '⭐⭐';
+                // 各维度分数
+                let dimHtml = '';
+                if (t.dimension_scores && Object.keys(t.dimension_scores).length > 0) {
+                    dimHtml = '<div style="font-size:0.7rem;color:#6b7280;margin-top:2px;">';
+                    for (const [dim, score] of Object.entries(t.dimension_scores)) {
+                        dimHtml += dim + ':' + score + ' ';
+                    }
+                    dimHtml += '</div>';
+                }
+                html += `<div style="display:flex;align-items:center;margin-bottom:${dimHtml ? '12' : '6'}px;padding-bottom:${dimHtml ? '6' : '0'}px;border-bottom:${dimHtml ? '1px solid #f3f4f6' : 'none'};">
+                    <span style="width:70px;font-size:0.8rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${t.therapist_name}">${t.therapist_name}</span>
+                    <div style="flex:1;height:20px;background:#f3f4f6;border-radius:10px;overflow:hidden;margin:0 8px;">
+                        <div style="height:100%;width:${pct}%;background:${colors[i % colors.length]};border-radius:10px;transition:width 0.5s;"></div>
+                    </div>
+                    <div style="width:120px;text-align:right;font-size:0.75rem;">${stars} <span style="font-weight:700;color:#374151;">${t.avg_score}</span> <span style="color:#22c55e;">${t.good_rate}%</span></div>
+                </div>${dimHtml}`;
+            });
+            html += '<div style="margin-top:10px;font-size:0.7rem;color:#9ca3af;"><i class="fas fa-info-circle"></i> 排名 = 加权评分(评分×60% + 好评率×20% + 评价数量×20%)</div>';
+            container.html(html);
+        }
+
+        function renderRecentComments(comments) {
+            const container = $('#recentRatingComments');
+            if (!comments || comments.length === 0) {
+                container.html('<span class="text-muted">暂无评论</span>');
+                return;
+            }
+            container.html(comments.map(c => {
+                const stars = '⭐'.repeat(c.star_rating) + '☆'.repeat(5 - c.star_rating);
+                return `<div class="mb-2 pb-2" style="border-bottom:1px solid #f0f0f0;"><strong>${c.patient_name}</strong> → <span class="text-primary">${c.therapist_name}</span> <small class="text-muted">${c.created_at}</small> ${stars}<br><span class="text-muted" style="font-size:0.85rem;">${c.comment}</span></div>`;
+            }).join(''));
+        }
+
+        // ---- 评价列表 ----
+        function loadRatings() {
+            const therapistId = $('#ratingFilterTherapist').val();
+            const patientName = $('#ratingFilterPatient').val();
+            const stars = $('#ratingFilterStars').val();
+
+            let params = { page: 1, per_page: 200 };
+            if (therapistId) params.therapist_id = therapistId;
+            if (patientName) params.patient_name = patientName;
+            if (stars) params.star_rating = stars;
+
+            $.get('/api/ratings/list', params, function(res) {
+                if (res.success) {
+                    ratingsAllData = res.data.ratings || [];
+                    renderRatingsTable(ratingsAllData);
+                } else {
+                    showToast('加载评价失败：' + (res.message || '未知错误'), 'error');
+                }
+            }).fail(function() {
+                showToast('评价接口不可用，请确认后端已更新', 'error');
+            });
+        }
+
+        function renderRatingsTable(ratings) {
+            const tbody = $('#ratingsTableBody');
+            if (!ratings || ratings.length === 0) {
+                tbody.html('<tr><td colspan="7" class="text-center text-muted py-4">暂无评价数据</td></tr>');
+                $('#ratingsPageInfo').text('共 0 条');
+                $('#ratingsPagination').empty();
+                return;
+            }
+
+            // 分页
+            const totalPages = Math.ceil(ratings.length / ratingsPerPage);
+            if (ratingsPage > totalPages) ratingsPage = totalPages;
+            const start = (ratingsPage - 1) * ratingsPerPage;
+            const pageData = ratings.slice(start, start + ratingsPerPage);
+
+            tbody.empty();
+            pageData.forEach(r => {
+                const starsHtml = renderStars(r.star_rating);
+                const tagsHtml = (r.tags && r.tags.length > 0)
+                    ? r.tags.map(t => `<span class="badge badge-secondary mr-1">${t}</span>`).join('')
+                    : '-';
+                const comment = r.comment || '<span class="text-muted">无评论</span>';
+                const time = r.created_at ? new Date(r.created_at).toLocaleString('zh-CN') : '-';
+
+                tbody.append(`
+                    <tr>
+                        <td>${r.patient_name || '-'}</td>
+                        <td>${r.therapist_name || '-'}</td>
+                        <td>${r.treatment_item_name || '-'}</td>
+                        <td>${starsHtml}</td>
+                        <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${r.comment || ''}">${comment}</td>
+                        <td>${tagsHtml}</td>
+                        <td><small class="text-muted">${time}</small></td>
+                    </tr>
+                `);
+            });
+
+            $('#ratingsPageInfo').text(`共 ${ratings.length} 条`);
+
+            // 渲染分页按钮
+            let paginationHtml = '';
+            if (totalPages > 1) {
+                paginationHtml += `<button class="btn btn-sm btn-outline-secondary" ${ratingsPage <= 1 ? 'disabled' : ''} onclick="ratingsPage--; renderRatingsTable(ratingsAllData);">上一页</button>`;
+                for (let i = 1; i <= Math.min(totalPages, 5); i++) {
+                    paginationHtml += `<button class="btn btn-sm ${i === ratingsPage ? 'btn-primary' : 'btn-outline-secondary'}" onclick="ratingsPage=${i}; renderRatingsTable(ratingsAllData);">${i}</button>`;
+                }
+                if (totalPages > 5) paginationHtml += `<button class="btn btn-sm btn-outline-secondary" disabled>...</button>`;
+                paginationHtml += `<button class="btn btn-sm btn-outline-secondary" ${ratingsPage >= totalPages ? 'disabled' : ''} onclick="ratingsPage++; renderRatingsTable(ratingsAllData);">下一页</button>`;
+            }
+            $('#ratingsPagination').html(paginationHtml);
+        }
+
+        function renderStars(rating) {
+            let html = '';
+            for (let i = 1; i <= 5; i++) {
+                html += `<i class="fas fa-star ${i <= rating ? 'text-warning' : 'text-muted'}"></i>`;
+            }
+            return html;
+        }
+
+        // ---- 问卷配置管理 ----
+        let questionsData = [];
+        let ratingConfigPasswordVerified = false;
+
+        function loadQuestions() {
+            if (!ratingConfigPasswordVerified) return;
+            $.get('/api/rating/questions', function(res) {
+                if (res.success) {
+                    questionsData = res.data.questions || [];
+                    renderQuestionsList();
+                }
+            });
+        }
+
+        function renderQuestionsList() {
+            const container = $('#questionsList');
+            if (!questionsData || questionsData.length === 0) {
+                container.html('<div class="text-center text-muted py-4">暂无题目，点击上方"添加题目"开始配置</div>');
+                return;
+            }
+
+            const typeIcons = { star: '⭐', radio: '🔘', text: '📝' };
+            const typeLabels = { star: '星级评分', radio: '单选题', text: '文本输入' };
+
+            let html = '';
+            questionsData.forEach((q) => {
+                const disabledClass = q.is_active ? '' : ' disabled';
+                const statusBadge = q.is_active
+                    ? '<span class="badge badge-success">启用</span>'
+                    : '<span class="badge badge-secondary">禁用</span>';
+                const optionsText = q.question_type === 'radio' && q.options && q.options.length > 0
+                    ? `选项：${q.options.join('、')}` : '';
+
+                html += `
+                    <div class="question-item${disabledClass}" data-id="${q.id}">
+                        <span class="drag-handle" title="拖拽排序"><i class="fas fa-grip-vertical"></i></span>
+                        <span class="mr-2">${typeIcons[q.question_type] || '❓'}</span>
+                        <div class="flex-grow-1 mr-2">
+                            <strong>${q.sort_order}. ${q.title}</strong>
+                            <span class="question-type-badge ${q.question_type}">${typeLabels[q.question_type]}</span>
+                            ${q.is_required ? '<small class="text-danger ml-1">*必填</small>' : ''}
+                            ${optionsText ? `<br><small class="text-muted">${optionsText}</small>` : ''}
+                        </div>
+                        ${statusBadge}
+                        <div class="question-actions ml-2">
+                            <button class="btn btn-outline-info btn-sm" onclick="editQuestion(${q.id})" title="编辑"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-outline-${q.is_active ? 'warning' : 'success'} btn-sm" onclick="toggleQuestion(${q.id}, ${!q.is_active})" title="${q.is_active ? '禁用' : '启用'}">
+                                <i class="fas fa-${q.is_active ? 'ban' : 'check'}"></i>
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm" onclick="deleteQuestion(${q.id})" title="删除"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.html(html);
+
+            // 简单拖拽排序
+            initQuestionDragSort();
+        }
+
+        function showQuestionModal(editId) {
+            $('#questionEditId').val('');
+            $('#questionTitle').val('');
+            $('#questionType').val('star');
+            $('#questionOptions').val('');
+            $('#questionOptionsGroup').hide();
+            $('#questionRequired').prop('checked', true);
+            $('#questionModalTitle').text('添加评价题目');
+            if (editId) {
+                const q = questionsData.find(q => q.id === editId);
+                if (q) {
+                    $('#questionEditId').val(q.id);
+                    $('#questionTitle').val(q.title);
+                    $('#questionType').val(q.question_type);
+                    $('#questionRequired').prop('checked', q.is_required);
+                    if (q.options && q.options.length > 0) {
+                        $('#questionOptions').val(q.options.join('\n'));
+                    }
+                    onQuestionTypeChange();
+                    $('#questionModalTitle').text('编辑评价题目');
+                }
+            }
+            $('#questionModal').modal('show');
+        }
+
+        function editQuestion(id) {
+            showQuestionModal(id);
+        }
+
+        function onQuestionTypeChange() {
+            const type = $('#questionType').val();
+            $('#questionOptionsGroup').toggle(type === 'radio');
+        }
+
+        function saveQuestion() {
+            const title = $('#questionTitle').val().trim();
+            const type = $('#questionType').val();
+            const required = $('#questionRequired').is(':checked');
+            const editId = $('#questionEditId').val();
+
+            if (!title) { showToast('请输入题目标题', 'warning'); return; }
+
+            let options = [];
+            if (type === 'radio') {
+                const optText = $('#questionOptions').val().trim();
+                if (!optText) { showToast('单选题必须设置选项', 'warning'); return; }
+                options = optText.split('\n').map(s => s.trim()).filter(s => s);
+            }
+
+            const data = { title, question_type: type, options, is_required: required };
+
+            if (editId) {
+                $.ajax({
+                    url: `/api/rating/questions/${editId}`,
+                    method: 'PUT',
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                    success: function(res) {
+                        if (res.success) {
+                            showToast('题目已更新', 'success');
+                            $('#questionModal').modal('hide');
+                            loadQuestions();
+                        } else { showToast(res.message || '更新失败', 'error'); }
+                    },
+                    error: function() { showToast('请求失败', 'error'); }
+                });
+            } else {
+                $.ajax({
+                    url: '/api/rating/questions',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                    success: function(res) {
+                        if (res.success) {
+                            showToast('题目添加成功', 'success');
+                            $('#questionModal').modal('hide');
+                            loadQuestions();
+                        } else { showToast(res.message || '添加失败', 'error'); }
+                    },
+                    error: function() { showToast('请求失败', 'error'); }
+                });
+            }
+        }
+
+        function toggleQuestion(id, active) {
+            $.ajax({
+                url: `/api/rating/questions/${id}`,
+                method: 'PUT',
+                contentType: 'application/json',
+                data: JSON.stringify({ is_active: active }),
+                success: function(res) {
+                    if (res.success) {
+                        showToast(active ? '题目已启用' : '题目已禁用', 'success');
+                        loadQuestions();
+                    }
+                }
+            });
+        }
+
+        function deleteQuestion(id) {
+            if (!confirm('确定要删除此题目吗？如果已有评价答案，将改为禁用。')) return;
+            $.ajax({
+                url: `/api/rating/questions/${id}`,
+                method: 'DELETE',
+                success: function(res) {
+                    if (res.success) {
+                        showToast(res.message || '题目已删除', 'success');
+                        loadQuestions();
+                    }
+                }
+            });
+        }
+
+        // 简单拖拽排序
+        function initQuestionDragSort() {
+            const container = $('#questionsList');
+            let dragItem = null;
+            let isReordering = false;
+
+            container.off('dragstart dragend dragover dragleave drop').off('dragstart', '.question-item').off('dragend', '.question-item').off('dragover', '.question-item').off('dragleave', '.question-item').off('drop', '.question-item');
+
+            container.on('dragstart', '.question-item', function(e) {
+                dragItem = this;
+                $(this).css('opacity', '0.5');
+                e.originalEvent.dataTransfer.effectAllowed = 'move';
+                e.stopPropagation();
+            });
+
+            container.on('dragend', '.question-item', function(e) {
+                $(this).css('opacity', '1');
+                container.find('.question-item').css('border-top', '');
+                dragItem = null;
+                e.stopPropagation();
+            });
+
+            container.on('dragover', '.question-item', function(e) {
+                e.preventDefault();
+                e.originalEvent.dataTransfer.dropEffect = 'move';
+                if (this !== dragItem) {
+                    $(this).css('border-top', '3px solid #4f46e5');
+                }
+                e.stopPropagation();
+            });
+
+            container.on('dragleave', '.question-item', function(e) {
+                $(this).css('border-top', '');
+                e.stopPropagation();
+            });
+
+            container.on('drop', '.question-item', function(e) {
+                e.preventDefault();
+                $(this).css('border-top', '');
+                e.stopPropagation();
+                if (dragItem && dragItem !== this && !isReordering) {
+                    isReordering = true;
+                    $(dragItem).insertBefore($(this));
+                    // 提交新排序
+                    const orders = [];
+                    container.find('.question-item').each(function(idx) {
+                        orders.push({ id: parseInt($(this).data('id')), sort_order: idx + 1 });
+                    });
+                    $.ajax({
+                        url: '/api/rating/questions/reorder',
+                        method: 'PUT',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ orders }),
+                        success: function(res) {
+                            if (res.success) showToast('排序已更新', 'success');
+                            isReordering = false;
+                            loadQuestions();
+                        },
+                        error: function() {
+                            isReordering = false;
+                        }
+                    });
+                } else {
+                    isReordering = false;
+                }
+            });
+
+            // 给每个 question-item 添加 draggable 属性
+            container.find('.question-item').attr('draggable', 'true');
+        }
+
+        function updateRatingStats(ratings) {
+            const total = ratings.length;
+            const avgScore = total > 0 ? (ratings.reduce((s, r) => s + r.star_rating, 0) / total).toFixed(1) : '0.0';
+            const fiveStar = ratings.filter(r => r.star_rating === 5).length;
+            const lowStar = ratings.filter(r => r.star_rating <= 2).length;
+
+            $('#ratingTotalCount').text(total);
+            $('#ratingAvgScore').text(avgScore);
+            $('#ratingFiveStarCount').text(fiveStar);
+            $('#ratingLowStarCount').text(lowStar);
+
+            // 评分分布
+            for (let i = 1; i <= 5; i++) {
+                const count = ratings.filter(r => r.star_rating === i).length;
+                const pct = total > 0 ? (count / total * 100).toFixed(0) : 0;
+                $(`#dist${i}`).css('width', pct + '%');
+                $(`#dist${i}Count`).text(count);
+            }
+
+            // 最近评价
+            const comments = ratings.filter(r => r.comment).slice(0, 10);
+            const container = $('#recentRatingComments');
+            if (comments.length === 0) {
+                container.html('<span class="text-muted">暂无评论</span>');
+            } else {
+                container.html(comments.map(r => {
+                    const stars = '⭐'.repeat(r.star_rating) + '☆'.repeat(5 - r.star_rating);
+                    const time = r.created_at ? new Date(r.created_at).toLocaleDateString('zh-CN') : '';
+                    return `<div class="mb-2 pb-2 border-bottom"><strong>${r.patient_name || '匿名'}</strong> <small class="text-muted">${time}</small> ${stars}<br>${r.comment}</div>`;
+                }).join(''));
+            }
+        }
+
+        function exportRatingsXLSX() {
+            if (!ratingsAllData || ratingsAllData.length === 0) {
+                showToast('没有可导出的评价数据', 'warning');
+                return;
+            }
+
+            const excelData = [
+                ['患者', '治疗师', '治疗项目', '评分', '评价内容', '标签', '评价时间']
+            ];
+
+            ratingsAllData.forEach(r => {
+                excelData.push([
+                    r.patient_name || '',
+                    r.therapist_name || '',
+                    r.treatment_item_name || '',
+                    r.star_rating,
+                    r.comment || '',
+                    (r.tags && r.tags.length > 0) ? r.tags.join(', ') : '',
+                    r.created_at ? new Date(r.created_at).toLocaleString('zh-CN') : ''
+                ]);
+            });
+
+            const ws = XLSX.utils.aoa_to_sheet(excelData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, '评价记录');
+            ws['!cols'] = [
+                { wch: 12 }, { wch: 10 }, { wch: 20 }, { wch: 8 }, { wch: 40 }, { wch: 20 }, { wch: 20 }
+            ];
+            const filename = `评价记录_${new Date().toISOString().slice(0,10)}.xlsx`;
+            XLSX.writeFile(wb, filename);
+            showToast(`成功导出 ${ratingsAllData.length} 条评价`, 'success');
+        }
+
+        // 治疗师列表缓存
+        let cachedTherapists = null;
+
+        function loadTherapistDropdown() {
+            if (cachedTherapists) {
+                fillTherapistDropdown(cachedTherapists);
+                return;
+            }
+            $.ajax({
+                url: '/api/therapists',
+                method: 'GET',
+                dataType: 'json',
+                timeout: 5000,
+                success: function(res) {
+                    console.log('[Rating] Therapists API response:', res);
+                    if (res.success && res.data && res.data.therapists) {
+                        cachedTherapists = res.data.therapists;
+                        fillTherapistDropdown(cachedTherapists);
+                    } else {
+                        console.warn('[Rating] Unexpected therapists response:', res);
+                    }
+                },
+                error: function(xhr, status, err) {
+                    console.error('[Rating] Therapists API failed:', status, err);
+                }
+            });
+        }
+
+        function fillTherapistDropdown(therapists) {
+            if (!therapists || therapists.length === 0) return;
+            let options = '<option value="">所有治疗师</option>';
+            therapists.forEach(function(t) {
+                const name = t.name || t.employee_id || ('治疗师' + t.id);
+                options += '<option value="' + t.id + '">' + name + '</option>';
+            });
+            $('#ratingFilterTherapist').html(options);
+            console.log('[Rating] Therapist dropdown filled with', therapists.length, 'items');
+        }
+
+        // 初始化评价面板
+        function initRatingPanel() {
+            loadTherapistDropdown();
+            loadRatingStats();
+            loadQuestions();
+        }
+
+        // 监听评价Tab激活事件
+        $('a[href="#tabRatings"]').on('shown.bs.tab', function() {
+            initRatingPanel();
+        });
+
+        // 问卷配置子Tab需要密码
+        $('a[href="#ratingTabQuestions"]').on('click', function(e) {
+            if (!ratingConfigPasswordVerified) {
+                e.preventDefault();
+                const password = prompt('请输入问卷配置密码：');
+                if (password === null) return false;
+                if (password === SETTINGS_PASSWORD) {
+                    ratingConfigPasswordVerified = true;
+                    $(this).tab('show');
+                    loadQuestions();
+                } else {
+                    showToast('密码错误，无法访问问卷配置', 'error');
+                }
+                return false;
+            }
         });
     </script>
 </body>
