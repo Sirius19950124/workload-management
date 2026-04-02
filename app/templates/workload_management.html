@@ -3467,11 +3467,7 @@
                                     p.status === 'completed' ? '<span class="badge badge-secondary">已结束</span>' :
                                     p.status === 'paused' ? '<span class="badge badge-warning">暂停</span>' :
                                     '<span class="text-muted">-</span>';
-                const daysBadge = p.days_since_last_treatment != null ?
-                    (p.days_since_last_treatment > 14 ? `<span class="text-danger font-weight-bold">${p.days_since_last_treatment}天</span>` :
-                     p.days_since_last_treatment > 7 ? `<span class="text-warning">${p.days_since_last_treatment}天</span>` :
-                     `${p.days_since_last_treatment}天`) :
-                    '-';
+                const daysBadge = p.days_since_last_treatment != null ? `${p.days_since_last_treatment}天` : '-';
 
                 html += `
                     <tr>
