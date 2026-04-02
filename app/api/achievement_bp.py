@@ -265,6 +265,7 @@ def get_level_leaderboard():
                         'code': ach.code,
                         'name': ach.name,
                         'icon': ach.icon,
+                        'rarity': ach.rarity,
                         'unlocked_at': ta.unlocked_at.isoformat() if ta.unlocked_at else None
                     })
 

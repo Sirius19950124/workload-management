@@ -568,7 +568,23 @@
         .achievement-icon {
             font-size: 2.5rem;
             margin-bottom: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #fde68a, #fbbf24);
+            box-shadow: 0 2px 8px rgba(251, 191, 36, 0.3);
+            /* Win7 等不支持彩色 emoji 的浏览器：用文字阴影模拟彩色效果 */
+            text-shadow: 0 0 2px rgba(0,0,0,0.1);
         }
+
+        /* 稀有度不同的底色 */
+        .achievement-icon.rarity-common { background: linear-gradient(135deg, #d1fae5, #34d399); }
+        .achievement-icon.rarity-rare { background: linear-gradient(135deg, #dbeafe, #60a5fa); }
+        .achievement-icon.rarity-epic { background: linear-gradient(135deg, #ede9fe, #a78bfa); }
+        .achievement-icon.rarity-legendary { background: linear-gradient(135deg, #fef3c7, #f59e0b); box-shadow: 0 2px 12px rgba(245, 158, 11, 0.4); }
 
         .achievement-name {
             font-weight: 600;
@@ -621,7 +637,15 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             cursor: help;
             transition: transform 0.2s;
+            /* Win7 兼容：即使 emoji 黑白，彩色底色也能区分 */
+            text-shadow: 0 0 1px rgba(0,0,0,0.15);
         }
+
+        /* 迷你徽章稀有度底色 */
+        .achievement-mini-badge.rarity-common { background: linear-gradient(135deg, #d1fae5, #34d399); }
+        .achievement-mini-badge.rarity-rare { background: linear-gradient(135deg, #dbeafe, #60a5fa); }
+        .achievement-mini-badge.rarity-epic { background: linear-gradient(135deg, #ede9fe, #a78bfa); }
+        .achievement-mini-badge.rarity-legendary { background: linear-gradient(135deg, #fef3c7, #f59e0b); }
 
         .achievement-mini-badge:hover {
             transform: scale(1.2);
@@ -2461,7 +2485,8 @@
                     const badges = item.achievements.slice(0, 10); // 最多显示10个
                     badgesHtml = '<div class="therapist-badges">';
                     badges.forEach(a => {
-                        badgesHtml += `<span class="achievement-mini-badge" title="${a.name} - ${a.unlocked_at ? new Date(a.unlocked_at).toLocaleDateString('zh-CN') : ''}">${a.icon}</span>`;
+                        const rarity = a.rarity || 'common';
+                        badgesHtml += `<span class="achievement-mini-badge rarity-${rarity}" title="${a.name} - ${a.unlocked_at ? new Date(a.unlocked_at).toLocaleDateString('zh-CN') : ''}">${a.icon}</span>`;
                     });
                     if (item.achievements.length > 10) {
                         badgesHtml += `<span class="text-muted" style="font-size:12px;">+${item.achievements.length - 10}</span>`;
@@ -2545,10 +2570,11 @@
             let html = '';
             achievements.forEach(function(achievement) {
                 const locked = achievement.unlocked_count === 0;
+                const rarity = achievement.rarity || 'common';
                 html += `
                     <div class="col-md-2 col-sm-4 col-6 mb-3">
                         <div class="achievement-card ${locked ? 'locked' : ''}">
-                            <div class="achievement-icon">${achievement.icon}</div>
+                            <div class="achievement-icon rarity-${rarity}">${achievement.icon}</div>
                             <div class="achievement-name">${achievement.name}</div>
                             <div class="achievement-desc">${achievement.description}</div>
                             ${!locked ? `<small class="text-success">${achievement.unlocked_count || 0}人获得</small>` : '<small class="text-muted">未解锁</small>'}
