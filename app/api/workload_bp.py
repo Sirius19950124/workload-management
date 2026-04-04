@@ -1212,6 +1212,68 @@ def get_monthly_statistics():
     })
 
 
+@workload_bp.route('/statistics/treatment-item-stats', methods=['GET'])
+def get_treatment_item_statistics():
+    """按治疗项目统计（支持日期范围）"""
+    start_date_str = request.args.get('start_date')
+    end_date_str = request.args.get('end_date')
+    
+    try:
+        if start_date_str:
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+        else:
+            start_date = date.today().replace(day=1)
+        
+        if end_date_str:
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+        else:
+            end_date = date.today()
+    except ValueError:
+        return jsonify({'success': False, 'error': '日期格式错误，应为YYYY-MM-DD'}), 400
+    
+    records = WorkloadRecord.query.filter(
+        WorkloadRecord.record_date >= start_date,
+        WorkloadRecord.record_date <= end_date
+    ).all()
+    
+    # 按治疗项目分组统计
+    item_stats = {}
+    for r in records:
+        item_id = r.treatment_item_id
+        if item_id not in item_stats:
+            item_name = r.treatment_item_rel.name if r.treatment_item_rel else '未知项目'
+            category_name = r.treatment_item_rel.category_rel.name if r.treatment_item_rel and r.treatment_item_rel.category_rel else '未分类'
+            item_stats[item_id] = {
+                'item_id': item_id,
+                'item_name': item_name,
+                'category_name': category_name,
+                'sessions': 0,
+                'workload': 0,
+                'record_count': 0
+            }
+        item_stats[item_id]['sessions'] += r.session_count
+        item_stats[item_id]['workload'] += r.weighted_workload
+        item_stats[item_id]['record_count'] += 1
+    
+    # 转为列表并排序（按工作量降序）
+    stats_list = sorted(item_stats.values(), key=lambda x: x['workload'], reverse=True)
+    
+    total_sessions = sum(s['sessions'] for s in stats_list)
+    total_workload = sum(s['workload'] for s in stats_list)
+    
+    return jsonify({
+        'success': True,
+        'data': {
+            'start_date': start_date.isoformat(),
+            'end_date': end_date.isoformat(),
+            'total_sessions': total_sessions,
+            'total_workload': round(total_workload, 2),
+            'item_count': len(stats_list),
+            'item_statistics': stats_list
+        }
+    })
+
+
 @workload_bp.route('/statistics/ranking', methods=['GET'])
 def get_ranking():
     """获取治疗师排行榜"""
