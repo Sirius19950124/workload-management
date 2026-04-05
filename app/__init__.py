@@ -415,12 +415,14 @@ def create_app():
     from .api.achievement_bp import achievement_bp
     from .api.patient_bp import patient_bp
     from .api.rating_bp import rating_bp
+    from .api.changelog_bp import changelog_bp
 
     app.register_blueprint(workload_bp)
     app.register_blueprint(workload_excel_bp)
     app.register_blueprint(achievement_bp)
     app.register_blueprint(patient_bp)
     app.register_blueprint(rating_bp)
+    app.register_blueprint(changelog_bp)
 
     # PC端首页路由
     @app.route('/')

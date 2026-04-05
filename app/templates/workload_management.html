@@ -773,6 +773,25 @@
             padding: 2px 8px;
             font-size: 0.75rem;
         }
+        /* 更新日志按钮 */
+        .changelog-btn { position: relative; }
+        .changelog-badge {
+            position: absolute; top: -4px; right: -4px;
+            width: 10px; height: 10px;
+            background: #ef4444; border-radius: 50%;
+            border: 2px solid #1e3a5f;
+        }
+        .changelog-hidden .changelog-badge { display: none; }
+        .changelog-item { border-left: 3px solid #4f46e5; padding-left: 16px; margin-bottom: 20px; }
+        .changelog-item .version-tag {
+            display: inline-block; background: #4f46e5; color: #fff;
+            padding: 2px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 600;
+        }
+        .changelog-item .date-tag {
+            color: #9ca3af; font-size: 0.75rem; margin-left: 8px;
+        }
+        .changelog-item ul { padding-left: 18px; margin: 8px 0 0; }
+        .changelog-item ul li { font-size: 0.85rem; color: #374151; margin-bottom: 4px; }
         /* 评价子标签页 */
         .rating-sub-tabs .nav-link {
             padding: 8px 16px;
@@ -821,7 +840,11 @@
                     <div class="subtitle" id="currentDate"></div>
                 </div>
                 <div>
-                    <button class="btn btn-light btn-sm" onclick="exportToExcel()">
+                    <button class="btn btn-light btn-sm changelog-btn" onclick="showChangelog()" id="changelogBtn" title="更新日志">
+                        <i class="fas fa-bell mr-1"></i>更新日志
+                        <span class="changelog-badge"></span>
+                    </button>
+                    <button class="btn btn-light btn-sm ml-2" onclick="exportToExcel()">
                         <i class="fas fa-file-excel mr-1"></i>导出Excel
                     </button>
                     <button class="btn btn-light btn-sm ml-2" onclick="showImportModal()">
@@ -5775,6 +5798,59 @@
                 return false;
             }
         });
+    </script>
+
+    <!-- 更新日志弹窗 -->
+    <div class="modal fade" id="changelogModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document" style="max-width: 520px;">
+            <div class="modal-content">
+                <div class="modal-header" style="background: #4f46e5; color: #fff;">
+                    <h5 class="modal-title"><i class="fas fa-bell mr-2"></i>更新日志</h5>
+                    <button type="button" class="close" data-dismiss="modal" style="color:#fff;"><span>&times;</span></button>
+                </div>
+                <div class="modal-body" id="changelogBody" style="max-height: 60vh; overflow-y: auto;">
+                    <div class="text-center text-muted py-3">加载中...</div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // 更新日志
+    function showChangelog() {
+        $('#changelogModal').modal('show');
+        $.get('/api/changelog', function(resp) {
+            if (!resp.success) return;
+            const items = resp.data;
+            let html = '';
+            items.forEach(item => {
+                html += `<div class="changelog-item">
+                    <span class="version-tag">v${item.version}</span>
+                    <span class="date-tag">${item.date}</span>
+                    <h6 style="margin: 6px 0 0; font-weight: 600;">${item.title}</h6>
+                    <ul>${item.changes.map(c => '<li>' + c + '</li>').join('')}</ul>
+                </div>`;
+            });
+            $('#changelogBody').html(html);
+            // 隐藏红点
+            $('#changelogBtn').addClass('changelog-hidden');
+            localStorage.setItem('changelog_seen', items[0].version);
+        });
+    }
+    // 检查是否已看过最新版本
+    $(function() {
+        $.get('/api/changelog', function(resp) {
+            if (resp.success && resp.data.length > 0) {
+                const seen = localStorage.getItem('changelog_seen');
+                if (seen === resp.data[0].version) {
+                    $('#changelogBtn').addClass('changelog-hidden');
+                }
+            }
+        });
+    });
     </script>
 </body>
 </html>
