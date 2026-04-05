@@ -3894,7 +3894,7 @@
             const gap = 6;
             const containerHeight = displayItems.length * (barHeight + gap) + 30;
 
-            let html = '<div style="height: ' + containerHeight + 'px; padding: 10px; overflow-y: auto;">';
+            let html = '<div style="padding: 10px;">';
             displayItems.forEach((item, idx) => {
                 const val = sortBy === 'sessions' ? item.sessions : item.workload;
                 const width = maxVal > 0 ? (val / maxVal * 70) : 0;
