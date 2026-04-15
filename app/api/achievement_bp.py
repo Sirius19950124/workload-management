@@ -6,6 +6,7 @@
 from flask import Blueprint, request, jsonify
 from datetime import date, timedelta
 from app import db
+from app.api.log_decorator import log_op
 from app.models import (
     Achievement, TherapistAchievement, TherapistStats,
     WorkloadTherapist, WorkloadRecord, DEFAULT_ACHIEVEMENTS
@@ -44,7 +45,7 @@ def update_therapist_stats(therapist_id):
     stats.total_workload = sum(r.weighted_workload for r in records)
 
     # 计算累计积分 (工作量 * 0.1 = 积分)
-    stats.total_points = int(stats.total_workload * 0.1)
+    stats.total_points = round(stats.total_workload * 0.1)
 
     # 计算连续打卡
     dates = sorted(set(r.record_date for r in records), reverse=True)
@@ -139,10 +140,18 @@ def check_and_award_achievements(therapist_id):
 def get_all_achievements():
     """获取所有成就列表"""
     achievements = Achievement.query.filter_by(is_active=True).order_by(Achievement.sort_order, Achievement.id).all()
+
+    # 批量查询每个成就的解锁人数
+    achievement_list = []
+    for a in achievements:
+        ach_dict = a.to_dict()
+        ach_dict['unlocked_count'] = TherapistAchievement.query.filter_by(achievement_id=a.id).count()
+        achievement_list.append(ach_dict)
+
     return jsonify({
         'success': True,
         'data': {
-            'achievements': [a.to_dict() for a in achievements],
+            'achievements': achievement_list,
             'total': len(achievements)
         }
     })
@@ -257,6 +266,7 @@ def get_level_leaderboard():
                         'code': ach.code,
                         'name': ach.name,
                         'icon': ach.icon,
+                        'rarity': ach.rarity,
                         'unlocked_at': ta.unlocked_at.isoformat() if ta.unlocked_at else None
                     })
 
@@ -327,6 +337,7 @@ def get_streak_leaderboard():
 
 
 @achievement_bp.route('/init', methods=['POST'])
+@log_op('setting', '初始化成就徽章')
 def init_achievements():
     """初始化默认成就（管理员）"""
     init_default_achievements()
@@ -352,6 +363,7 @@ def recalculate_stats(therapist_id):
 
 
 @achievement_bp.route('/recalculate-all', methods=['POST'])
+@log_op('update', '重新计算全部成就')
 def recalculate_all_stats():
     """重新计算所有治疗师统计"""
     therapists = WorkloadTherapist.query.filter_by(is_active=True).all()

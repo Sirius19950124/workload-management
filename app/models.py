@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-康复科治疗师工作量管理系统 - 数据模型
+惠阳妇幼保健院康复科业务管理系统 - 数据模型
 V1.0 - 2026-02-24
 
 数据模型设计:
@@ -557,6 +557,407 @@ class Patient(db.Model):
 
     def __repr__(self):
         return f'<Patient {self.name} (主管: {self.primary_therapist.name if self.primary_therapist else "无"})>'
+
+
+# ===================== 评价系统（小程序用） =====================
+
+class Rating(db.Model):
+    """治疗评价表"""
+    __tablename__ = 'ratings'
+
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('patients.id'), nullable=False, comment='患者ID')
+    record_id = db.Column(db.Integer, db.ForeignKey('workload_records.id'), nullable=True, comment='治疗记录ID（可选）')
+    therapist_id = db.Column(db.Integer, db.ForeignKey('workload_therapists.id'), nullable=True, comment='治疗师ID')
+    treatment_item_id = db.Column(db.Integer, db.ForeignKey('workload_treatment_items.id'), nullable=True, comment='治疗项目ID')
+
+    star_rating = db.Column(db.Integer, nullable=False, comment='星级评分(1-5)')
+    comment = db.Column(db.Text, comment='评价内容')
+    tags = db.Column(db.String(200), comment='评价标签(逗号分隔)')
+
+    # 微信相关
+    openid = db.Column(db.String(64), comment='微信openid')
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # 关联
+    patient = db.relationship('Patient', backref='ratings')
+    record = db.relationship('WorkloadRecord', backref='ratings')
+    therapist = db.relationship('WorkloadTherapist', backref='ratings')
+
+    __table_args__ = (
+        db.Index('idx_ratings_patient', 'patient_id'),
+        db.Index('idx_ratings_therapist', 'therapist_id'),
+        db.Index('idx_ratings_record', 'record_id'),
+    )
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'patient_id': self.patient_id,
+            'patient_name': self.patient.name if self.patient else None,
+            'record_id': self.record_id,
+            'therapist_id': self.therapist_id,
+            'therapist_name': self.therapist.name if self.therapist else None,
+            'treatment_item_id': self.treatment_item_id,
+            'treatment_item_name': self.record.treatment_item_rel.name if self.record and self.record.treatment_item_rel else None,
+            'star_rating': self.star_rating,
+            'comment': self.comment,
+            'tags': self.tags.split(',') if self.tags else [],
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+    def __repr__(self):
+        return f'<Rating id={self.id} patient={self.patient_id} stars={self.star_rating}>'
+
+
+# ===================== 评价问卷配置 =====================
+
+class RatingQuestion(db.Model):
+    """评价问卷题目配置表"""
+    __tablename__ = 'rating_questions'
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False, comment='问题标题')
+    question_type = db.Column(db.String(20), nullable=False, default='star', comment='类型: star/radio/text')
+    options = db.Column(db.Text, comment='选项(JSON数组, 用于radio类型)')
+    is_required = db.Column(db.Boolean, default=True, comment='是否必填')
+    sort_order = db.Column(db.Integer, default=0, comment='排序顺序')
+    is_active = db.Column(db.Boolean, default=True, comment='是否启用')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def to_dict(self):
+        options_list = []
+        if self.options:
+            import json
+            try:
+                options_list = json.loads(self.options)
+            except:
+                options_list = []
+        return {
+            'id': self.id,
+            'title': self.title,
+            'question_type': self.question_type,
+            'options': options_list,
+            'is_required': self.is_required,
+            'sort_order': self.sort_order,
+            'is_active': self.is_active
+        }
+
+    def __repr__(self):
+        return f'<RatingQuestion id={self.id} title={self.title} type={self.question_type}>'
+
+
+class RatingAnswer(db.Model):
+    """评价答案表（支持多维度问卷）"""
+    __tablename__ = 'rating_answers'
+
+    id = db.Column(db.Integer, primary_key=True)
+    rating_id = db.Column(db.Integer, db.ForeignKey('ratings.id'), nullable=False, comment='评价ID')
+    question_id = db.Column(db.Integer, db.ForeignKey('rating_questions.id'), nullable=False, comment='问题ID')
+    answer_value = db.Column(db.String(500), comment='答案值(星级存数字, 单选存选项文本, 文本存内容)')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # 关联
+    rating = db.relationship('Rating', backref='answers')
+    question = db.relationship('RatingQuestion')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'question_id': self.question_id,
+            'question_title': self.question.title if self.question else None,
+            'question_type': self.question.question_type if self.question else None,
+            'answer_value': self.answer_value
+        }
+
+    def __repr__(self):
+        return f'<RatingAnswer rating={self.rating_id} question={self.question_id}>'
+
+
+class WorkloadOperationLog(db.Model):
+    """操作日志表"""
+    __tablename__ = 'workload_operation_logs'
+
+    id = db.Column(db.Integer, primary_key=True)
+    log_type = db.Column(db.String(20), nullable=False, index=True, comment='操作类型: create/update/delete/import/export/backup/restore/setting/other')
+    detail = db.Column(db.Text, nullable=False, comment='操作详情')
+    operator = db.Column(db.String(50), default='系统', comment='操作人')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True, comment='操作时间')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'log_type': self.log_type,
+            'detail': self.detail,
+            'operator': self.operator,
+            'created_at': self.created_at.strftime('%Y-%m-%d %H:%M:%S') if self.created_at else None
+        }
+
+    def __repr__(self):
+        return f'<WorkloadOperationLog [{self.log_type}] {self.detail[:30]}>'
+
+
+# 默认评价问卷题目
+import json as _json
+DEFAULT_RATING_QUESTIONS = [
+    {'title': '服务态度', 'question_type': 'star', 'is_required': True, 'sort_order': 1},
+    {'title': '治疗效果', 'question_type': 'star', 'is_required': True, 'sort_order': 2},
+    {'title': '整体满意度', 'question_type': 'star', 'is_required': True, 'sort_order': 3},
+    {'title': '是否愿意该治疗师继续为您治疗？', 'question_type': 'radio',
+     'options': _json.dumps(['愿意', '暂不考虑'], ensure_ascii=False), 'is_required': True, 'sort_order': 4},
+    {'title': '其他建议', 'question_type': 'text', 'is_required': False, 'sort_order': 5},
+]
+
+
+# ===================== 在线培训考试系统 =====================
+
+class TrainingMaterial(db.Model):
+    """培训资料表 - 上传的PDF/Word/文本文件"""
+    __tablename__ = 'training_materials'
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False, comment='资料标题')
+    description = db.Column(db.Text, comment='资料描述')
+    file_name = db.Column(db.String(200), nullable=False, comment='原始文件名')
+    file_path = db.Column(db.String(500), nullable=False, comment='存储路径(相对uploads)')
+    file_type = db.Column(db.String(20), comment='文件类型: pdf/word/txt')
+    file_size = db.Column(db.Integer, comment='文件大小(bytes)')
+    extracted_text = db.Column(db.Text, comment='从文件提取的纯文本内容')
+    category = db.Column(db.String(50), default='通用', comment='资料分类')
+    is_active = db.Column(db.Boolean, default=True, comment='是否启用')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    questions = db.relationship('QuestionBank', backref='material_rel', lazy='dynamic')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'title': self.title,
+            'description': self.description,
+            'file_name': self.file_name,
+            'file_type': self.file_type,
+            'file_size': self.file_size,
+            'category': self.category,
+            'question_count': self.questions.count(),
+            'is_active': self.is_active,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+
+    def __repr__(self):
+        return f'<TrainingMaterial {self.title}>'
+
+
+class QuestionBank(db.Model):
+    """题库表 - AI生成或手动创建的题目"""
+    __tablename__ = 'question_bank'
+
+    id = db.Column(db.Integer, primary_key=True)
+    material_id = db.Column(db.Integer, db.ForeignKey('training_materials.id'), nullable=True, comment='关联的培训资料ID')
+    question_type = db.Column(db.String(20), nullable=False, comment='题型: single_choice/multiple_choice/true_false/fill_blank')
+    question_text = db.Column(db.Text, nullable=False, comment='题干内容')
+    options = db.Column(db.Text, comment='选项(JSON数组)')
+    answer = db.Column(db.Text, nullable=False, comment='正确答案')
+    analysis = db.Column(db.Text, comment='解析/说明')
+    difficulty = db.Column(db.String(10), default='medium', comment='难度: easy/medium/hard')
+    score = db.Column(db.Integer, default=2, comment='分值(默认2分)')
+    source = db.Column(db.String(20), default='manual', comment='来源: ai_generated/manual/imported')
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def to_dict(self):
+        import json as _json
+        options_list = []
+        if self.options:
+            try:
+                options_list = _json.loads(self.options)
+            except:
+                options_list = []
+        return {
+            'id': self.id,
+            'material_id': self.material_id,
+            'material_title': self.material_rel.title if self.material_rel else None,
+            'question_type': self.question_type,
+            'question_text': self.question_text,
+            'options': options_list,
+            'answer': self.answer,
+            'analysis': self.analysis,
+            'difficulty': self.difficulty,
+            'score': self.score,
+            'source': self.source,
+            'is_active': self.is_active,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+
+    def __repr__(self):
+        return f'<QuestionBank [{self.question_type}] {self.question_text[:30]}...>'
+
+
+class ExamPaper(db.Model):
+    """试卷表 - 由题目组成的考试"""
+    __tablename__ = 'exam_papers'
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False, comment='试卷标题')
+    description = db.Column(db.Text, comment='试卷说明')
+    total_score = db.Column(db.Integer, default=100, comment='总分')
+    pass_score = db.Column(db.Integer, default=60, comment='及格分数')
+    duration_minutes = db.Column(db.Integer, default=60, comment='考试时长(分钟)')
+    status = db.Column(db.String(20), default='draft', comment='状态: draft/published/closed')
+    shuffle_questions = db.Column(db.Boolean, default=True, comment='是否打乱题目顺序')
+    shuffle_options = db.Column(db.Boolean, default=True, comment='是否打乱选项顺序')
+    show_answer_after_submit = db.Column(db.Boolean, default=True, comment='提交后显示答案')
+    start_time = db.Column(db.DateTime, comment='考试开始时间')
+    end_time = db.Column(db.DateTime, comment='考试截止时间')
+    created_by = db.Column(db.String(50), comment='创建人')
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    questions = db.relationship('ExamPaperQuestion', backref='paper_rel', lazy='dynamic', cascade='all, delete-orphan')
+    assignments = db.relationship('ExamAssignment', backref='paper_rel', lazy='dynamic')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'title': self.title,
+            'description': self.description,
+            'total_score': self.total_score,
+            'pass_score': self.pass_score,
+            'duration_minutes': self.duration_minutes,
+            'status': self.status,
+            'shuffle_questions': self.shuffle_questions,
+            'shuffle_options': self.shuffle_options,
+            'show_answer_after_submit': self.show_answer_after_submit,
+            'start_time': self.start_time.isoformat() if self.start_time else None,
+            'end_time': self.end_time.isoformat() if self.end_time else None,
+            'question_count': self.questions.count(),
+            'is_active': self.is_active,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+
+    def __repr__(self):
+        return f'<ExamPaper {self.title} [{self.status}]>'
+
+
+class ExamPaperQuestion(db.Model):
+    """试卷题目关联表"""
+    __tablename__ = 'exam_paper_questions'
+
+    id = db.Column(db.Integer, primary_key=True)
+    paper_id = db.Column(db.Integer, db.ForeignKey('exam_papers.id'), nullable=False)
+    question_id = db.Column(db.Integer, db.ForeignKey('question_bank.id'), nullable=False)
+    sort_order = db.Column(db.Integer, default=0, comment='在试卷中的排序')
+    score = db.Column(db.Integer, default=2, comment='该题在试卷中的分值')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    question = db.relationship('QuestionBank')
+
+    __table_args__ = (
+        db.UniqueConstraint('paper_id', 'question_id', name='uq_paper_question'),
+    )
+
+    def to_dict(self):
+        qdict = self.question.to_dict() if self.question else {}
+        qdict['sort_order'] = self.sort_order
+        qdict['score'] = self.score
+        return qdict
+
+    def __repr__(self):
+        return f'<ExamPaperQuestion paper={self.paper_id} q={self.question_id}>'
+
+
+class ExamAssignment(db.Model):
+    """考试分配表 - 哪些治疗师需要参加哪个考试"""
+    __tablename__ = 'exam_assignments'
+
+    id = db.Column(db.Integer, primary_key=True)
+    paper_id = db.Column(db.Integer, db.ForeignKey('exam_papers.id'), nullable=False)
+    therapist_id = db.Column(db.Integer, db.ForeignKey('workload_therapists.id'), nullable=False)
+    status = db.Column(db.String(20), default='assigned', comment='状态: assigned/started/submitted')
+    assigned_at = db.Column(db.DateTime, default=datetime.utcnow, comment='分配时间')
+    started_at = db.Column(db.DateTime, comment='开始答题时间')
+    submitted_at = db.Column(db.DateTime, comment='提交时间')
+
+    therapist = db.relationship('WorkloadTherapist')
+    answer_record = db.relationship('ExamAnswer', backref='assignment_rel', uselist=False)
+
+    __table_args__ = (
+        db.UniqueConstraint('paper_id', 'therapist_id', name='uq_paper_therapist'),
+    )
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'paper_id': self.paper_id,
+            'paper_title': self.paper_rel.title if self.paper_rel else None,
+            'therapist_id': self.therapist_id,
+            'therapist_name': self.therapist.name if self.therapist else None,
+            'status': self.status,
+            'assigned_at': self.assigned_at.isoformat() if self.assigned_at else None,
+            'started_at': self.started_at.isoformat() if self.started_at else None,
+            'submitted_at': self.submitted_at.isoformat() if self.submitted_at else None,
+            'has_answer': self.answer_record is not None
+        }
+
+    def __repr__(self):
+        return f'<ExamAssignment paper={self.paper_id} therapist={self.therapist_id} [{self.status}]>'
+
+
+class ExamAnswer(db.Model):
+    """答卷记录表 - 治疗师的答案和评分"""
+    __tablename__ = 'exam_answers'
+
+    id = db.Column(db.Integer, primary_key=True)
+    assignment_id = db.Column(db.Integer, db.ForeignKey('exam_assignments.id'), nullable=False, unique=True)
+    answers_json = db.Column(db.Text, comment='所有答案(JSON数组)')
+    score = db.Column(db.Integer, default=0, comment='得分')
+    total_score = db.Column(db.Integer, default=0, comment='试卷总分')
+    time_spent_seconds = db.Column(db.Integer, default=0, comment='答题耗时(秒)')
+    grading_detail = db.Column(db.Text, comment='评卷详情(JSON)')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def to_dict(self):
+        import json as _json
+        answers = []
+        if self.answers_json:
+            try:
+                answers = _json.loads(self.answers_json)
+            except:
+                answers = []
+        detail = []
+        if self.grading_detail:
+            try:
+                detail = _json.loads(self.grading_detail)
+            except:
+                detail = []
+        # 获取试卷及格分（通过assignment关联）
+        pass_score = None
+        if self.assignment_rel and self.assignment_rel.paper_rel:
+            pass_score = self.assignment_rel.paper_rel.pass_score
+        is_passed = self.score >= pass_score if (pass_score is not None and self.total_score > 0) else (self.score >= self.total_score * 0.6 if self.total_score > 0 else False)
+        return {
+            'id': self.id,
+            'assignment_id': self.assignment_id,
+            'answers': answers,
+            'score': self.score,
+            'total_score': self.total_score,
+            'time_spent_seconds': self.time_spent_seconds,
+            'time_spent_display': f'{self.time_spent_seconds // 60}分{self.time_spent_seconds % 60}秒',
+            'is_passed': is_passed,
+            'pass_rate': round(self.score / self.total_score * 100, 1) if self.total_score > 0 else 0,
+            'grading_detail': detail,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+
+    def __repr__(self):
+        return f'<ExamAnswer assignment={self.assignment_id} score={self.score}/{self.total_score}>'
 
 
 # 默认设置常量

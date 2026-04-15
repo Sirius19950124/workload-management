@@ -1,6 +1,6 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """
-康复科治疗师工作量管理系统 - Excel导入导出
+惠阳妇幼保健院康复科业务管理系统 - Excel导入导出
 V1.0 - 2026-02-24
 """
 
@@ -10,6 +10,7 @@ from datetime import datetime, date, timedelta
 from flask import Blueprint, request, jsonify, send_file, current_app
 from sqlalchemy import extract, func
 from app import db
+from app.api.log_decorator import log_op
 from app.models import (
     WorkloadTherapist, WorkloadTreatmentCategory,
     WorkloadTreatmentItem, WorkloadRecord
@@ -28,6 +29,7 @@ workload_excel_bp = Blueprint('workload_excel', __name__, url_prefix='/api/excel
 
 
 @workload_excel_bp.route('/import', methods=['POST'])
+@log_op('import', 'Excel导入工作量记录')
 def import_from_excel():
     """从Excel文件导入数据"""
     if not EXCEL_AVAILABLE:
@@ -104,6 +106,13 @@ def import_from_excel():
                 if item_col is not None and len(row) > item_col and pd.notna(row[item_col]):
                     item_name = str(row[item_col]).strip()
 
+                    # 跳过说明文字和非项目名称
+                    skip_item_keywords = ['提示', '说明', '模板', '参考', '下拉', '自动计算', '治疗师', '总权重', '人次']
+                    if any(kw in item_name for kw in skip_item_keywords):
+                        continue
+                    if len(item_name) > 20 or item_name.isdigit():
+                        continue
+
                     # 获取类别
                     category_name = None
                     if category_col is not None and len(row) > category_col and pd.notna(row[category_col]):
@@ -149,12 +158,33 @@ def import_from_excel():
                         result['treatment_items_created'] += 1
 
             # 尝试解析治疗师（通常在数据源表右侧）
+            # 需要跳过的非人名词汇（说明、表头等）
+            skip_words = [
+                '治疗师', '项目', '总权重', '人次', 'nan',
+                '提示', '说明', '参考', '备注', '姓名', '工号',
+                '治疗类别', '权重系数', '编号', '代码', '序号',
+                '日期', '患者', '加权工作量', '治疗项目',
+                '导入模板', '工作量记录', '下拉菜单', '自动计算',
+            ]
             for col_idx in range(5, min(len(df_source.columns), 15)):
+                # 先检查该列第一个值是否是'治疗师'表头
+                if pd.notna(df_source.iloc[0, col_idx]) and str(df_source.iloc[0, col_idx]).strip() != '治疗师':
+                    continue
                 col_values = df_source.iloc[:, col_idx].dropna()
                 for val in col_values:
                     if pd.notna(val) and isinstance(val, str) and len(val.strip()) > 0:
                         name = val.strip()
-                        if name in ['治疗师', '项目', '总权重', '人次', 'nan']:
+                        # 跳过说明/非人名词汇
+                        if name in skip_words:
+                            continue
+                        # 跳过包含说明性文字的行
+                        if any(kw in name for kw in ['提示', '说明', '模板', '参考', '下拉', '自动']):
+                            continue
+                        # 跳过纯数字（可能是编号）
+                        if name.isdigit():
+                            continue
+                        # 跳过过长的文本（说明文字通常较长）
+                        if len(name) > 10:
                             continue
                         if not WorkloadTherapist.query.filter_by(name=name).first():
                             therapist = WorkloadTherapist(name=name)
@@ -171,35 +201,89 @@ def import_from_excel():
             try:
                 df = pd.read_excel(file, sheet_name=sheet_name, header=None)
 
+                # ---- 智能检测表头行和列映射 ----
                 header_row = None
+                col_map = {}  # 列名 -> 列索引
                 for i in range(min(5, len(df))):
-                    row = df.iloc[i].tolist()
-                    if '日期' in str(row) and '治疗师' in str(row):
+                    row_values = df.iloc[i].tolist()
+                    row_str = str(row_values)
+                    # 更严格的表头检测：必须同时包含"日期"和"治疗师"
+                    has_date = any('日期' in str(v) for v in row_values if pd.notna(v))
+                    has_therapist = any('治疗师' in str(v) for v in row_values if pd.notna(v))
+                    if has_date and has_therapist:
                         header_row = i
+                        # 构建列名->索引的映射
+                        for col_idx, val in enumerate(row_values):
+                            if pd.notna(val):
+                                col_str = str(val).strip()
+                                if col_str:
+                                    col_map[col_str] = col_idx
+                        result['debug_info']['sheet_{}'.format(sheet_name)] = {
+                            'header_row': header_row,
+                            'col_map': col_map
+                        }
                         break
 
                 if header_row is None:
+                    result['errors'].append(f'工作表 {sheet_name}: 未找到有效表头(需包含"日期"和"治疗师")')
                     continue
+
+                # 根据检测到的表头确定各列索引（支持中英文和常见别名）
+                def _find_col(*names):
+                    """在col_map中查找列索引，支持多个候选名称"""
+                    for n in names:
+                        for k, v in col_map.items():
+                            if n.lower() in k.lower() or k.lower() in n.lower():
+                                return v
+                    return None
+
+                date_col = _find_col('日期')
+                therapist_col = _find_col('治疗师')
+                patient_col = _find_col('患者', '病人', '患者ID', '姓名')
+                item_col = _find_col('治疗项目', '项目', '具体治疗项目名称')
+                weight_col = _find_col('权重', '权重系数', '综合权重系数', '权值')
+                sessions_col = _find_col('人次', '次数', 'session')
+                remark_col = _find_col('备注', '说明', 'remark')
+
+                # 如果没检测到某些列，使用基于位置的回退策略
+                # 兼容旧格式：日期(0) 治疗师(1) 患者(2) 项目(3) 权重(4) 人次(5) 备注(6/7)
+                if date_col is None: date_col = 0
+                if therapist_col is None: therapist_col = 1
+                if patient_col is None: patient_col = 2
+                if item_col is None: item_col = 3
+                # 权重和人次的位置取决于是否有权重列
+                if weight_col is not None and sessions_col is None:
+                    # 有权重列但未识别人次列 → 人次通常在权重后面
+                    sessions_col = weight_col + 1
+                elif weight_col is None and sessions_col is None:
+                    # 无权重列 → 人次在第5列（兼容旧6列格式）
+                    sessions_col = 5
 
                 for idx in range(header_row + 1, len(df)):
                     row = df.iloc[idx]
 
+                    # ---- 日期 ----
                     record_date = None
-                    if pd.notna(row[0]):
+                    if date_col is not None and date_col < len(row) and pd.notna(row[date_col]):
                         try:
-                            if isinstance(row[0], datetime):
-                                record_date = row[0].date()
-                            elif isinstance(row[0], date):
-                                record_date = row[0]
+                            val = row[date_col]
+                            if isinstance(val, datetime):
+                                record_date = val.date()
+                            elif isinstance(val, date):
+                                record_date = val
                             else:
-                                record_date = pd.to_datetime(row[0]).date()
-                        except:
+                                parsed = pd.to_datetime(val)
+                                record_date = parsed.date() if hasattr(parsed, 'date') else parsed
+                        except Exception:
                             continue
 
                     if not record_date:
                         continue
 
-                    therapist_name = str(row[1]).strip() if pd.notna(row[1]) else None
+                    # ---- 治疗师 ----
+                    therapist_name = None
+                    if therapist_col is not None and therapist_col < len(row) and pd.notna(row[therapist_col]):
+                        therapist_name = str(row[therapist_col]).strip()
                     if not therapist_name:
                         continue
 
@@ -210,25 +294,56 @@ def import_from_excel():
                         db.session.flush()
                         result['therapists_created'] += 1
 
-                    patient_info = str(row[2]).strip() if pd.notna(row[2]) else None
+                    # ---- 患者 ----
+                    patient_info = None
+                    if patient_col is not None and patient_col < len(row) and pd.notna(row[patient_col]):
+                        patient_info = str(row[patient_col]).strip()
 
-                    item_name = str(row[3]).strip() if pd.notna(row[3]) else None
+                    # ---- 治疗项目 ----
+                    item_name = None
+                    if item_col is not None and item_col < len(row) and pd.notna(row[item_col]):
+                        item_name = str(row[item_col]).strip()
                     if not item_name:
                         continue
 
                     treatment_item = WorkloadTreatmentItem.query.filter_by(name=item_name).first()
                     if not treatment_item:
+                        item_weight = 1.0
+                        if weight_col is not None and weight_col < len(row) and pd.notna(row[weight_col]):
+                            try:
+                                item_weight = float(row[weight_col])
+                            except:
+                                pass
                         treatment_item = WorkloadTreatmentItem(
                             name=item_name,
-                            weight_coefficient=float(row[4]) if pd.notna(row[4]) else 1.0
+                            weight_coefficient=item_weight
                         )
                         db.session.add(treatment_item)
                         db.session.flush()
                         result['treatment_items_created'] += 1
 
-                    weight = float(row[4]) if pd.notna(row[4]) else treatment_item.weight_coefficient
-                    sessions = int(row[5]) if pd.notna(row[5]) else 1
-                    remark = str(row[7]).strip() if pd.notna(row[7]) and len(row) > 7 else None
+                    # ---- 权重系数 ----
+                    weight = treatment_item.weight_coefficient
+                    if weight_col is not None and weight_col < len(row) and pd.notna(row[weight_col]):
+                        try:
+                            weight = float(row[weight_col])
+                        except:
+                            pass
+
+                    # ---- 人次（关键修复！）----
+                    sessions = 1
+                    if sessions_col is not None and sessions_col < len(row) and pd.notna(row[sessions_col]):
+                        try:
+                            sessions = int(float(row[sessions_col]))
+                            if sessions < 0:
+                                sessions = 1
+                        except:
+                            sessions = 1
+
+                    # ---- 备注 ----
+                    remark = None
+                    if remark_col is not None and remark_col < len(row) and pd.notna(row[remark_col]):
+                        remark = str(row[remark_col]).strip()
 
                     existing = WorkloadRecord.query.filter_by(
                         record_date=record_date,

@@ -1,6 +1,6 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """
-康复科治疗师工作量管理系统 - API蓝图
+惠阳妇幼保健院康复科业务管理系统 - API蓝图
 V1.0 - 2026-02-24
 
 API端点:
@@ -21,7 +21,7 @@ from app.models import (
     Patient  # 导入患者模型
 )
 from app.api.achievement_bp import update_therapist_stats, check_and_award_achievements
-from app.api.achievement_bp import update_therapist_stats, check_and_award_achievements
+from app.api.operation_log_bp import log_operation
 from datetime import date, datetime, timedelta
 
 workload_bp = Blueprint('workload', __name__, url_prefix='/api')
@@ -82,6 +82,7 @@ def create_therapist():
 
         db.session.add(therapist)
         db.session.commit()
+        log_operation('create', f'新增治疗师「{therapist.name}」工号:{therapist.employee_id or "无"} 科室:{therapist.department}')
 
         return jsonify({
             'success': True,
@@ -132,6 +133,8 @@ def update_therapist(therapist_id):
             therapist.sort_order = data['sort_order']
 
         db.session.commit()
+        _changes = [k for k in ['name','employee_id','department','is_active','sort_order'] if k in data]
+        log_operation('update', f'修改治疗师「{therapist.name}」字段: {", ".join(_changes)}')
 
         return jsonify({
             'success': True,
@@ -153,6 +156,7 @@ def delete_therapist(therapist_id):
 
     therapist.is_active = False
     db.session.commit()
+    log_operation('delete', f'删除(停用)治疗师「{therapist.name}」')
 
     return jsonify({
         'success': True,
@@ -218,6 +222,7 @@ def create_treatment_item():
 
     db.session.add(item)
     db.session.commit()
+    log_operation('create', f'新增治疗项目「{item.name}」编号:{item.code or "无"} 权重:{item.weight_coefficient}')
 
     return jsonify({
         'success': True,
@@ -254,6 +259,8 @@ def update_treatment_item(item_id):
         item.sort_order = data['sort_order']
 
     db.session.commit()
+    _changes = [k for k in ['name','code','category_id','weight_coefficient','description','is_active','sort_order'] if k in data]
+    log_operation('update', f'修改治疗项目「{item.name}」字段: {", ".join(_changes)}')
 
     return jsonify({
         'success': True,
@@ -276,6 +283,7 @@ def delete_treatment_item(item_id):
 
     item.is_active = False
     db.session.commit()
+    log_operation('delete', f'删除(停用)治疗项目「{item.name}」')
 
     return jsonify({
         'success': True,
@@ -285,74 +293,157 @@ def delete_treatment_item(item_id):
 
 @workload_bp.route('/treatment-items/batch', methods=['POST'])
 def batch_create_treatment_items():
-    """批量创建治疗项目"""
-    data = request.get_json()
+    """批量导入治疗项目（按名称匹配更新 + 全部重编号 T001/T002...）
 
-    if not data or not data.get('items'):
-        return jsonify({'success': False, 'error': '请提供项目数据'}), 400
+    导入规则:
+    - Excel只需两列: 项目名称 | 权重系数
+    - 名称完全匹配已有项目 → 更新权重（编号稍后统一重排）
+    - 名称不存在 → 新增项目
+    - 导入完成后，所有启用项目按顺序重新编号 T001, T002, ...
+    - 历史记录不受影响（记录通过 treatment_item_id 关联，编号变但ID不变）
+    """
+    try:
+        data = request.get_json()
 
-    items_data = data['items']
-    created = 0
-    skipped = 0
-    categories_created = 0
-    errors = []
+        if not data or not data.get('items'):
+            return jsonify({'success': False, 'error': '请提供项目数据'}), 400
 
-    for item_data in items_data:
-        name = item_data.get('name', '').strip()
-        if not name:
-            continue
+        force_rebuild = data.get('force', False)
+        items_data = data['items']
+        created = 0
+        updated = 0   # 名称匹配更新的数量
+        skipped = 0
+        categories_created = 0
+        errors = []
 
-        code = item_data.get('code', '').strip() if item_data.get('code') else None
+        for item_data in items_data:
+            name = item_data.get('name', '').strip()
+            if not name:
+                continue
 
-        # 检查是否已存在（按名称或编号）
-        existing = WorkloadTreatmentItem.query.filter(
-            (WorkloadTreatmentItem.name == name) |
-            (code and WorkloadTreatmentItem.code == code)
-        ).first()
-        if existing:
-            skipped += 1
-            continue
+            code = item_data.get('code', '').strip() if item_data.get('code') else None
+            category_name = item_data.get('category', '').strip()
+            weight = float(item_data.get('weight', 1.0))
 
-        # 处理类别
-        category_id = None
-        category_name = item_data.get('category', '').strip()
-        if category_name:
-            category = WorkloadTreatmentCategory.query.filter_by(name=category_name).first()
-            if not category:
-                category = WorkloadTreatmentCategory(
-                    name=category_name,
-                    sort_order=0
-                )
-                db.session.add(category)
-                db.session.flush()
-                categories_created += 1
-            category_id = category.id
+            # 辅助函数：解析或创建类别
+            def _get_or_create_category(cat_name):
+                if not cat_name:
+                    return None, False
+                cat = WorkloadTreatmentCategory.query.filter_by(name=cat_name).first()
+                created_flag = False
+                if not cat:
+                    cat = WorkloadTreatmentCategory(name=cat_name, sort_order=0)
+                    db.session.add(cat)
+                    db.session.flush()
+                    created_flag = True
+                return cat, created_flag
 
-        try:
-            item = WorkloadTreatmentItem(
-                code=code,
-                name=name,
-                category_id=category_id,
-                weight_coefficient=float(item_data.get('weight', 1.0)),
-                sort_order=0
-            )
-            db.session.add(item)
-            created += 1
-        except Exception as e:
-            errors.append(f'{name}: {str(e)}')
+            if force_rebuild:
+                # ========== 强制重建模式：按编号优先匹配，更新全部字段（含名称）==========
+                existing = None
+                match_method = None
 
-    db.session.commit()
+                # 1) 优先按编号(code)匹配
+                if code:
+                    existing = WorkloadTreatmentItem.query.filter_by(code=code).first()
+                    if existing:
+                        match_method = 'code'
 
-    return jsonify({
-        'success': True,
-        'message': f'成功创建 {created} 个项目',
-        'data': {
-            'created': created,
-            'skipped': skipped,
-            'categories_created': categories_created,
-            'errors': errors
-        }
-    }), 201
+                # 2) 编号没匹配到，按名称(name)匹配
+                if not existing:
+                    existing = WorkloadTreatmentItem.query.filter_by(name=name).first()
+                    if existing:
+                        match_method = 'name'
+
+                if existing:
+                    # 重新激活 + 全字段更新
+                    existing.is_active = True
+                    existing.name = name  # ✅ 更新名称（修正名称错别字等）
+                    existing.weight_coefficient = weight
+                    # 更新编号
+                    if code:
+                        code_conflict = WorkloadTreatmentItem.query.filter(
+                            WorkloadTreatmentItem.code == code,
+                            WorkloadTreatmentItem.id != existing.id
+                        ).first()
+                        if not code_conflict:
+                            existing.code = code
+                    # 更新类别
+                    if category_name:
+                        cat, cat_created = _get_or_create_category(category_name)
+                        existing.category_id = cat.id if cat else None
+                        if cat_created:
+                            categories_created += 1
+                    created += 1
+                    continue
+
+            else:
+                # ========== 普通模式（新版）：按名称匹配 ==========
+                # 名称完全匹配 → 更新权重（编号稍后统一重排）
+                existing = WorkloadTreatmentItem.query.filter_by(name=name).first()
+                if existing:
+                    existing.is_active = True  # 确保是启用状态
+                    existing.weight_coefficient = weight
+                    # 如果有类别信息也更新
+                    if category_name:
+                        cat, cat_created = _get_or_create_category(category_name)
+                        existing.category_id = cat.id if cat else None
+                        if cat_created:
+                            categories_created += 1
+                    updated += 1
+                    continue
+
+            # 名称不存在 → 创建新项目
+            category_id = None
+            if category_name:
+                cat, cat_created = _get_or_create_category(category_name)
+                category_id = cat.id if cat else None
+                if cat_created:
+                    categories_created += 1
+
+            try:
+                item = WorkloadTreatmentItem(code=code, name=name, category_id=category_id,
+                    weight_coefficient=weight, sort_order=0)
+                db.session.add(item)
+                created += 1
+            except Exception as e:
+                errors.append(f'{name}: {str(e)}')
+
+        db.session.commit()
+
+        # ========== 名称不在本次导入列表中的旧项目 → 自动停用 ==========
+        import_names = {item_data.get('name', '').strip() for item_data in items_data if item_data.get('name', '').strip()}
+        deactivated = 0
+        old_items = WorkloadTreatmentItem.query.filter_by(is_active=True).all()
+        for item in old_items:
+            if item.name not in import_names:
+                item.is_active = False
+                deactivated += 1
+        db.session.commit()
+
+        # ========== 全部重编号：T001, T002, T003 ...（只对仍启用的）==========
+        # 先清空所有项目的code，避免UNIQUE冲突（停用的旧项目还占着旧编号）
+        WorkloadTreatmentItem.query.update({WorkloadTreatmentItem.code: None}, synchronize_session='fetch')
+        db.session.commit()
+
+        all_active = WorkloadTreatmentItem.query.filter_by(is_active=True).order_by(WorkloadTreatmentItem.id).all()
+        for idx, item in enumerate(all_active, 1):
+            item.code = f'T{idx:03d}'
+            item.sort_order = idx
+        db.session.commit()
+        mode_msg = '【强制重建】' if force_rebuild else ''
+        log_operation('create', f'{mode_msg}项目导入: 新增{created}个, 更新{updated}个, 停用{deactivated}个, 重编号完成, 新增类别{categories_created}个')
+
+        return jsonify({
+            'success': True,
+            'message': f'导入完成！新增 {created}，更新 {updated}，停用(不在新表) {deactivated}，已重编号 T001~T{len(all_active):03d}' + (' (强制重建模式)' if force_rebuild else ''),
+            'data': {'created': created, 'updated': updated, 'deactivated': deactivated, 'skipped': skipped, 'categories_created': categories_created, 'errors': errors, 'force_mode': force_rebuild, 'total_count': len(all_active)}
+        }), 201
+    except Exception as e:
+        db.session.rollback()
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 @workload_bp.route('/treatment-items/batch-delete', methods=['POST'])
@@ -380,6 +471,7 @@ def batch_delete_treatment_items():
             deleted += 1
 
     db.session.commit()
+    log_operation('delete', f'批量删除(停用)治疗项目: {deleted}个')
 
     return jsonify({
         'success': True,
@@ -391,6 +483,56 @@ def batch_delete_treatment_items():
     })
 
 
+
+
+
+@workload_bp.route('/treatment-items/force-rebuild', methods=['POST'])
+def force_rebuild_items():
+    """强制重建：停用所有旧项目（保护历史记录）"""
+    try:
+        all_items = WorkloadTreatmentItem.query.filter_by(is_active=True).all()
+        total_items = len(all_items)
+        affected_records = 0
+        cleared_names = []
+        for item in all_items:
+            rc = WorkloadRecord.query.filter_by(treatment_item_id=item.id).count()
+            if rc > 0: affected_records += rc
+            item.is_active = False
+            cleared_names.append(f'{item.name}(ID:{item.id}, 关联{rc}条记录)')
+        db.session.commit()
+        log_operation('delete', f'强制重建: 停用{total_items}个治疗项目，影响{affected_records}条历史记录')
+        return jsonify({
+            'success': True,
+            'message': f'已停用{total_items}个旧项目（软删除，不影响历史记录）。接下来请用强制重建模式导入新项目。',
+            'data': {'cleared_count': total_items, 'affected_records': affected_records, 'cleared_items': cleared_names[:20]}
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@workload_bp.route('/treatment-items/restore-all', methods=['POST'])
+def restore_all_items():
+    """撤销强制重建：恢复所有被停用的治疗项目"""
+    try:
+        inactive_items = WorkloadTreatmentItem.query.filter_by(is_active=False).all()
+        count = len(inactive_items)
+        for item in inactive_items:
+            item.is_active = True
+        db.session.commit()
+        log_operation('create', f'撤销强制重建: 恢复{count}个治疗项目')
+        return jsonify({
+            'success': True,
+            'message': f'已恢复 {count} 个项目',
+            'data': {'restored_count': count}
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+# ============================================================================
+# 治疗类别管理 API
 # ============================================================================
 # 治疗类别管理 API
 # ============================================================================
@@ -434,6 +576,7 @@ def create_category():
 
     db.session.add(category)
     db.session.commit()
+    log_operation('create', f'新增治疗类别「{category.name}」')
 
     return jsonify({
         'success': True,
@@ -461,6 +604,8 @@ def update_category(category_id):
         category.sort_order = data['sort_order']
 
     db.session.commit()
+    _changes = [k for k in ['name','description','is_active','sort_order'] if k in data]
+    log_operation('update', f'修改治疗类别「{category.name}」字段: {", ".join(_changes)}')
 
     return jsonify({
         'success': True,
@@ -478,6 +623,7 @@ def delete_category(category_id):
 
     category.is_active = False
     db.session.commit()
+    log_operation('delete', f'删除(停用)治疗类别「{category.name}」')
 
     return jsonify({
         'success': True,
@@ -582,17 +728,15 @@ def parse_record_date(date_value):
     if date_value is None:
         return date.today()
 
-    if isinstance(date_value, date):
+    if isinstance(date_value, (date, datetime)):
         return date_value
 
     if isinstance(date_value, str):
         try:
-            # 支持 YYYY-MM-DD 格式
             return datetime.strptime(date_value, '%Y-%m-%d').date()
         except ValueError:
             pass
         try:
-            # 支持 YYYY/MM/DD 格式
             return datetime.strptime(date_value, '%Y/%m/%d').date()
         except ValueError:
             pass
@@ -760,6 +904,7 @@ def create_record():
     else:
         new_achievements_by_therapist = {}
 
+    log_operation('create', f'新增工作量记录: {len(created_records)}条' + (f', 失败{len(errors)}条' if errors else ''))
     return jsonify({
         'success': True,
         'message': f'成功创建 {len(created_records)} 条记录',
@@ -827,6 +972,8 @@ def update_record(record_id):
     )
 
     db.session.commit()
+    therapist_name = record.therapist_rel.name if record.therapist_rel else '未知'
+    log_operation('update', f'修改工作量记录: {therapist_name} {record.record_date}')
 
     # 触发统计和成就更新
     update_therapist_stats(record.therapist_id)
@@ -854,9 +1001,13 @@ def delete_record(record_id):
 
     # 保存治疗师ID用于后续更新统计
     therapist_id = record.therapist_id
+    therapist_name = record.therapist_rel.name if record.therapist_rel else '未知'
+    item_name = record.treatment_item_rel.name if record.treatment_item_rel else '未知'
+    record_date = str(record.record_date) if record.record_date else '未知'
 
     db.session.delete(record)
     db.session.commit()
+    log_operation('delete', f'删除工作量记录: {therapist_name} {record_date} {item_name}')
 
     # 触发统计和成就更新
     update_therapist_stats(therapist_id)
@@ -892,6 +1043,7 @@ def batch_delete_records():
             deleted += 1
 
     db.session.commit()
+    log_operation('delete', f'批量删除工作量记录: {deleted}条')
 
     # 批量更新受影响治疗师的统计
     for tid in affected_therapists:
@@ -1060,6 +1212,7 @@ def batch_import_records():
                 failed += 1
 
         db.session.commit()
+        log_operation('import', f'批量导入工作量记录: 成功{imported}条, 失败{failed}条')
 
         # 批量更新受影响治疗师的统计和成就
         new_achievements_by_therapist = {}
@@ -1212,6 +1365,68 @@ def get_monthly_statistics():
     })
 
 
+@workload_bp.route('/statistics/treatment-item-stats', methods=['GET'])
+def get_treatment_item_statistics():
+    """按治疗项目统计（支持日期范围）"""
+    start_date_str = request.args.get('start_date')
+    end_date_str = request.args.get('end_date')
+
+    try:
+        if start_date_str:
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+        else:
+            start_date = date.today().replace(day=1)
+
+        if end_date_str:
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+        else:
+            end_date = date.today()
+    except ValueError:
+        return jsonify({'success': False, 'error': '日期格式错误，应为YYYY-MM-DD'}), 400
+    
+    records = WorkloadRecord.query.filter(
+        WorkloadRecord.record_date >= start_date,
+        WorkloadRecord.record_date <= end_date
+    ).all()
+    
+    # 按治疗项目分组统计
+    item_stats = {}
+    for r in records:
+        item_id = r.treatment_item_id
+        if item_id not in item_stats:
+            item_name = r.treatment_item_rel.name if r.treatment_item_rel else '未知项目'
+            category_name = r.treatment_item_rel.category_rel.name if r.treatment_item_rel and r.treatment_item_rel.category_rel else '未分类'
+            item_stats[item_id] = {
+                'item_id': item_id,
+                'item_name': item_name,
+                'category_name': category_name,
+                'sessions': 0,
+                'workload': 0,
+                'record_count': 0
+            }
+        item_stats[item_id]['sessions'] += r.session_count
+        item_stats[item_id]['workload'] += r.weighted_workload
+        item_stats[item_id]['record_count'] += 1
+    
+    # 转为列表并排序（按工作量降序）
+    stats_list = sorted(item_stats.values(), key=lambda x: x['workload'], reverse=True)
+    
+    total_sessions = sum(s['sessions'] for s in stats_list)
+    total_workload = sum(s['workload'] for s in stats_list)
+    
+    return jsonify({
+        'success': True,
+        'data': {
+            'start_date': start_date.isoformat(),
+            'end_date': end_date.isoformat(),
+            'total_sessions': total_sessions,
+            'total_workload': round(total_workload, 2),
+            'item_count': len(stats_list),
+            'item_statistics': stats_list
+        }
+    })
+
+
 @workload_bp.route('/statistics/ranking', methods=['GET'])
 def get_ranking():
     """获取治疗师排行榜"""
@@ -1318,6 +1533,10 @@ def get_dashboard():
         therapist_today[tid]['workload'] += r.weighted_workload
         therapist_today[tid]['sessions'] += r.session_count
 
+    # Add days info (today = 1 day for all)
+    for tid, stats in therapist_today.items():
+        stats['days'] = 1
+        stats['daily_average'] = round(stats['workload'], 2) if stats['workload'] else 0
     today_ranking = sorted(therapist_today.values(), key=lambda x: x['workload'], reverse=True)[:5]
 
     # 本月排行
@@ -1334,6 +1553,17 @@ def get_dashboard():
         therapist_month[tid]['workload'] += r.weighted_workload
         therapist_month[tid]['sessions'] += r.session_count
 
+    # Track unique work days per therapist for monthly ranking
+    month_day_map = {}
+    for r in month_records:
+        tid = r.therapist_id
+        if tid not in month_day_map:
+            month_day_map[tid] = set()
+        month_day_map[tid].add(r.record_date)
+    for tid, stats in therapist_month.items():
+        dc = len(month_day_map.get(tid, set()))
+        stats['days'] = dc
+        stats['daily_average'] = round(stats['workload'] / dc, 2) if dc > 0 else 0
     month_ranking = sorted(therapist_month.values(), key=lambda x: x['workload'], reverse=True)[:5]
 
     return jsonify({
@@ -1476,6 +1706,7 @@ def restore_backup():
                     records_created += 1
 
         db.session.commit()
+        log_operation('restore', '从备份恢复数据')
 
         return jsonify({
             'success': True,
@@ -1553,6 +1784,7 @@ def export_records():
         query = query.filter(WorkloadRecord.record_date <= end_date)
 
     records = query.order_by(WorkloadRecord.record_date.desc()).all()
+    log_operation('export', f'导出工作量记录: {len(records)}条, 日期范围:{start_date or "不限"}~{end_date or "不限"}')
 
     output = io.StringIO()
 
@@ -1616,7 +1848,7 @@ def import_records():
         data_lines = []
         for line in lines:
             # 跳过空行和说明行
-            if not line.strip() or line.startswith('说明') or line.startswith('治疗师参考') or line.startswith('治疗项目参考'):
+            if not line.strip() or line.startswith('说明') or line.startswith('治疗师参考') or line.startswith('治疗项目参考') or line.startswith('工作量记录导入模板') or '导入模板' in line:
                 continue
             # 检查是否是表头行
             if '日期' in line and '治疗师' in line:
@@ -1852,6 +2084,21 @@ DEFAULT_SETTINGS = {
         'value': '2026',
         'type': 'string',
         'description': '设置页面访问密码（在设置页面中可修改）'
+    },
+    'ai_api_key': {
+        'value': '',
+        'type': 'string',
+        'description': 'AI API Key（用于AI智能出题功能）'
+    },
+    'ai_model': {
+        'value': 'glm-5v-turbo',
+        'type': 'string',
+        'description': 'AI出题使用的模型名称'
+    },
+    'ai_api_base_url': {
+        'value': 'https://open.bigmodel.cn/api/paas/v4/anthropic',
+        'type': 'string',
+        'description': 'AI API 接口地址'
     }
 }
 
@@ -1941,6 +2188,7 @@ def update_settings():
         updated.append(key)
 
     db.session.commit()
+    log_operation('setting', f'更新系统设置: {updated}')
 
     return jsonify({
         'success': True,
@@ -2036,6 +2284,7 @@ def change_settings_password():
 
     password_setting.setting_value = data['new_password']
     db.session.commit()
+    log_operation('setting', '修改设置页面密码')
 
     return jsonify({
         'success': True,
