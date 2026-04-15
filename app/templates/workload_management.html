@@ -1304,6 +1304,7 @@
                                         </div>
                                         <button class="btn btn-sm btn-success" onclick="openOutpatientEntry()"><i class="fas fa-edit mr-1"></i>录入数据</button>
                                         <button class="btn btn-sm btn-outline-secondary" onclick="exportTableToExcel('outpatientMonthlyWrap','门诊月度统计')"><i class="fas fa-file-excel mr-1"></i>导出</button>
+                                        <button class="btn btn-sm btn-outline-warning ml-1" onclick="openGenericRollback('outpatient','门诊')" title="回滚到之前的版本"><i class="fas fa-undo mr-1"></i>回滚</button>
                                     </div>
                                     <div id="outpatientTableWrap" style="overflow-x:auto;">
                                         <p class="text-muted text-center">请选择月份后查询</p>
@@ -1320,6 +1321,7 @@
                                         <li class="nav-item"><a class="nav-link" data-toggle="pill" href="#wardDaily_2">妇科</a></li>
                                         <li class="nav-item"><a class="nav-link" data-toggle="pill" href="#wardDaily_3">外科</a></li>
                                         <li class="nav-item"><a class="nav-link" data-toggle="pill" href="#wardDaily_4">新生儿科</a></li>
+                                        <li class="nav-item"><a class="nav-link" data-toggle="pill" href="#wardDaily_5">产康中心</a></li>
                                     </ul>
                                     <div class="tab-content">
                                         <!-- 月度汇总（原有内容） -->
@@ -1334,6 +1336,7 @@
                                                 <div>
                                                     <button class="btn btn-sm btn-success" onclick="openWardEntry()"><i class="fas fa-edit mr-1"></i>录入数据</button>
                                                     <button class="btn btn-sm btn-outline-secondary ml-1" onclick="exportTableToExcel('wardTableWrap','病房月度统计')"><i class="fas fa-file-excel mr-1"></i>导出</button>
+                                                    <button class="btn btn-sm btn-outline-warning ml-1" onclick="openGenericRollback('ward_monthly','病房月度')" title="回滚到之前的版本"><i class="fas fa-undo mr-1"></i>回滚</button>
                                                 </div>
                                             </div>
                                             <div id="wardTableWrap" style="overflow-x:auto;">
@@ -1348,15 +1351,17 @@
                                                     <select class="form-control form-control-sm mr-2" id="wardDailyYear_1" style="width:100px;"><option value="2028">2028</option><option value="2027">2027</option><option value="2026" selected>2026</option><option value="2025">2025</option><option value="2024">2024</option><option value="2023">2023</option><option value="2022">2022</option></select>
                                                     <select class="form-control form-control-sm mr-2" id="wardDailyMonth_1" style="width:90px;"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select>
                                                     <button class="btn btn-sm btn-primary" onclick="loadWardDaily(1)"><i class="fas fa-search mr-1"></i>查询</button>
-                                                    <button class="btn btn-sm btn-outline-secondary ml-1" id="wardDailySaveBtn_1" onclick="saveWardDailyEdit(1)" title="输入已自动保存，此按钮仅用于全量同步"><i class="fas fa-sync mr-1"></i>同步</button>
+                                                    <button class="btn btn-sm btn-outline-secondary ml-1" id="wardDailySaveBtn_1" onclick="saveWardDailyEdit(1)" title="强制全量保存所有单元格（正常情况下输入会自动保存）"><i class="fas fa-sync mr-1"></i>全量保存</button>
                                                 </div>
                                                 <div class="d-flex flex-wrap">
                                                     <button class="btn btn-sm btn-outline-info mr-1 mb-1" onclick="openWardPriceManage(1)"><i class="fas fa-cog mr-1"></i>项目单价</button>
                                                     <button class="btn btn-sm btn-outline-primary mr-1 mb-1" onclick="downloadWardDailyTemplate(1)"><i class="fas fa-file-download mr-1"></i>下载模板</button>
                                                     <label class="btn btn-sm btn-outline-success mr-1 mb-1" style="margin-bottom:0;"><i class="fas fa-file-import mr-1"></i>导入Excel<input type="file" accept=".xlsx,.xls" style="display:none;" onchange="importWardDailyExcel(this,1)"></label>
                                                     <button class="btn btn-sm btn-outline-secondary mr-1 mb-1" onclick="exportWardDailyExcel(1)"><i class="fas fa-file-export mr-1"></i>导出</button>
+                                                    <button class="btn btn-sm btn-outline-warning mr-1 mb-1" onclick="openWardRollback(1)" title="回滚到之前的版本"><i class="fas fa-undo mr-1"></i>回滚</button>
                                                 </div>
                                             </div>
+                                            <div id="wdSaveInd_1" class="small mb-1" style="height:20px;"></div>
                                             <div id="wardDailyTableWrap_1" style="overflow-x:auto;min-height:300px;"><p class="text-muted text-center py-4">请选择年月后查询，可直接在表格中编辑数据并保存</p></div>
                                             <div class="row mt-3" id="wardDailyChartsSection_1" style="display:none;">
                                                 <div class="col-md-8 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-chart-line mr-1"></i>每日金额趋势</h6></div><div class="card-body p-2"><canvas id="chartWardDailyTrend_1"></canvas></div></div></div>
@@ -1371,15 +1376,17 @@
                                                     <select class="form-control form-control-sm mr-2" id="wardDailyYear_2" style="width:100px;"><option value="2028">2028</option><option value="2027">2027</option><option value="2026" selected>2026</option><option value="2025">2025</option><option value="2024">2024</option><option value="2023">2023</option><option value="2022">2022</option></select>
                                                     <select class="form-control form-control-sm mr-2" id="wardDailyMonth_2" style="width:90px;"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select>
                                                     <button class="btn btn-sm btn-primary" onclick="loadWardDaily(2)"><i class="fas fa-search mr-1"></i>查询</button>
-                                                    <button class="btn btn-sm btn-outline-secondary ml-1" id="wardDailySaveBtn_2" onclick="saveWardDailyEdit(2)" title="输入已自动保存，此按钮仅用于全量同步"><i class="fas fa-sync mr-1"></i>同步</button>
+                                                    <button class="btn btn-sm btn-outline-secondary ml-1" id="wardDailySaveBtn_2" onclick="saveWardDailyEdit(2)" title="强制全量保存所有单元格（正常情况下输入会自动保存）"><i class="fas fa-sync mr-1"></i>全量保存</button>
                                                 </div>
                                                 <div class="d-flex flex-wrap">
                                                     <button class="btn btn-sm btn-outline-info mr-1 mb-1" onclick="openWardPriceManage(2)"><i class="fas fa-cog mr-1"></i>项目单价</button>
                                                     <button class="btn btn-sm btn-outline-primary mr-1 mb-1" onclick="downloadWardDailyTemplate(2)"><i class="fas fa-file-download mr-1"></i>下载模板</button>
                                                     <label class="btn btn-sm btn-outline-success mr-1 mb-1" style="margin-bottom:0;"><i class="fas fa-file-import mr-1"></i>导入Excel<input type="file" accept=".xlsx,.xls" style="display:none;" onchange="importWardDailyExcel(this,2)"></label>
                                                     <button class="btn btn-sm btn-outline-secondary mr-1 mb-1" onclick="exportWardDailyExcel(2)"><i class="fas fa-file-export mr-1"></i>导出</button>
+                                                    <button class="btn btn-sm btn-outline-warning mr-1 mb-1" onclick="openWardRollback(2)" title="回滚到之前的版本"><i class="fas fa-undo mr-1"></i>回滚</button>
                                                 </div>
                                             </div>
+                                            <div id="wdSaveInd_2" class="small mb-1" style="height:20px;"></div>
                                             <div id="wardDailyTableWrap_2" style="overflow-x:auto;min-height:300px;"><p class="text-muted text-center py-4">请选择年月后查询，可直接在表格中编辑数据并保存</p></div>
                                             <div class="row mt-3" id="wardDailyChartsSection_2" style="display:none;">
                                                 <div class="col-md-8 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-chart-line mr-1"></i>每日金额趋势</h6></div><div class="card-body p-2"><canvas id="chartWardDailyTrend_2"></canvas></div></div></div>
@@ -1394,15 +1401,17 @@
                                                     <select class="form-control form-control-sm mr-2" id="wardDailyYear_3" style="width:100px;"><option value="2028">2028</option><option value="2027">2027</option><option value="2026" selected>2026</option><option value="2025">2025</option><option value="2024">2024</option><option value="2023">2023</option><option value="2022">2022</option></select>
                                                     <select class="form-control form-control-sm mr-2" id="wardDailyMonth_3" style="width:90px;"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select>
                                                     <button class="btn btn-sm btn-primary" onclick="loadWardDaily(3)"><i class="fas fa-search mr-1"></i>查询</button>
-                                                    <button class="btn btn-sm btn-outline-secondary ml-1" id="wardDailySaveBtn_3" onclick="saveWardDailyEdit(3)" title="输入已自动保存，此按钮仅用于全量同步"><i class="fas fa-sync mr-1"></i>同步</button>
+                                                    <button class="btn btn-sm btn-outline-secondary ml-1" id="wardDailySaveBtn_3" onclick="saveWardDailyEdit(3)" title="强制全量保存所有单元格（正常情况下输入会自动保存）"><i class="fas fa-sync mr-1"></i>全量保存</button>
                                                 </div>
                                                 <div class="d-flex flex-wrap">
                                                     <button class="btn btn-sm btn-outline-info mr-1 mb-1" onclick="openWardPriceManage(3)"><i class="fas fa-cog mr-1"></i>项目单价</button>
                                                     <button class="btn btn-sm btn-outline-primary mr-1 mb-1" onclick="downloadWardDailyTemplate(3)"><i class="fas fa-file-download mr-1"></i>下载模板</button>
                                                     <label class="btn btn-sm btn-outline-success mr-1 mb-1" style="margin-bottom:0;"><i class="fas fa-file-import mr-1"></i>导入Excel<input type="file" accept=".xlsx,.xls" style="display:none;" onchange="importWardDailyExcel(this,3)"></label>
                                                     <button class="btn btn-sm btn-outline-secondary mr-1 mb-1" onclick="exportWardDailyExcel(3)"><i class="fas fa-file-export mr-1"></i>导出</button>
+                                                    <button class="btn btn-sm btn-outline-warning mr-1 mb-1" onclick="openWardRollback(3)" title="回滚到之前的版本"><i class="fas fa-undo mr-1"></i>回滚</button>
                                                 </div>
                                             </div>
+                                            <div id="wdSaveInd_3" class="small mb-1" style="height:20px;"></div>
                                             <div id="wardDailyTableWrap_3" style="overflow-x:auto;min-height:300px;"><p class="text-muted text-center py-4">请选择年月后查询，可直接在表格中编辑数据并保存</p></div>
                                             <div class="row mt-3" id="wardDailyChartsSection_3" style="display:none;">
                                                 <div class="col-md-8 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-chart-line mr-1"></i>每日金额趋势</h6></div><div class="card-body p-2"><canvas id="chartWardDailyTrend_3"></canvas></div></div></div>
@@ -1417,19 +1426,46 @@
                                                     <select class="form-control form-control-sm mr-2" id="wardDailyYear_4" style="width:100px;"><option value="2028">2028</option><option value="2027">2027</option><option value="2026" selected>2026</option><option value="2025">2025</option><option value="2024">2024</option><option value="2023">2023</option><option value="2022">2022</option></select>
                                                     <select class="form-control form-control-sm mr-2" id="wardDailyMonth_4" style="width:90px;"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select>
                                                     <button class="btn btn-sm btn-primary" onclick="loadWardDaily(4)"><i class="fas fa-search mr-1"></i>查询</button>
-                                                    <button class="btn btn-sm btn-outline-secondary ml-1" id="wardDailySaveBtn_4" onclick="saveWardDailyEdit(4)" title="输入已自动保存，此按钮仅用于全量同步"><i class="fas fa-sync mr-1"></i>同步</button>
+                                                    <button class="btn btn-sm btn-outline-secondary ml-1" id="wardDailySaveBtn_4" onclick="saveWardDailyEdit(4)" title="强制全量保存所有单元格（正常情况下输入会自动保存）"><i class="fas fa-sync mr-1"></i>全量保存</button>
                                                 </div>
                                                 <div class="d-flex flex-wrap">
                                                     <button class="btn btn-sm btn-outline-info mr-1 mb-1" onclick="openWardPriceManage(4)"><i class="fas fa-cog mr-1"></i>项目单价</button>
                                                     <button class="btn btn-sm btn-outline-primary mr-1 mb-1" onclick="downloadWardDailyTemplate(4)"><i class="fas fa-file-download mr-1"></i>下载模板</button>
                                                     <label class="btn btn-sm btn-outline-success mr-1 mb-1" style="margin-bottom:0;"><i class="fas fa-file-import mr-1"></i>导入Excel<input type="file" accept=".xlsx,.xls" style="display:none;" onchange="importWardDailyExcel(this,4)"></label>
                                                     <button class="btn btn-sm btn-outline-secondary mr-1 mb-1" onclick="exportWardDailyExcel(4)"><i class="fas fa-file-export mr-1"></i>导出</button>
+                                                    <button class="btn btn-sm btn-outline-warning mr-1 mb-1" onclick="openWardRollback(4)" title="回滚到之前的版本"><i class="fas fa-undo mr-1"></i>回滚</button>
                                                 </div>
                                             </div>
+                                            <div id="wdSaveInd_4" class="small mb-1" style="height:20px;"></div>
                                             <div id="wardDailyTableWrap_4" style="overflow-x:auto;min-height:300px;"><p class="text-muted text-center py-4">请选择年月后查询，可直接在表格中编辑数据并保存</p></div>
                                             <div class="row mt-3" id="wardDailyChartsSection_4" style="display:none;">
                                                 <div class="col-md-8 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-chart-line mr-1"></i>每日金额趋势</h6></div><div class="card-body p-2"><canvas id="chartWardDailyTrend_4"></canvas></div></div></div>
                                                 <div class="col-md-4 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-chart-bar mr-1"></i>项目人次排名（本月）</h6></div><div class="card-body p-2"><canvas id="chartWardDailyRank_4"></canvas></div></div></div>
+                                            </div>
+                                        </div>
+
+                                        <!-- 产康中心 每日统计 -->
+                                        <div class="tab-pane fade" id="wardDaily_5">
+                                            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+                                                <div class="d-flex align-items-center">
+                                                    <select class="form-control form-control-sm mr-2" id="wardDailyYear_5" style="width:100px;"><option value="2028">2028</option><option value="2027">2027</option><option value="2026" selected>2026</option><option value="2025">2025</option><option value="2024">2024</option><option value="2023">2023</option><option value="2022">2022</option></select>
+                                                    <select class="form-control form-control-sm mr-2" id="wardDailyMonth_5" style="width:90px;"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select>
+                                                    <button class="btn btn-sm btn-primary" onclick="loadWardDaily(5)"><i class="fas fa-search mr-1"></i>查询</button>
+                                                    <button class="btn btn-sm btn-outline-secondary ml-1" id="wardDailySaveBtn_5" onclick="saveWardDailyEdit(5)" title="强制全量保存所有单元格（正常情况下输入会自动保存）"><i class="fas fa-sync mr-1"></i>全量保存</button>
+                                                </div>
+                                                <div class="d-flex flex-wrap">
+                                                    <button class="btn btn-sm btn-outline-info mr-1 mb-1" onclick="openWardPriceManage(5)"><i class="fas fa-cog mr-1"></i>项目单价</button>
+                                                    <button class="btn btn-sm btn-outline-primary mr-1 mb-1" onclick="downloadWardDailyTemplate(5)"><i class="fas fa-file-download mr-1"></i>下载模板</button>
+                                                    <label class="btn btn-sm btn-outline-success mr-1 mb-1" style="margin-bottom:0;"><i class="fas fa-file-import mr-1"></i>导入Excel<input type="file" accept=".xlsx,.xls" style="display:none;" onchange="importWardDailyExcel(this,5)"></label>
+                                                    <button class="btn btn-sm btn-outline-secondary mr-1 mb-1" onclick="exportWardDailyExcel(5)"><i class="fas fa-file-export mr-1"></i>导出</button>
+                                                    <button class="btn btn-sm btn-outline-warning mr-1 mb-1" onclick="openWardRollback(5)" title="回滚到之前的版本"><i class="fas fa-undo mr-1"></i>回滚</button>
+                                                </div>
+                                            </div>
+                                            <div id="wdSaveInd_5" class="small mb-1" style="height:20px;"></div>
+                                            <div id="wardDailyTableWrap_5" style="overflow-x:auto;min-height:300px;"><p class="text-muted text-center py-4">请选择年月后查询，可直接在表格中编辑数据并保存</p></div>
+                                            <div class="row mt-3" id="wardDailyChartsSection_5" style="display:none;">
+                                                <div class="col-md-8 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-chart-line mr-1"></i>每日金额趋势</h6></div><div class="card-body p-2"><canvas id="chartWardDailyTrend_5"></canvas></div></div></div>
+                                                <div class="col-md-4 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-chart-bar mr-1"></i>项目人次排名（本月）</h6></div><div class="card-body p-2"><canvas id="chartWardDailyRank_5"></canvas></div></div></div>
                                             </div>
                                         </div>
                                     </div>
@@ -1451,6 +1487,7 @@
                                                 </div>
                                                 <button class="btn btn-sm btn-success" onclick="openChildrenMonthlyEntry()"><i class="fas fa-edit mr-1"></i>录入数据</button>
                                                 <button class="btn btn-sm btn-outline-secondary" onclick="exportTableToExcel('childrenMonthlyWrap','儿童医院月度统计')"><i class="fas fa-file-excel mr-1"></i>导出</button>
+                                                <button class="btn btn-sm btn-outline-warning ml-1" onclick="openGenericRollback('children_monthly','儿童医院月度')" title="回滚到之前的版本"><i class="fas fa-undo mr-1"></i>回滚</button>
                                             </div>
                                             <div id="childrenMonthlyWrap" style="overflow-x:auto;">
                                                 <p class="text-muted text-center">请选择月份后查询</p>
@@ -1466,6 +1503,7 @@
                                                 </div>
                                                 <button class="btn btn-sm btn-success" onclick="openChildrenDoctorEntry()"><i class="fas fa-edit mr-1"></i>录入数据</button>
                                                 <button class="btn btn-sm btn-outline-secondary" onclick="exportTableToExcel('childrenDoctorWrap','医生开单统计')"><i class="fas fa-file-excel mr-1"></i>导出</button>
+                                                <button class="btn btn-sm btn-outline-warning ml-1" onclick="openGenericRollback('children_doctor','医生开单统计')" title="回滚到之前的版本"><i class="fas fa-undo mr-1"></i>回滚</button>
                                             </div>
                                             <div id="childrenDoctorWrap" style="overflow-x:auto;">
                                                 <p class="text-muted text-center">请选择年月后查询</p>
@@ -1515,6 +1553,7 @@
                                     <button class="btn btn-sm btn-outline-info mr-1" onclick="$('#refMonthlyImportFile').click()"><i class="fas fa-file-import mr-1"></i>导入Excel</button>
                                     <button class="btn btn-sm btn-outline-secondary mr-1" onclick="window.open('/api/referral/template','_blank')"><i class="fas fa-download mr-1"></i>下载数据模板</button>
                                     <button class="btn btn-sm btn-outline-secondary" onclick="exportTableToExcel('referralDataWrap','转介统计')"><i class="fas fa-file-excel mr-1"></i>导出</button>
+                                    <button class="btn btn-sm btn-outline-warning ml-1" onclick="openGenericRollback('referral','转介统计')" title="回滚到之前的版本"><i class="fas fa-undo mr-1"></i>回滚</button>
                                 </div>
                             </div>
                             <!-- 导入预览 -->
@@ -2681,6 +2720,44 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
                     <button type="button" class="btn btn-primary" onclick="saveWardPrices()">保存单价</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 病房每日回滚模态框 -->
+    <div class="modal fade" id="wardRollbackModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title"><i class="fas fa-undo mr-2"></i>数据回滚</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-warning mb-2"><i class="fas fa-exclamation-triangle mr-1"></i>恢复后将覆盖当前数据，此操作不可撤销！</p>
+                    <table class="table table-sm table-hover">
+                        <thead><tr><th>时间</th><th>类型</th><th>记录数</th><th>操作</th></tr></thead>
+                        <tbody id="wardRollbackList"><tr><td colspan="4" class="text-center">加载中...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 通用数据回滚模态框 -->
+    <div class="modal fade" id="genericRollbackModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title" id="genericRollbackTitle"><i class="fas fa-undo mr-2"></i>数据回滚</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-warning mb-2"><i class="fas fa-exclamation-triangle mr-1"></i>恢复后将覆盖当前数据，此操作不可撤销！</p>
+                    <table class="table table-sm table-hover">
+                        <thead><tr><th>时间</th><th>范围</th><th>类型</th><th>记录数</th><th>操作</th></tr></thead>
+                        <tbody id="genericRollbackList"><tr><td colspan="5" class="text-center">加载中...</td></tr></tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -8656,7 +8733,7 @@ function importWardItems(input) { var fd=new FormData();fd.append('file',input.f
 function initWardDailyControls(){/* options now in HTML */}
 
 
-var WARD_AREAS=['产科','妇科','外科','新生儿科'];
+var WARD_AREAS=['产科','妇科','外科','新生儿科','产康中心'];
 var _currentWardArea='';
 var _currentWardAreaIdx=0;
 function loadWardDaily(areaIdx){
@@ -8762,14 +8839,27 @@ function bindWardDailyEditCells(){
 }
 
 // Save a single cell value to backend
+var _wdSaveStatus={}; // areaIdx → 'saving'|'saved'|'idle'
 function autoSaveWardCell(areaIdx, date, item, sessions){
+    _wdSaveStatus[areaIdx]='saving';
+    updateWardSaveIndicator(areaIdx);
     $.ajax({url:'/api/dept-stats/ward/daily',method:'POST',contentType:'application/json',
         data:JSON.stringify({records:[{record_date:date, ward_area:WARD_AREAS[areaIdx-1], item_name:item, session_count:sessions}],auto_calc:true}),
         success:function(r){
-            if(!r.success) console.warn('Auto-save failed:', r.error);
+            if(r.success){ _wdSaveStatus[areaIdx]='saved'; }
+            else { _wdSaveStatus[areaIdx]='idle'; console.warn('Auto-save failed:', r.error); }
+            updateWardSaveIndicator(areaIdx);
         },
-        error:function(){ console.warn('Auto-save network error'); }
+        error:function(){ _wdSaveStatus[areaIdx]='idle'; updateWardSaveIndicator(areaIdx); }
     });
+}
+function updateWardSaveIndicator(areaIdx){
+    var $ind=$('#wdSaveInd_'+areaIdx);
+    if(!$ind.length) return;
+    var s=_wdSaveStatus[areaIdx]||'idle';
+    if(s==='saving') $ind.html('<i class="fas fa-circle-notch fa-spin text-primary mr-1"></i>保存中...').removeClass('text-success text-muted').addClass('text-primary');
+    else if(s==='saved') $ind.html('<i class="fas fa-check-circle text-success mr-1"></i>已自动保存').removeClass('text-primary text-muted').addClass('text-success');
+    else $ind.html('').removeClass('text-primary text-success text-muted');
 }
 
 // Recalculate trend+rank charts from current DOM values
@@ -8817,11 +8907,11 @@ function saveWardDailyEdit(areaIdx){
     $.ajax({url:'/api/dept-stats/ward/daily',method:'POST',contentType:'application/json',
         data:JSON.stringify({records:records,auto_calc:true}),
         success:function(r){
-            if(r.success){ showToast('同步完成 '+ (r.data.count||records.length) +'条记录','success'); loadWardDaily(areaIdx); }
-            else showToast(r.error||'同步失败','error');
+            if(r.success){ _wdSaveStatus[areaIdx]='saved'; updateWardSaveIndicator(areaIdx); showToast('全量保存完成 '+ (r.data.count||records.length) +'条记录','success'); loadWardDaily(areaIdx); }
+            else{ _wdSaveStatus[areaIdx]='idle'; updateWardSaveIndicator(areaIdx); showToast(r.error||'保存失败','error'); }
         },
-        error:function(){showToast('网络错误','error');},
-        complete:function(){$btn.prop('disabled',false).html('<i class="fas fa-sync mr-1"></i>同步');}
+        error:function(){ _wdSaveStatus[areaIdx]='idle'; updateWardSaveIndicator(areaIdx); showToast('网络错误','error'); },
+        complete:function(){$btn.prop('disabled',false).html('<i class="fas fa-sync mr-1"></i>全量保存');}
     });
 }
 
@@ -8965,6 +9055,104 @@ function addWardPrice(){
 }
 function deleteWardPrice(name){ $('tr[data-item="'+name+'"]').remove(); }
 
+// === 数据回滚 ===
+var _currentRollbackAreaIdx=0;
+function openWardRollback(areaIdx){
+    _currentRollbackAreaIdx=areaIdx;
+    $('#wardRollbackModal .modal-title').html('<i class="fas fa-undo mr-2"></i>'+WARD_AREAS[areaIdx-1]+' — 数据回滚');
+    $('#wardRollbackList').html('<tr><td colspan="4" class="text-center text-muted py-3"><i class="fas fa-spinner fa-spin mr-1"></i>加载快照列表...</td></tr>');
+    $('#wardRollbackModal').modal('show');
+    $.get('/api/dept-stats/ward/daily/snapshots',{area:WARD_AREAS[areaIdx-1]},function(r){
+        if(!r.success||!r.data.length){
+            $('#wardRollbackList').html('<tr><td colspan="4" class="text-center text-muted py-3">暂无可用快照</td></tr>');
+            return;
+        }
+        var h='';
+        var typeMap={'auto_save':'自动保存','sync':'同步','import':'导入'};
+        r.data.forEach(function(s){
+            var t=s.snapshot_time.replace('T',' ').replace(/\.\d+$/,'');
+            var typeLabel=typeMap[s.trigger_type]||s.trigger_type;
+            h+='<tr><td>'+t+'</td><td><span class="badge badge-'+(s.trigger_type==='import'?'success':s.trigger_type==='sync'?'info':'secondary')+'">'+typeLabel+'</span></td><td class="text-center">'+s.record_count+'</td>';
+            h+='<td><button class="btn btn-sm btn-warning" onclick="doWardRollback('+s.id+','+areaIdx+')"><i class="fas fa-undo mr-1"></i>恢复到此版本</button></td></tr>';
+        });
+        $('#wardRollbackList').html(h||'<tr><td colspan="4" class="text-center text-muted py-3">暂无可用快照</td></tr>');
+    }).fail(function(){
+        $('#wardRollbackList').html('<tr><td colspan="4" class="text-danger text-center py-3">加载失败，请重试</td></tr>');
+    });
+}
+function doWardRollback(snapshotId,areaIdx){
+    if(!confirm('确定要回滚到该版本吗？当前数据将被覆盖！')) return;
+    var $btn=$(event.target).prop('disabled',true).html('<i class="fas fa-spinner fa-spin mr-1"></i>恢复中...');
+    $.ajax({url:'/api/dept-stats/ward/daily/rollback',method:'POST',contentType:'application/json',
+        data:JSON.stringify({snapshot_id:snapshotId}),
+        success:function(resp){
+            if(resp.success){ showToast('回滚成功！已恢复'+resp.data.count+'条记录','success'); $('#wardRollbackModal').modal('hide'); loadWardDaily(areaIdx); }
+            else{ showToast(resp.error||'回滚失败','error'); $btn.prop('disabled',false).html('<i class="fas fa-undo mr-1"></i>恢复到此版本'); }
+        },
+        error:function(){ showToast('网络错误','error'); $btn.prop('disabled',false).html('<i class="fas fa-undo mr-1"></i>恢复到此版本'); }
+    });
+}
+
+/* ========== 通用数据回滚（门诊/病房月度/儿童/转介） ========== */
+var _currentGenericModule='';
+var _currentGenericDisplayName='';
+function openGenericRollback(module, displayName){
+    _currentGenericModule=module;
+    _currentGenericDisplayName=displayName;
+    $('#genericRollbackTitle').html('<i class="fas fa-undo mr-2"></i>'+displayName+' — 数据回滚');
+    $('#genericRollbackList').html('<tr><td colspan="5" class="text-center text-muted py-3"><i class="fas fa-spinner fa-spin mr-1"></i>加载快照列表...</td></tr>');
+    $('#genericRollbackModal').modal('show');
+    // 根据模块确定scope_key
+    var scopeKey='';
+    if(module==='outpatient') scopeKey=$('#outMonth').val();
+    else if(module==='ward_monthly') scopeKey=$('#wardMonth').val();
+    else if(module==='children_monthly') scopeKey=$('#childMonth').val();
+    else if(module==='children_doctor') scopeKey=$('#childDoctorYear').val()+'-'+$('#childDoctorMonth').val();
+    else if(module==='referral') scopeKey=$('#referralYear').val();
+    $.get('/api/dept-stats/snapshots',{module:module,scope_key:scopeKey},function(r){
+        if(!r.success||!r.data.length){
+            $('#genericRollbackList').html('<tr><td colspan="5" class="text-center text-muted py-3">暂无可用快照（保存数据时会自动创建）</td></tr>');
+            return;
+        }
+        var h='';
+        var typeMap={'auto_save':'自动保存','sync':'同步','import':'导入'};
+        r.data.forEach(function(s){
+            var t=s.snapshot_time.replace('T',' ').replace(/\.\d+$/,'');
+            var typeLabel=typeMap[s.trigger_type]||s.trigger_type;
+            h+='<tr><td>'+t+'</td><td>'+s.scope_key+'</td>';
+            h+='<td><span class="badge badge-'+(s.trigger_type==='import'?'success':s.trigger_type==='sync'?'info':'secondary')+'">'+typeLabel+'</span></td>';
+            h+='<td class="text-center">'+s.record_count+'</td>';
+            h+='<td><button class="btn btn-sm btn-warning" onclick="doGenericRollback('+s.id+')"><i class="fas fa-undo mr-1"></i>恢复到此版本</button></td></tr>';
+        });
+        $('#genericRollbackList').html(h);
+    }).fail(function(){
+        $('#genericRollbackList').html('<tr><td colspan="5" class="text-danger text-center py-3">加载失败，请重试</td></tr>');
+    });
+}
+function doGenericRollback(snapshotId){
+    if(!confirm('确定要回滚到该版本吗？当前数据将被覆盖！')) return;
+    var $btn=$(event.target).prop('disabled',true).html('<i class="fas fa-spinner fa-spin mr-1"></i>恢复中...');
+    $.ajax({url:'/api/dept-stats/rollback',method:'POST',contentType:'application/json',
+        data:JSON.stringify({snapshot_id:snapshotId}),
+        success:function(resp){
+            if(resp.success){
+                showToast('回滚成功！已恢复'+resp.data.count+'条记录','success');
+                $('#genericRollbackModal').modal('hide');
+                // 刷新对应模块的数据
+                if(_currentGenericModule==='outpatient') loadOutpatientData();
+                else if(_currentGenericModule==='ward_monthly') loadWardData();
+                else if(_currentGenericModule==='children_monthly') loadChildrenMonthly();
+                else if(_currentGenericModule==='children_doctor') loadChildrenDoctor();
+                else if(_currentGenericModule==='referral') loadReferralData();
+            }else{
+                showToast(resp.error||'回滚失败','error');
+                $btn.prop('disabled',false).html('<i class="fas fa-undo mr-1"></i>恢复到此版本');
+            }
+        },
+        error:function(){ showToast('网络错误','error'); $btn.prop('disabled',false).html('<i class="fas fa-undo mr-1"></i>恢复到此版本'); }
+    });
+}
+
 // Drag & Drop reordering for price table (native HTML5)
 var _dragSrcEl=null;
 function initWardPriceDragDrop(){
@@ -9082,11 +9270,13 @@ function importWardDailyExcel(input,areaIdx){
             var ws=wb.Sheets[wb.SheetNames[0]];
             var data=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
             if(data.length<3){ showToast('格式不正确','error'); return; }
-            var header=data[0], items=[];
+            // Row 0 = item names header, Row 1 = unit prices
+            var header=data[0], priceRow=data[1]||[], items=[];
             for(var c=1;c<header.length-1;c++){
                 var name=String(header[c]||'').trim();
                 if(!name||name==='合计'||name==='总金额') continue;
-                items.push({name:name, colIndex:c});
+                var p=parseFloat(priceRow[c])||0;
+                items.push({name:name, colIndex:c, unit_price:p});
             }
             if(!items.length){ showToast('未识别项目','error'); return; }
             var records=[];
@@ -9105,9 +9295,11 @@ function importWardDailyExcel(input,areaIdx){
                 items.forEach(function(it){ var cnt=parseFloat(row[it.colIndex])||0; if(cnt>=0) records.push({record_date:dateVal, ward_area:WARD_AREAS[areaIdx-1], item_name:it.name, session_count:cnt}); });
             }
             if(!records.length){ showToast('没有有效数据','warning'); return; }
+            // Build prices array from Excel header items (to sync item list for this area)
+            var prices=items.map(function(it){ return {item_name:it.name, unit_price:it.unit_price}; });
             $.ajax({url:'/api/dept-stats/ward/daily',method:'POST',contentType:'application/json',
-                data:JSON.stringify({records:records,auto_calc:true}),
-                success:function(resp){if(resp.success){showToast('成功保存'+resp.data.count+'条记录','success');loadWardDaily(areaIdx);}else{showToast(resp.error||'保存失败','error');}},
+                data:JSON.stringify({records:records,auto_calc:true,trigger_type:'import',update_prices:true,prices:prices}),
+                success:function(resp){if(resp.success){showToast('成功导入'+resp.data.count+'条记录（已同步'+items.length+'个项目）','success');loadWardDaily(areaIdx);}else{showToast(resp.error||'保存失败','error');}},
                 error:function(){showToast('网络错','error');}
             });
         }catch(err){ showToast('导入Excel失败: '+err.message,'error'); console.error(err); }
@@ -9215,9 +9407,9 @@ function loadChildrenMonthly() {
             t+=sv; a+=av;
             var sCell = `<input type="number" class="form-control form-control-sm text-center child-editable" data-field="session_count" value="${sv}" min="0" style="width:90px;display:inline-block;">`;
             var aCell = `<input type="number" class="form-control form-control-sm text-center child-editable" data-field="amount" value="${av.toFixed(2)}" min="0" step="0.01" style="width:90px;display:inline-block;">`;
-            html+=`<tr data-item="${d.item}" data-month="${d.month}"><td>${d.item}</td><td class="text-center">${sCell}</td><td class="text-center">${aCell}</td><td class="text-center"><button class="btn btn-outline-danger btn-xs" onclick="deleteChildMonRow(\x27${d.item}\x27,${d.month})" title="删除"><i class="fas fa-times"></i></button></td></tr>`;
+            html+=`<tr data-item="${d.item}" data-month="${d.month}"><td><input type="checkbox" class="child-mon-cb"></td><td>${d.item}</td><td class="text-center">${sCell}</td><td class="text-center">${aCell}</td><td class="text-center"><button class="btn btn-outline-danger btn-xs" onclick="deleteChildMonRow(\x27${d.item}\x27,${d.month})" title="删除"><i class="fas fa-times"></i></button></td></tr>`;
         });
-        html+=`<tr class="font-weight-bold" style="background:#e8f0fe;"><td>合计</td><td class="text-center" id="childGrandTotal">${t}</td><td class="text-center" id="childGrandAmtTotal">${a.toFixed(2)}</td></tr></tbody></table>`;
+        html+=`<tr class="font-weight-bold" style="background:#e8f0fe;"><td></td><td>合计</td><td class="text-center" id="childGrandTotal">${t}</td><td class="text-center" id="childGrandAmtTotal">${a.toFixed(2)}</td><td></td></tr></tbody></table>`;
         $('#childrenMonthlyWrap').html(html);
         $('#childrenMonthlyWrap .child-editable').on('change',function(){
             var $row=$(this).closest('tr');

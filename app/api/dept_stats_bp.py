@@ -142,6 +142,27 @@ TABLES_SQL = [
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         UNIQUE(ward_area, item_name)
     )""",
+    # --- 病房每日数据快照（回滚用） ---
+    """CREATE TABLE IF NOT EXISTS ward_daily_snapshots (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        ward_area VARCHAR(100) NOT NULL,
+        snapshot_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        trigger_type VARCHAR(50) NOT NULL DEFAULT 'auto_save',
+        data_json TEXT NOT NULL,
+        record_count INTEGER NOT NULL DEFAULT 0
+    )""",
+    # --- 通用数据快照（各模块回滚用） ---
+    """CREATE TABLE IF NOT EXISTS data_snapshots (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        module VARCHAR(50) NOT NULL,
+        scope_key VARCHAR(200) NOT NULL,
+        table_name VARCHAR(100) NOT NULL,
+        key_columns TEXT NOT NULL,
+        snapshot_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        trigger_type VARCHAR(50) NOT NULL DEFAULT 'auto_save',
+        data_json TEXT NOT NULL,
+        record_count INTEGER NOT NULL DEFAULT 0
+    )""",
 ]
 
 
@@ -860,16 +881,25 @@ def get_outpatient_monthly_data():
 
 @dept_stats_bp.route('/outpatient', methods=['POST'])
 def save_outpatient():
-    """保存门诊月度数据（批量，upsert）"""
+    """保存门诊月度数据（批量，upsert，保存前自动快照）"""
     ensure_tables()
     data = request.get_json()
     year = data.get('year')
     month = data.get('month')
     records = data.get('records', [])
-    
+
     if not year or not month or not records:
         return jsonify({'success': False, 'error': '缺少必要参数'}), 400
-    
+
+    # 自动快照
+    try:
+        _create_snapshot('outpatient', f'{year}-{month}', 'outpatient_monthly',
+            ['item_name', 'year', 'month'],
+            "SELECT * FROM outpatient_monthly WHERE year=:y AND month=:m",
+            {'y': int(year), 'm': int(month)})
+    except Exception:
+        pass
+
     count = 0
     for r in records:
         name = r.get('item_name', '').strip()
@@ -937,15 +967,25 @@ def get_ward():
 
 @dept_stats_bp.route('/ward', methods=['POST'])
 def save_ward():
+    """保存病房月度数据（批量，upsert，保存前自动快照）"""
     ensure_tables()
     data = request.get_json()
     year = data.get('year')
     month = data.get('month')
     records = data.get('records', [])
-    
+
     if not year or not month or not records:
         return jsonify({'success': False, 'error': '缺少必要参数'}), 400
-    
+
+    # 自动快照
+    try:
+        _create_snapshot('ward_monthly', f'{year}-{month}', 'ward_monthly',
+            ['ward_area', 'item_name', 'year', 'month'],
+            "SELECT * FROM ward_monthly WHERE year=:y AND month=:m",
+            {'y': int(year), 'm': int(month)})
+    except Exception:
+        pass
+
     count = 0
     for r in records:
         area = r.get('ward_area', '').strip()
@@ -1205,26 +1245,198 @@ def get_ward_daily():
     ]})
 
 
+def _create_ward_daily_snapshot(area, trigger_type='auto_save'):
+    """保存前快照当前area的所有数据，用于回滚"""
+    rows = db.session.execute(text("""
+        SELECT record_date, item_name, session_count, amount
+        FROM ward_daily WHERE ward_area = :area ORDER BY record_date, item_name
+    """), {'area': area}).fetchall()
+    if not rows:
+        return
+    snapshot_data = [
+        {'record_date': str(r[0]), 'item_name': r[1], 'session_count': r[2] or 0,
+         'amount': float(r[3]) if r[3] is not None else 0.0}
+        for r in rows
+    ]
+    _now_local = "datetime('now','localtime')"
+    # import/sync 类型：始终创建新快照（重要回滚点，不节流）
+    if trigger_type in ('import', 'sync'):
+        db.session.execute(text("""
+            INSERT INTO ward_daily_snapshots (ward_area, trigger_type, data_json, record_count, snapshot_time)
+            VALUES (:area, :type, :dj, :rc, """ + _now_local + """)
+        """), {'area': area, 'type': trigger_type,
+              'dj': json.dumps(snapshot_data, ensure_ascii=False),
+              'rc': len(snapshot_data)})
+        _prune_snapshots('ward_daily_snapshots', f'ward_area = "{area}"')
+        return
+    # auto_save：30分钟内只创建1次（不覆盖已有快照，保留历史版本）
+    if trigger_type == 'auto_save':
+        recent = db.session.execute(text("""
+            SELECT id FROM ward_daily_snapshots
+            WHERE ward_area = :area AND trigger_type = 'auto_save'
+              AND snapshot_time > """ + _now_local + """ || '-30 minutes'
+            ORDER BY id DESC LIMIT 1
+        """), {'area': area}).fetchone()
+        if recent:
+            return  # 30分钟内有快照了，跳过（不覆盖，保留之前的版本）
+    db.session.execute(text("""
+        INSERT INTO ward_daily_snapshots (ward_area, trigger_type, data_json, record_count, snapshot_time)
+        VALUES (:area, :type, :dj, :rc, """ + _now_local + """)
+    """), {'area': area, 'type': trigger_type,
+          'dj': json.dumps(snapshot_data, ensure_ascii=False),
+          'rc': len(snapshot_data)})
+    _prune_snapshots('ward_daily_snapshots', f'ward_area = "{area}"')
+
+
+# ============================================================================
+# 通用数据快照工具函数（供各模块回滚使用）
+# ============================================================================
+
+def _create_snapshot(module, scope_key, table_name, key_columns, query_sql,
+                     params, trigger_type='auto_save'):
+    """通用快照：查询当前数据→序列化JSON→存入data_snapshots表（含节流）"""
+    rows = db.session.execute(text(query_sql), params).fetchall()
+    if not rows:
+        return
+    cols = [d[0] for d in rows[0].cursor.description] if rows else []
+    snapshot_data = [dict(zip(cols, r)) for r in rows]
+    _now_local = "datetime('now','localtime')"
+    # import/sync 类型：始终创建新快照（重要回滚点，不节流）
+    if trigger_type in ('import', 'sync'):
+        db.session.execute(text("""
+            INSERT INTO data_snapshots (module, scope_key, table_name, key_columns,
+                                        trigger_type, data_json, record_count, snapshot_time)
+            VALUES (:mod, :sk, :tbl, :kc, :type, :dj, :rc, """ + _now_local + """)
+        """), {'mod': module, 'sk': scope_key, 'tbl': table_name,
+              'kc': json.dumps(key_columns), 'type': trigger_type,
+              'dj': json.dumps(snapshot_data, ensure_ascii=False),
+              'rc': len(snapshot_data)})
+        _prune_snapshots('data_snapshots', f'module = "{module}"')
+        return
+    # auto_save：30分钟内只创建1次（不覆盖已有快照，保留历史版本）
+    if trigger_type == 'auto_save':
+        recent = db.session.execute(text("""
+            SELECT id FROM data_snapshots
+            WHERE module=:mod AND scope_key=:sk AND trigger_type='auto_save'
+              AND snapshot_time > """ + _now_local + """ || '-30 minutes'
+            ORDER BY id DESC LIMIT 1
+        """), {'mod': module, 'sk': scope_key}).fetchone()
+        if recent:
+            return  # 30分钟内有快照了，跳过
+    db.session.execute(text("""
+        INSERT INTO data_snapshots (module, scope_key, table_name, key_columns,
+                                    trigger_type, data_json, record_count, snapshot_time)
+        VALUES (:mod, :sk, :tbl, :kc, :type, :dj, :rc, """ + _now_local + """)
+    """), {'mod': module, 'sk': scope_key, 'tbl': table_name,
+          'kc': json.dumps(key_columns), 'type': trigger_type,
+          'dj': json.dumps(snapshot_data, ensure_ascii=False),
+          'rc': len(snapshot_data)})
+    _prune_snapshots('data_snapshots', f'module = "{module}"')
+
+
+def _prune_snapshots(table_name, where_clause):
+    """清理快照表：每个分组最多保留50条（保留最近的，删除最旧的）"""
+    try:
+        # 查询总数
+        total = db.session.execute(text(
+            f"SELECT COUNT(*) FROM {table_name} WHERE {where_clause}"
+        )).scalar() or 0
+        if total <= 50:
+            return
+        # 删除超出部分（保留最新的50条）
+        keep_ids = db.session.execute(text(
+            f"SELECT id FROM {table_name} WHERE {where_clause} "
+            f"ORDER BY id DESC LIMIT 50"
+        )).fetchall()
+        if not keep_ids:
+            return
+        keep_str = ','.join(str(r[0]) for r in keep_ids)
+        deleted = db.session.execute(text(
+            f"DELETE FROM {table_name} WHERE {where_clause} AND id NOT IN ({keep_str})"
+        )).rowcount
+    except Exception:
+        pass  # 清理失败不应阻断主流程
+
+
+def _do_rollback(snapshot_id):
+    """通用回滚：从data_snapshots恢复数据到原表"""
+    row = db.session.execute(text(
+        "SELECT table_name, key_columns, data_json FROM data_snapshots WHERE id = :sid"
+    ), {'sid': snapshot_id}).fetchone()
+    if not row:
+        return None, '快照不存在'
+    table_name = row[0]
+    key_cols = json.loads(row[1])
+    records = json.loads(row[2])
+    count = 0
+    for rec in records:
+        # 构建 SET 子句（排除key列）
+        set_parts = [f"{k}=:{k}" for k in rec.keys() if k not in key_cols and k != 'id']
+        # 构建 VALUES/ON CONFLICT
+        col_names = list(rec.keys())
+        placeholders = [f":{c}" for c in col_names]
+        all_params = {c: rec[c] for c in col_names}
+        # UPSERT
+        sql = f"INSERT INTO {table_name} ({', '.join(col_names)}) VALUES ({', '.join(placeholders)})"
+        if key_cols:
+            on_conflict = f" ON CONFLICT({', '.join(key_cols)}) DO UPDATE SET {', '.join(set_parts)}"
+            # 为 DO UPDATE 部分添加排除参数
+            for kc in key_cols:
+                if kc in rec:
+                    pass  # key列用 excluded. 引用或直接值
+            sql += on_conflict
+            # 合并参数：SET部分需要引用excluded的值
+            for sk in set_parts:
+                col_name = sk.split('=')[0].strip()
+                if col_name in rec:
+                    all_params[f'excluded_{col_name}'] = rec[col_name]
+        try:
+            db.session.execute(text(sql), all_params)
+            count += 1
+        except Exception:
+            pass
+    db.session.commit()
+    return count, None
+
+
 @dept_stats_bp.route('/ward/daily', methods=['POST'])
 def save_ward_daily():
-    """批量保存每日记录（支持auto_calc自动计算金额）"""
+    """批量保存每日记录（支持auto_calc自动计算金额，保存前自动快照）"""
     ensure_tables()
     data = request.get_json()
     records = data.get('records', [])
     auto_calc = data.get('auto_calc', True)
+    trigger_type = data.get('trigger_type', 'auto_save')  # auto_save / sync / import
 
-    # 可选：同时更新单价
+    # 可选：同时更新单价（按各记录的ward_area分别保存）
     if data.get('update_prices') and data.get('prices'):
+        # 收集本次请求涉及的所有area
+        areas_in_request = set()
+        for r in records:
+            a = str(r.get('ward_area') or '').strip()
+            if a: areas_in_request.add(a)
         for p in data['prices']:
             name = (p.get('item_name') or '').strip()
             price = float(p.get('unit_price') or 0)
             if name:
-                db.session.execute(text("""
-                    INSERT INTO ward_item_prices (ward_area, item_name, unit_price)
-                    VALUES (:area, :name, :price)
-                    ON CONFLICT(ward_area, item_name) DO UPDATE SET
-                        unit_price = :price, updated_at = CURRENT_TIMESTAMP
-                """), {'area': '', 'name': name, 'price': price})
+                # 为每个涉及的area都写入价格
+                for area in (areas_in_request or ['']):
+                    db.session.execute(text("""
+                        INSERT INTO ward_item_prices (ward_area, item_name, unit_price)
+                        VALUES (:area, :name, :price)
+                        ON CONFLICT(ward_area, item_name) DO UPDATE SET
+                            unit_price = :price, updated_at = CURRENT_TIMESTAMP
+                    """), {'area': area, 'name': name, 'price': price})
+
+    # 自动快照：在覆盖数据前记录当前状态（用于回滚）
+    if records:
+        areas_in_request = set()
+        for r in records:
+            a = str(r.get('ward_area') or '').strip() or ''
+            if a: areas_in_request.add(a)
+        for area in areas_in_request:
+            try: _create_ward_daily_snapshot(area, trigger_type)
+            except Exception: pass  # 快照失败不应阻断保存
 
     count = 0
     # 预加载单价缓存
@@ -1343,6 +1555,112 @@ def rollup_ward_daily_to_monthly():
     return jsonify({'success': True})
 
 
+@dept_stats_bp.route('/ward/daily/snapshots', methods=['GET'])
+def get_ward_daily_snapshots():
+    """获取回滚快照列表"""
+    ensure_tables()
+    area = request.args.get('area', '').strip()
+    query = "SELECT id, ward_area, snapshot_time, trigger_type, record_count FROM ward_daily_snapshots WHERE 1=1"
+    params = {}
+    if area:
+        query += " AND ward_area = :area"
+        params['area'] = area
+    query += " ORDER BY id DESC LIMIT 50"
+    rows = db.session.execute(text(query), params).fetchall()
+    return jsonify({'success': True, 'data': [
+        {'id': r[0], 'ward_area': r[1], 'snapshot_time': str(r[2]),
+         'trigger_type': r[3], 'record_count': r[4]}
+        for r in rows
+    ]})
+
+@dept_stats_bp.route('/ward/daily/rollback', methods=['POST'])
+def rollback_ward_daily():
+    """从快照恢复病房每日数据"""
+    ensure_tables()
+    data = request.get_json() or {}
+    snapshot_id = int(data.get('snapshot_id') or 0)
+    if not snapshot_id:
+        return jsonify({'success': False, 'error': '缺少snapshot_id'}), 400
+    # 获取快照数据
+    row = db.session.execute(text(
+        "SELECT ward_area, trigger_type, data_json, record_count FROM ward_daily_snapshots WHERE id = :sid",
+        {'sid': snapshot_id}
+    )).fetchone()
+    if not row:
+        return jsonify({'success': False, 'error': '快照不存在'}), 404
+    records = json.loads(row[2])
+    count = 0
+    for rec in records:
+        db.session.execute(text("""
+            INSERT INTO ward_daily (record_date, ward_area, item_name, session_count, amount)
+            VALUES (:date, :area, :name, :sessions, :amt)
+            ON CONFLICT(record_date, ward_area, item_name) DO UPDATE SET
+                session_count = :sessions, amount = :amt, updated_at = CURRENT_TIMESTAMP
+        """), {'date': rec['record_date'], 'area': row[0],
+              'name': rec['item_name'],
+              'sessions': int(rec.get('session_count', 0)),
+              'amt': float(rec.get('amount', 0))})
+        count += 1
+    db.session.commit()
+    # 记录回滚操作日志
+    try:
+        log_operation('rollback',
+            f"病房每日数据回滚: {row[0]} 快照#{snapshot_id} ({row[3]}) 恢复{count}条记录")
+    except Exception:
+        pass
+    return jsonify({'success': True, 'data': {'count': count,
+        'area': row[0], 'trigger_type': row[3]}})
+
+
+@dept_stats_bp.route('/snapshots', methods=['GET'])
+def get_data_snapshots():
+    """通用快照列表API"""
+    ensure_tables()
+    module = request.args.get('module', '').strip()
+    scope_key = request.args.get('scope_key', '').strip()
+    query = ("SELECT id, module, scope_key, table_name, snapshot_time, "
+             "trigger_type, record_count FROM data_snapshots WHERE 1=1")
+    params = {}
+    if module:
+        query += " AND module = :mod"
+        params['mod'] = module
+    if scope_key:
+        query += " AND scope_key = :sk"
+        params['sk'] = scope_key
+    query += " ORDER BY id DESC LIMIT 50"
+    rows = db.session.execute(text(query), params).fetchall()
+    return jsonify({'success': True, 'data': [
+        {'id': r[0], 'module': r[1], 'scope_key': r[2], 'table_name': r[3],
+         'snapshot_time': str(r[4]), 'trigger_type': r[5], 'record_count': r[6]}
+        for r in rows
+    ]})
+
+
+@dept_stats_bp.route('/rollback', methods=['POST'])
+def rollback_data():
+    """通用回滚API"""
+    ensure_tables()
+    data = request.get_json() or {}
+    snapshot_id = int(data.get('snapshot_id') or 0)
+    if not snapshot_id:
+        return jsonify({'success': False, 'error': '缺少snapshot_id'}), 400
+    count, err = _do_rollback(snapshot_id)
+    if err:
+        return jsonify({'success': False, 'error': err}), 404
+    # 获取模块信息用于日志
+    info = db.session.execute(text(
+        "SELECT module, scope_key FROM data_snapshots WHERE id = :sid"
+    ), {'sid': snapshot_id}).fetchone()
+    try:
+        log_operation('rollback',
+            f"通用数据回滚: {info[0]} [{info[1]}] 快照#{snapshot_id} 恢复{count}条记录")
+    except Exception:
+        pass
+    return jsonify({'success': True, 'data': {
+        'count': count, 'module': info[0], 'scope_key': info[1]
+    }})
+
+
 # ============================================================================
 # 四、儿童医院数据
 # ============================================================================
@@ -1365,15 +1683,25 @@ def get_children_monthly():
 
 @dept_stats_bp.route('/children/monthly', methods=['POST'])
 def save_children_monthly():
+    """保存儿童医院月度数据（保存前自动快照）"""
     ensure_tables()
     data = request.get_json()
     year = data.get('year')
     month = data.get('month')
     records = data.get('records', [])
-    
+
     if not year or not month or not records:
         return jsonify({'success': False, 'error': '缺少必要参数'}), 400
-    
+
+    # 自动快照
+    try:
+        _create_snapshot('children_monthly', f'{year}-{month}', 'children_monthly',
+            ['item_name', 'year', 'month'],
+            "SELECT * FROM children_monthly WHERE year=:y AND month=:m",
+            {'y': int(year), 'm': int(month)})
+    except Exception:
+        pass
+
     count = 0
     for r in records:
         name = r.get('item_name', '').strip()
@@ -1418,14 +1746,24 @@ def get_children_daily():
 
 @dept_stats_bp.route('/children/daily', methods=['POST'])
 def save_children_daily():
+    """保存儿童医院每日数据（保存前自动快照）"""
     ensure_tables()
     data = request.get_json()
     record_date = data.get('date')
     records = data.get('records', [])
-    
+
     if not record_date or not records:
         return jsonify({'success': False, 'error': '缺少必要参数'}), 400
-    
+
+    # 自动快照
+    try:
+        _create_snapshot('children_daily', str(record_date), 'children_daily',
+            ['record_date', 'item_name'],
+            "SELECT * FROM children_daily WHERE record_date=:date",
+            {'date': record_date})
+    except Exception:
+        pass
+
     count = 0
     for r in records:
         name = r.get('item_name', '').strip()
@@ -1470,6 +1808,7 @@ def get_children_doctor_monthly():
 @dept_stats_bp.route('/children/doctor-monthly', methods=['POST'])
 @log_op('update', '保存儿童医生月度数据')
 def save_children_doctor_monthly():
+    """保存儿童医生月度数据（保存前自动快照）"""
     ensure_tables()
     data = request.get_json()
     year = data.get('year')
@@ -1477,6 +1816,16 @@ def save_children_doctor_monthly():
     records = data.get('records', [])
     if not year or not month or not records:
         return jsonify({'success': False, 'error': '缺少必要参数'}), 400
+
+    # 自动快照
+    try:
+        _create_snapshot('children_doctor', f'{year}-{month}', 'children_doctor_monthly',
+            ['doctor_name', 'year', 'month'],
+            "SELECT * FROM children_doctor_monthly WHERE year=:y AND month=:m",
+            {'y': int(year), 'm': int(month)})
+    except Exception:
+        pass
+
     count = 0
     for r in records:
         name = r.get('doctor_name', '').strip()
@@ -1874,15 +2223,25 @@ def get_referral_data():
 @referral_bp.route('/data', methods=['POST'])
 @log_op('update', '保存转介数据')
 def save_referral_data():
+    """保存转介月度数据（保存前自动快照）"""
     ensure_tables()
     data = request.get_json()
     year = data.get('year')
     month = data.get('month')
     records = data.get('records', [])
-    
+
     if not year or not month or not records:
         return jsonify({'success': False, 'error': '缺少必要参数'}), 400
-    
+
+    # 自动快照
+    try:
+        _create_snapshot('referral', f'{year}-{month}', 'referral_monthly',
+            ['department', 'doctor_name', 'year', 'month', 'metric_name'],
+            "SELECT * FROM referral_monthly WHERE year=:y AND month=:m",
+            {'y': int(year), 'm': int(month)})
+    except Exception:
+        pass
+
     count = 0
     for r in records:
         dept = r.get('department', '').strip()
