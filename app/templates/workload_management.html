@@ -8589,9 +8589,19 @@ function submitOutEntry() {
 function downloadOutTemplate() { window.open('/api/dept-stats/items/template?type=outpatient','_blank'); }
 function openOutItemsManage() { _manageItemType='outpatient';_manageItemSub='';$('#itemsManageTitle').text('门诊项目管理');loadManageItems();$('#itemsManageModal').modal('show'); }
 function importOutItems(input) { var fd=new FormData();fd.append('file',input.files[0]);fd.append('type','outpatient');fd.append('year',document.getElementById('outEntryYear').value);
+    // 传递当前勾选的月份，支持多月份同时导入
+    var months=getCheckedMonths('outMonthChecks');
+    fd.append('months',JSON.stringify(months));
     $.ajax({url:'/api/dept-stats/items/import-excel',type:'POST',data:fd,processData:false,contentType:false,
-        success:function(r){if(r.success){var msg='导'+r.data.count+'条项';if(r.data.monthly_count)msg+='和'+r.data.monthly_count+'个数数';document.getElementById('outImportResult').innerHTML='<div class="alert alert-success">'+msg+'</div>';openOutpatientEntry();loadOutpatientData();}else{showToast(r.error||'导失败','error');}},
-        error:function(xhr){showToast('导失: '+(xhr.responseJSON?xhr.responseJSON.error:'网络错'),'error');}
+        success:function(r){
+            if(!r.success){showToast(r.error||'导入失败','error');return;}
+            var msg='成功导入 '+r.data.count+' 个项目';
+            if(r.data.monthly_count) msg+='，已写入 '+r.data.monthly_count+' 条月度数据';
+            showToast(msg,'success');
+            document.getElementById('outImportResult').innerHTML='<div class="alert alert-success">'+msg+'</div>';
+            openOutpatientEntry(); loadOutpatientData();
+        },
+        error:function(xhr){showToast('导入失败: '+(xhr.responseJSON?xhr.responseJSON.error:'网络错误'),'error');}
     });
 }
 // ============================================================
