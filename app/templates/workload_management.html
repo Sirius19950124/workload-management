@@ -1314,10 +1314,10 @@
                                         <li class="nav-item">
                                             <a class="nav-link active" data-toggle="pill" href="#wardMonthly">月度汇总</a>
                                         </li>
-                                        <li class="nav-item"><a class="nav-link" data-toggle="pill" href="#wardDaily_1">科室1</a></li>
-                                        <li class="nav-item"><a class="nav-link" data-toggle="pill" href="#wardDaily_2">科室2</a></li>
-                                        <li class="nav-item"><a class="nav-link" data-toggle="pill" href="#wardDaily_3">科室3</a></li>
-                                        <li class="nav-item"><a class="nav-link" data-toggle="pill" href="#wardDaily_4">科室4</a></li>
+                                        <li class="nav-item"><a class="nav-link" data-toggle="pill" href="#wardDaily_1">产科</a></li>
+                                        <li class="nav-item"><a class="nav-link" data-toggle="pill" href="#wardDaily_2">妇科</a></li>
+                                        <li class="nav-item"><a class="nav-link" data-toggle="pill" href="#wardDaily_3">外科</a></li>
+                                        <li class="nav-item"><a class="nav-link" data-toggle="pill" href="#wardDaily_4">新生儿科</a></li>
                                     </ul>
                                     <div class="tab-content">
                                         <!-- 月度汇总（原有内容） -->
@@ -1339,7 +1339,7 @@
                                             </div>
                                         </div>
 
-                                        <!-- 科室1 每日统计 -->
+                                        <!-- 产科 每日统计 -->
                                         <div class="tab-pane fade" id="wardDaily_1">
                                             <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
                                                 <div class="d-flex align-items-center">
@@ -1362,7 +1362,7 @@
                                             </div>
                                         </div>
 
-                                        <!-- 科室2 每日统计 -->
+                                        <!-- 妇科 每日统计 -->
                                         <div class="tab-pane fade" id="wardDaily_2">
                                             <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
                                                 <div class="d-flex align-items-center">
@@ -1385,7 +1385,7 @@
                                             </div>
                                         </div>
 
-                                        <!-- 科室3 每日统计 -->
+                                        <!-- 外科 每日统计 -->
                                         <div class="tab-pane fade" id="wardDaily_3">
                                             <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
                                                 <div class="d-flex align-items-center">
@@ -1408,7 +1408,7 @@
                                             </div>
                                         </div>
 
-                                        <!-- 科室4 每日统计 -->
+                                        <!-- 新生儿科 每日统计 -->
                                         <div class="tab-pane fade" id="wardDaily_4">
                                             <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
                                                 <div class="d-flex align-items-center">
@@ -8654,7 +8654,7 @@ function importWardItems(input) { var fd=new FormData();fd.append('file',input.f
 function initWardDailyControls(){/* options now in HTML */}
 
 
-var WARD_AREAS=['科室1','科室2','科室3','科室4'];
+var WARD_AREAS=['产科','妇科','外科','新生儿科'];
 var _currentWardArea='';
 var _currentWardAreaIdx=0;
 function loadWardDaily(areaIdx){
