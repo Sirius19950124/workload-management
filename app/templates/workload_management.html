@@ -8588,21 +8588,66 @@ function submitOutEntry() {
 
 function downloadOutTemplate() { window.open('/api/dept-stats/items/template?type=outpatient','_blank'); }
 function openOutItemsManage() { _manageItemType='outpatient';_manageItemSub='';$('#itemsManageTitle').text('门诊项目管理');loadManageItems();$('#itemsManageModal').modal('show'); }
-function importOutItems(input) { var fd=new FormData();fd.append('file',input.files[0]);fd.append('type','outpatient');fd.append('year',document.getElementById('outEntryYear').value);
-    // 传递当前勾选的月份，支持多月份同时导入
-    var months=getCheckedMonths('outMonthChecks');
-    fd.append('months',JSON.stringify(months));
-    $.ajax({url:'/api/dept-stats/items/import-excel',type:'POST',data:fd,processData:false,contentType:false,
-        success:function(r){
-            if(!r.success){showToast(r.error||'导入失败','error');return;}
-            var msg='成功导入 '+r.data.count+' 个项目';
-            if(r.data.monthly_count) msg+='，已写入 '+r.data.monthly_count+' 条月度数据';
-            showToast(msg,'success');
-            document.getElementById('outImportResult').innerHTML='<div class="alert alert-success">'+msg+'</div>';
-            openOutpatientEntry(); loadOutpatientData();
-        },
-        error:function(xhr){showToast('导入失败: '+(xhr.responseJSON?xhr.responseJSON.error:'网络错误'),'error');}
-    });
+function importOutItems(input) {
+    if(!input.files.length) return;
+    var reader=new FileReader();
+    reader.onload=function(e){
+        try{
+            var wb=XLSX.read(e.target.result,{type:'array'});
+            var ws=wb.Sheets[wb.SheetNames[0]];
+            var data=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+            if(data.length<2){ showToast('Excel格式不正确或为空','error'); return; }
+            var header=data[0], items=[], nameCol=0, sessionsCol=-1, amountCol=-1;
+            // 定位列：项目名称、人次、金额
+            for(var c=0;c<header.length;c++){
+                var h=String(header[c]||'').trim().toLowerCase();
+                if(h==='项目名称'||h==='项目'||h==='名称'||h==='name') nameCol=c;
+                else if(h==='人次'||h==='数量'||h==='session_count') sessionsCol=c;
+                else if(h==='金额'||h==='费用'||h==='amount') amountCol=c;
+            }
+            // 收集所有非表头行的项目数据
+            var importData={};
+            for(var r=1;r<data.length;r++){
+                var row=data[r], name=String(row[nameCol]||'').trim();
+                if(!name||name==='合计'||name==='总计'||name==='日期') continue;
+                // 跳过纯数字
+                if(/^-?\d+(\.\d+)?$/.test(name)) continue;
+                var s=sessionsCol>=0?(parseFloat(row[sessionsCol])||0):0;
+                var a=amountCol>=0?(parseFloat(row[amountCol])||0):0;
+                importData[name]={sessions:s, amount:a};
+                items.push(name);
+            }
+            if(!items.length){ showToast('未识别到任何项目','warning'); return; }
+            // 先确保项目已入库（调用import-excel只建项目库，不写月度数据）
+            var fd=new FormData();
+            fd.append('file',input.files[0]);
+            fd.append('type','outpatient');
+            fd.append('year',document.getElementById('outEntryYear').value);
+            $.ajax({url:'/api/dept-stats/items/import-excel',type:'POST',data:fd,processData:false,contentType:false,
+                success:function(r){
+                    if(!r.success){showToast(r.error||'项目入库失败','error');return;}
+                    // 项目入库成功，现在渲染预览表格
+                    openOutpatientEntry();
+                    // 等表格渲染完成后填充导入的数据
+                    setTimeout(function(){
+                        $('#outEntryTable tbody tr').each(function(){
+                            var itemName=$(this).data('item-name');
+                            if(importData[itemName]){
+                                $(this).find('[data-col="session_count"]').val(importData[itemName].sessions);
+                                $(this).find('[data-col="amount"]').val(importData[itemName].amount);
+                            }
+                        });
+                        var mStr=[];
+                        getCheckedMonths('outMonthChecks').forEach(function(m){mStr.push(m+'月');});
+                        document.getElementById('outImportResult').innerHTML=
+                            '<div class="alert alert-info"><i class="fas fa-info-circle mr-1"></i>已从Excel预览 <strong>'+items.length+'</strong> 个项目（'+mStr.join(',')+'），请核对后点击保存</div>';
+                    },300);
+                },
+                error:function(){showToast('项目入库失败','error');}
+            });
+        }catch(err){ showToast('解析Excel失败: '+err.message,'error'); console.error(err); }
+    };
+    reader.readAsArrayBuffer(input.files[0]); input.value='';
 }
 // ============================================================
 // 病房
