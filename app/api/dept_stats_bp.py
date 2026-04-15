@@ -1351,7 +1351,36 @@ def save_module_items():
     return jsonify({'success': True, 'data': {'count': len(items)}})
 
 
-@dept_stats_bp.route('/ward/daily', methods=['GET'])
+@dept_stats_bp.route('/backup/download-all', methods=['GET'])
+def download_all_backup():
+    """一键下载全部业务数据的 JSON 备份（用于本地保存）"""
+    ensure_tables()
+    tables = [
+        'outpatient_monthly', 'ward_daily', 'children_monthly',
+        'children_doctor_monthly', 'referral_monthly', 'referral_doctors',
+        'dept_items', 'data_snapshots', 'ward_item_prices', 'ward_monthly',
+        'children_daily'
+    ]
+    backup = {
+        'version': '2.0',
+        'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        'tables': {}
+    }
+    for t in tables:
+        try:
+            cols = [c['name'] for c in db.session.execute(text(f'PRAGMA table_info({t})')).fetchall()]
+            rows = db.session.execute(text(f'SELECT * FROM {t}')).fetchall()
+            backup['tables'][t] = {
+                'columns': cols,
+                'rows': [dict(zip(cols, r)) for r in rows],
+                'count': len(rows)
+            }
+        except Exception:
+            pass
+    # 统计总记录数
+    total = sum(v.get('count', 0) for v in backup['tables'].values())
+    backup['summary'] = {'total_records': total, 'table_count': len(backup['tables'])}
+    return jsonify(backup)
 def get_ward_daily():
     """查询每日数据"""
     ensure_tables()
