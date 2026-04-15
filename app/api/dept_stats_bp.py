@@ -397,24 +397,29 @@ def import_items_excel():
                     pass
                 
                 # 获取病区（继承模式：空A列用上一个病区）
+                # 注意：outpatient/children 等无子分类的类型，不要从A列自动推断病区
                 if has_explicit_header and area_col is not None and area_col < len(row) and row[area_col]:
                     current_area = str(row[area_col]).strip()
                 elif has_two_cols and not has_explicit_header and first_val:
-                    current_area = first_val
-                elif has_explicit_header and first_val:
-                    # 有表头但A列有值（如：产科、妇科），可能是病区行也可能是数据行
-                    # 如果B列也是项目名，A列就是病区
+                    # 无表头双列模式：A列=病区（仅病房等需要病区的类型）
+                    if item_type in ('ward',):
+                        current_area = first_val
+                elif has_explicit_header and first_val and item_type in ('ward',):
+                    # 有表头且是病房类型：A列有值可能是病区行
                     if second_val and second_val not in skip_headers:
                         current_area = first_val
-                elif first_val and not second_val:
-                    # A列有值但B列没值，这行可能只是病区标题行，跳过
-                    # 但要先更新继承病区
+                elif first_val and not second_val and item_type in ('ward',):
+                    # 病房类型的标题行
                     current_area = first_val
                     continue
                 
-                area = current_area or sub
+                # 门诊/儿童医院等无子分类的类型，强制area为空
+                if item_type in ('outpatient', 'children'):
+                    area = ''
+                else:
+                    area = current_area or sub
                 # children_doctor等不需要病区的类型，允许area为空
-                if not area and item_type not in ('children_doctor', 'children', 'outpatient'):
+                if not area and item_type not in ('children_doctor', 'children', 'outpatient', 'ward'):
                     continue
                 
                 # 获取月份
