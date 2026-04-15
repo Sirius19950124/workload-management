@@ -54,12 +54,13 @@
         /* ========== 病房每日统计 - 现代表格样式 ========== */
         .wd-table{width:100%;border-collapse:separate;border-spacing:0;border:1px solid #e8ecf1;font-size:0.875rem;}
         .wd-table thead th{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;padding:10px 12px;font-weight:600;font-size:0.82rem;white-space:nowrap;position:sticky;top:0;z-index:10;border:none;text-align:center;letter-spacing:0.3px;}
+        .wd-table thead th:first-child{text-align:left;position:sticky;left:0;z-index:11;background:linear-gradient(135deg,#5a67d8 0%,#667eea 100%);}
         .wd-table thead th small{color:rgba(255,255,255,0.75);font-size:0.72rem;}
-        .wd-table thead th:first-child{text-align:left;}
         .wd-table tbody tr{transition:background-color 0.15s ease;}
         .wd-table tbody tr:nth-child(even){background-color:#f8f9fc;}
         .wd-table tbody tr:hover{background-color:#eef1fb!important;}
         .wd-table tbody tr.wd-total-row{background:linear-gradient(135deg,#f093fb 0%,#f5576c 100%)!important;color:#fff;font-weight:700;}
+        .wd-table tbody tr.wd-total-row td:first-child{position:sticky;left:0;z-index:6;background:linear-gradient(135deg,#f093fb 0%,#f5576c 100%);box-shadow:2px 0 4px rgba(0,0,0,0.08);}
         .wd-table tbody tr.wd-total-row td{border-color:rgba(255,255,255,0.2);color:#fff;}
         .wd-table tbody tr.wd-total-row small{color:rgba(255,255,255,0.8);}
         .wd-table td{padding:7px 10px;border-bottom:1px solid #eef1f6;border-right:1px solid #eef1f6;vertical-align:middle;}
@@ -78,7 +79,8 @@
         .wd-entry-cell:hover{border-color:#a5b4fc!important;}
         .wd-entry-cell:not(:placeholder-shown){background:#f0fdf4!important;border-color:#86efac!important;color:#166534!important;font-weight:600;}
         /* 容器卡片 */
-        .wd-card-wrap{background:#fff;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06),0 4px 12px rgba(0,0,0,0.04);overflow:hidden;border:1px solid #eef1f6;}
+        .wd-card-wrap{background:#fff;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06),0 4px 12px rgba(0,0,0,0.04);border:1px solid #eef1f6;}
+        .wd-card-wrap .wd-table{border:none;}
         .wd-card-wrap .wd-table{border:none;}
     </style>
     <!-- Fallback styles if CDN fails -->
@@ -8725,7 +8727,9 @@ function renderWardDailyView(data,items,y,m,areaIdx){
     html+='<tr class="wd-total-row"><td>合计</td>';
     items.forEach(function(it){ var cs=0; dates.forEach(function(d){ cs+=(lookup[d+'_'+it.item_name]||0); }); html+='<td class="wd-col-total" data-item="'+escAttr(it.item_name)+'">'+cs+'</td>'; });
     html+='<td class="wd-grand-total-cell">¥'+grandTotal.toFixed(1)+'</td></tr></tbody></table></div>';
-    $('#wardDailyTableWrap_'+areaIdx).html(html).css({'min-height':'auto','display':'block','visibility':'visible'});
+    // Wrap in scrollable container for frozen header/sticky columns to work
+    var scrollHtml='<div style="max-height:500px;overflow:auto;border-radius:12px;">'+html+'</div>';
+    $('#wardDailyTableWrap_'+areaIdx).html(scrollHtml).css({'min-height':'auto','display':'block','visibility':'visible'});
     $('#wardDailyChartsSection_'+areaIdx).show().css('display','flex');
     // Bind input events for real-time recalculation
     bindWardDailyEditCells();
@@ -8780,7 +8784,14 @@ function updateWardChartsFromDOM(areaIdx){
         var amt=amtText&&amtText!=='-'?parseFloat(amtText.replace('¥',''))||0:0;
         if(dateStr){ labels.push(dateStr.substr(5)); trendVals.push(amt); }
     });
-    var tc=Chart.getChart(document.getElementById('chartWardDailyTrend_'+areaIdx))||_charts['wardDailyTrend_'+areaIdx];
+    // Safe chart reference (try multiple methods)
+    function getChart(canvas,key){
+        var c=_charts[key];if(c)return c;
+        if(typeof Chart!=='undefined'&&Chart.getChart)return Chart.getChart(canvas);
+        if(canvas&&canvas.__chart)return canvas.__chart;
+        return null;
+    }
+    var tc=getChart(document.getElementById('chartWardDailyTrend_'+areaIdx),'wardDailyTrend_'+areaIdx);
     if(tc){ try{tc.data.labels=labels; tc.data.datasets[0].data=trendVals; tc.update();}catch(e){} }
     // Rank data: each item column → total sessions
     var rankLabels=[], rankVals=[];
@@ -8790,7 +8801,7 @@ function updateWardChartsFromDOM(areaIdx){
         var colTotal=parseFloat($('.wd-col-total[data-item="'+name+'"]').text())||0;
         rankLabels.push(name); rankVals.push(colTotal);
     });
-    var rc=Chart.getChart(document.getElementById('chartWardDailyRank_'+areaIdx))||_charts['wardDailyRank_'+areaIdx];
+    var rc=getChart(document.getElementById('chartWardDailyRank_'+areaIdx),'wardDailyRank_'+areaIdx);
     if(rc){ try{rc.data.labels=rankLabels; rc.data.datasets[0].data=rankVals; rc.update();}catch(e){} }
 }
 
@@ -9136,29 +9147,53 @@ function exportWardDailyExcel(areaIdx){
     XLSX.writeFile(wb,'病房每日统计'+WARD_AREAS[areaIdx-1]+'_'+y+'年'+m+'月.xlsx');
 }
 
+// Per-areaIdx XHR abort tokens + generation counter to prevent stale callbacks
+var _wardChartXhr={};
+var _wardChartGen={};
+
 function loadWardDailyCharts(y,m,areaIdx){
-    // Safe destroy using Chart.getChart (handles race conditions)
-    var trendCanvas=document.getElementById('chartWardDailyTrend_'+areaIdx);
-    var rankCanvas=document.getElementById('chartWardDailyRank_'+areaIdx);
-    if(trendCanvas){var tc=Chart.getChart(trendCanvas);if(tc){tc.destroy();}}
-    if(rankCanvas){var rc=Chart.getChart(rankCanvas);if(rc){rc.destroy();}}
+    // 1) Abort any previous in-flight chart request for this area
+    if(_wardChartXhr[areaIdx]){ try{_wardChartXhr[areaIdx].abort();}catch(e){} _wardChartXhr[areaIdx]=null; }
+    // 2) Bump generation — stale callbacks will check this and bail out
+    _wardChartGen[areaIdx]=(_wardChartGen[areaIdx]||0)+1;
+    var myGen=_wardChartGen[areaIdx];
+    // 3) Replace canvas DOM elements (guarantees no lingering Chart.js refs)
+    ['chartWardDailyTrend_'+areaIdx,'chartWardDailyRank_'+areaIdx].forEach(function(id){
+        var el=document.getElementById(id);
+        if(!el) return;
+        var p=el.parentNode,n=document.createElement('canvas');
+        n.id=id; n.width=el.width; n.height=el.height;
+        for(var i=0;i<el.attributes.length;i++){var a=el.attributes[i];if(a.name!=='id')n.setAttribute(a.name,a.value);}
+        p.replaceChild(n,el);
+    });
     _charts['wardDailyTrend_'+areaIdx]=null;
     _charts['wardDailyRank_'+areaIdx]=null;
-    $.get('/api/dept-stats/charts',{year:y,month:m,ward_daily_area:WARD_AREAS[areaIdx-1]},function(r){
+    // 4) Fire request with abort capability
+    _wardChartXhr[areaIdx]=$.get('/api/dept-stats/charts',{year:y,month:m,ward_daily_area:WARD_AREAS[areaIdx-1]},function(r){
+        // If a newer request was started after us, discard this stale response
+        if(_wardChartGen[areaIdx]!==myGen) return;
+        _wardChartXhr[areaIdx]=null;
         if(!r.success) return;
         var d=r.data, trend=d.ward_daily_trend||[];
-        if(trend.length){
-            var $tab=$('#chartWardDailyTrend_'+areaIdx).closest('.tab-pane');
+        // Double-check generation again right before creating charts
+        if(_wardChartGen[areaIdx]!==myGen) return;
+        var tc=document.getElementById('chartWardDailyTrend_'+areaIdx);
+        var rc=document.getElementById('chartWardDailyRank_'+areaIdx);
+        if(trend.length&&tc){
+            var $tab=$(tc).closest('.tab-pane');
             if($tab.length&&!$tab.hasClass('active')){$tab.addClass('active show');}
-            _charts['wardDailyTrend_'+areaIdx]=new Chart(trendCanvas,{type:'line',
-                data:{labels:trend.map(function(x){return x.date.substr(5);}),datasets:[{label:'金额',data:trend.map(function(x){return x.amount||0;}),borderColor:'#e15759',backgroundColor:'rgba(225,87,89,0.1)',fill:true,tension:0.3}]},
-                options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
+            var tCfg={type:'line',data:{labels:trend.map(function(x){return x.date.substr(5);}),datasets:[{label:'金额',data:trend.map(function(x){return x.amount||0;}),borderColor:'#e15759',backgroundColor:'rgba(225,87,89,0.1)',fill:true,tension:0.3}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}};
+            _charts['wardDailyTrend_'+areaIdx]=new Chart(tc,tCfg);
             if($tab.length)$tab.removeClass('active show');
         }
+        if(_wardChartGen[areaIdx]!==myGen) return;
         var rank=d.ward_daily_item_ranking||[];
-        if(rank.length){ _charts['wardDailyRank_'+areaIdx]=new Chart(rankCanvas,{type:'bar',
-            data:{labels:rank.map(function(x){return x.item;}),datasets:[{data:rank.map(function(x){return x.sessions;}),backgroundColor:COLORS}]},
-            options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}}}});}
+        if(rank.length&&rc){
+            var rCfg={type:'bar',data:{labels:rank.map(function(x){return x.item;}),datasets:[{data:rank.map(function(x){return x.sessions;}),backgroundColor:COLORS}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}}}};
+            _charts['wardDailyRank_'+areaIdx]=new Chart(rc,rCfg);
+        }
+    }).fail(function(){
+        _wardChartXhr[areaIdx]=null;
     });
 }
 
