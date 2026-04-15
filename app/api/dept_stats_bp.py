@@ -1555,6 +1555,39 @@ def rollup_ward_daily_to_monthly():
     return jsonify({'success': True})
 
 
+@dept_stats_bp.route('/ward/daily/monthly-summary', methods=['GET'])
+def get_ward_daily_monthly_summary():
+    """从ward_daily聚合月度汇总（按科室+项目分组）"""
+    ensure_tables()
+    year = request.args.get('year', date.today().year, type=int)
+    month = request.args.get('month', type=int)
+    area = request.args.get('area', '').strip()
+
+    query = """
+        SELECT ward_area, item_name,
+               COALESCE(SUM(session_count), 0) as total_sessions,
+               COALESCE(SUM(amount), 0) as total_amount,
+               COUNT(DISTINCT record_date) as day_count
+        FROM ward_daily
+        WHERE strftime('%Y', record_date) = :y
+    """
+    params = {'y': str(year)}
+    if month:
+        query += " AND CAST(strftime('%m', record_date) AS INTEGER) = :m"
+        params['m'] = int(month)
+    if area:
+        query += " AND ward_area = :area"
+        params['area'] = area
+    query += " GROUP BY ward_area, item_name ORDER BY ward_area, item_name"
+
+    rows = db.session.execute(text(query), params).fetchall()
+    return jsonify({'success': True, 'data': [
+        {'area': r[0], 'item': r[1], 'sessions': r[2] or 0,
+         'amount': float(r[3]) if r[3] else 0.0, 'day_count': r[4]}
+        for r in rows
+    ]})
+
+
 @dept_stats_bp.route('/ward/daily/snapshots', methods=['GET'])
 def get_ward_daily_snapshots():
     """获取回滚快照列表"""

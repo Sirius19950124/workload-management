@@ -1324,23 +1324,19 @@
                                         <li class="nav-item"><a class="nav-link" data-toggle="pill" href="#wardDaily_5">产康中心</a></li>
                                     </ul>
                                     <div class="tab-content">
-                                        <!-- 月度汇总（原有内容） -->
+                                        <!-- 月度汇总（从各科室每日数据自动聚合） -->
                                         <div class="tab-pane fade show active" id="wardMonthly">
                                             <div class="d-flex justify-content-between align-items-center mb-3">
                                                 <div class="d-flex align-items-center">
                                                     <select class="form-control form-control-sm mr-2" id="wardMonth" style="width:100px;"></select>
-                                                    <select class="form-control form-control-sm mr-2" id="wardArea" style="width:120px;"><option value="">全部病区</option></select>
-                                                    <button class="btn btn-sm btn-primary" onclick="loadWardData()"><i class="fas fa-search mr-1"></i>查询</button>
-                                                    <button class="btn-outline-danger btn-sm ml-2" id="batchDelWardBtn" onclick="batchDeleteWard()" style="display:none;"><i class="fas fa-trash-alt mr-1"></i>批量删除 (<span id="batchDelWardCount">0</span>)</button>
+                                                    <button class="btn btn-sm btn-primary" onclick="loadWardMonthlySummary()"><i class="fas fa-search mr-1"></i>查询</button>
                                                 </div>
                                                 <div>
-                                                    <button class="btn btn-sm btn-success" onclick="openWardEntry()"><i class="fas fa-edit mr-1"></i>录入数据</button>
-                                                    <button class="btn btn-sm btn-outline-secondary ml-1" onclick="exportTableToExcel('wardTableWrap','病房月度统计')"><i class="fas fa-file-excel mr-1"></i>导出</button>
-                                                    <button class="btn btn-sm btn-outline-warning ml-1" onclick="openGenericRollback('ward_monthly','病房月度')" title="回滚到之前的版本"><i class="fas fa-undo mr-1"></i>回滚</button>
+                                                    <button class="btn btn-sm btn-outline-secondary" onclick="exportTableToExcel('wardTableWrap','病房月度汇总')"><i class="fas fa-file-excel mr-1"></i>导出</button>
                                                 </div>
                                             </div>
                                             <div id="wardTableWrap" style="overflow-x:auto;">
-                                                <p class="text-muted text-center">请选择月份后查询</p>
+                                                <p class="text-muted text-center">选择月份后查看各科室月度汇总（数据来自各科室每日统计）</p>
                                             </div>
                                         </div>
 
@@ -8439,7 +8435,7 @@ function activateProtectedTab(target, linkEl) {
 $('#outMonth, #wardMonth, #childMonth, [id^=wardDailyYear_], [id^=wardDailyMonth_]').on('change', function() {
     const id = $(this).attr('id');
     if(id==='outMonth') loadOutpatientData();
-    if(id==='wardMonth') loadWardData();
+    if(id==='wardMonth') loadWardMonthlySummary();
     if(id==='childMonth') loadChildrenMonthly();
     if(id==='childDoctorMonth') loadChildrenDoctor();
     if(id.startsWith('wardDailyYear_') || id.startsWith('wardDailyMonth_')){ var idx=parseInt(id.split('_')[1]); loadWardDaily(idx); }
@@ -8610,78 +8606,41 @@ function loadWardAreas() {
     });
 }
 
-function loadWardData() {
-    var y=$('#deptStatsYear').val(), m=$('#wardMonth').val(), area=$('#wardArea').val();
+function loadWardMonthlySummary() {
+    var y=$('#deptStatsYear').val(), m=parseInt($('#wardMonth').val());
     if(!m) return;
-    $.get('/api/dept-stats/ward',{year:y},function(r){
-        if(!r.success) return;
-        var filtered=r.data.filter(function(d){return d.month==m;});
-        if(area) filtered=filtered.filter(function(d){return d.area===area;});
-        if(!filtered.length){$('#wardTableWrap').html('<p class="text-muted text-center">该月无数据，请先录入</p>');return;}
+    $('#wardTableWrap').html('<p class="text-muted text-center py-4"><i class="fas fa-spinner fa-spin mr-1"></i>正在汇总各科室数据...</p>');
+    $.get('/api/dept-stats/ward/daily/monthly-summary',{year:y,month:m},function(r){
+        if(!r.success){$('#wardTableWrap').html('<p class="text-danger text-center py-4">查询失败</p>');return;}
+        var rows=r.data||[];
+        if(!rows.length){$('#wardTableWrap').html('<p class="text-muted text-center py-4">该月暂无每日统计数据，请先在各科室标签页中录入数据</p>');return;}
+        // 按科室分组
         var grouped={};
-        filtered.forEach(function(d){if(!grouped[d.area])grouped[d.area]=[];grouped[d.area].push(d);});
-        var html='<table class="table table-sm table-bordered table-hover"><thead class="thead-light"><tr><th style="width:30px;"><input type="checkbox" id="wardSelectAll" onchange="toggleWardSelectAll()"></th><th>病区</th><th>项目</th><th style="width:120px;">人次</th><th style="width:120px;">金额</th><th style="width:46px;">操作</th></tr></thead><tbody>';
-        var total=0, amtTotal=0;
-        Object.keys(grouped).forEach(function(area){
-            var at=0, aa=0;
-            grouped[area].forEach(function(d,i){
-                at+=d.sessions;
-                aa+=d.amount||0;
-                html+='<tr data-area="'+d.area+'" data-item="'+d.item+'" data-month="'+d.month+'" data-id="'+d.id+'"><td><input type="checkbox" class="ward-row-cb"></td>';
-                if(i===0) html+='<td rowspan="'+grouped[area].length+'" class="align-middle font-weight-bold">'+area+'</td>';
-                html+='<td>'+d.item+'</td>';
-                html+='<td class="text-center"><input type="number" class="form-control form-control-sm text-center ward-editable" data-field="sessions" value="'+d.sessions+'" min="0" style="width:90px;display:inline-block;"></td>';
-                html+='<td class="text-center"><input type="number" class="form-control form-control-sm text-center ward-editable" data-field="amount" value="'+(d.amount||0)+'" min="0" step="0.01" style="width:90px;display:inline-block;"></td>';
-    html+='<td class=\"text-center\"><button class=\"btn btn-outline-danger btn-xs\" onclick=\"deleteWardRow('+d.id+')" title=\"删除\"><i class=\"fas fa-times\"></i></button></td>';
+        rows.forEach(function(d){
+            if(!grouped[d.area]) grouped[d.area]=[];
+            grouped[d.area].push(d);
+        });
+        var grandSessions=0, grandAmount=0;
+        var html='<table class="table table-sm table-bordered table-hover"><thead class="thead-light"><tr><th>科室</th><th>项目</th><th>人次</th><th>金额（元）</th></tr></thead><tbody>';
+        WARD_AREAS.forEach(function(area){
+            var items=grouped[area]||[];
+            if(!items.length) return;
+            var areaS=0, areaA=0;
+            items.forEach(function(d, i){
+                areaS+=d.sessions; areaA+=d.amount;
+                html+='<tr>';
+                if(i===0) html+='<td rowspan="'+items.length+'" class="align-middle font-weight-bold bg-light">'+area+'</td>';
+                html+='<td>'+escHtml(d.item)+'</td>';
+                html+='<td class="text-center">'+d.sessions+'</td>';
+                html+='<td class="text-right">'+d.amount.toFixed(2)+'</td>';
                 html+='</tr>';
             });
-            total+=at;
-            amtTotal+=aa;
-            html+='<tr class="table-info ward-subtotal" data-area="'+area+'"><td></td><td class="font-weight-bold">'+area+'合计</td><td class="text-center font-weight-bold">'+at+'</td><td class="text-center font-weight-bold">'+aa.toFixed(2)+'</td></tr>';
+            grandSessions+=areaS; grandAmount+=areaA;
+            html+='<tr class="table-secondary font-weight-bold"><td colspan="2">'+area+' 小计</td><td class="text-center">'+areaS+'</td><td class="text-right">'+areaA.toFixed(2)+'</td></tr>';
         });
-        html+='<tr class="font-weight-bold" style="background:#e8f0fe;"><td colspan="2">总计</td><td class="text-center" id="wardGrandTotal">'+total+'</td><td class="text-center" id="wardGrandAmtTotal">'+amtTotal.toFixed(2)+'</td><td></td></tr></tbody></table>';
+        html+='<tr class="font-weight-bold" style="background:#e8f0fe;"><td colspan="2">全部科室 合计</td><td class="text-center">'+grandSessions+'</td><td class="text-right">'+grandAmount.toFixed(2)+'</td></tr></tbody></table>';
         $('#wardTableWrap').html(html);
-        // 绑定编辑事件
-        $('#wardTableWrap .ward-editable').on('change',function(){
-            var $row=$(this).closest('tr');
-            var area=$row.data('area'), item=$row.data('item'), month=$row.data('month');
-            var sessions=parseFloat($(this).val())||0;
-            var field=$(this).data('field');
-            var postData={year:y,month:month,records:[{ward_area:area,item_name:item}]};
-            if(field==='sessions') postData.records[0].session_count=sessions;
-            else postData.records[0].amount=sessions;
-            $.ajax({url:'/api/dept-stats/ward',method:'POST',contentType:'application/json',
-                data:JSON.stringify(postData),
-                success:function(r){
-                    if(!r.success) return;
-                    // 更新人次总计
-                    var ts=0;
-                    $('#wardTableWrap tbody tr:not(.table-info):not(:last)').each(function(){
-                        var v=parseFloat($(this).find('.ward-editable[data-field="sessions"]').val())||0;
-                        ts+=v;
-                    });
-                    $('#wardGrandTotal').text(ts);
-                    // 更新金额总计
-                    var at2=0;
-                    $('#wardTableWrap tbody tr:not(.table-info):not(:last)').each(function(){
-                        at2+=parseFloat($(this).find('.ward-editable[data-field="amount"]').val())||0;
-                    });
-                    $('#wardGrandAmtTotal').text(at2.toFixed(2));
-                    // 更新病区小计
-                    $('.ward-subtotal').each(function(){
-                        var a=$(this).data('area');
-                        var st=0,sa=0;
-                        $(this).siblings('tr[data-area="'+a+'"]').each(function(){
-                            st+=parseFloat($(this).find('.ward-editable[data-field="sessions"]').val())||0;
-                            sa+=parseFloat($(this).find('.ward-editable[data-field="amount"]').val())||0;
-                        });
-                        $(this).find('td').eq(2).text(st);
-                        $(this).find('td').eq(3).text(sa.toFixed(2));
-                    });
-                }
-            });
-        });
-    });
+    }).fail(function(){ $('#wardTableWrap').html('<p class="text-danger text-center py-4">网络错误</p>'); });
 }
 
 function openWardEntry() {
