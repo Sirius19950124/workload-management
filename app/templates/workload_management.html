@@ -8609,11 +8609,15 @@ function loadWardAreas() {
 function loadWardMonthlySummary() {
     var y=$('#deptStatsYear').val(), m=parseInt($('#wardMonth').val());
     if(!m) return;
-    $('#wardTableWrap').html('<p class="text-muted text-center py-4"><i class="fas fa-spinner fa-spin mr-1"></i>正在汇总各科室数据...</p>');
+    var $wrap=$('#wardTableWrap');
+    // 保持容器高度稳定，避免页面抖动
+    var prevH=$wrap.height()||200;
+    $wrap.css('min-height',prevH).html('<div class="text-center py-4"><i class="fas fa-spinner fa-spin mr-1"></i>正在汇总各科室数据...</div>');
     $.get('/api/dept-stats/ward/daily/monthly-summary',{year:y,month:m},function(r){
-        if(!r.success){$('#wardTableWrap').html('<p class="text-danger text-center py-4">查询失败</p>');return;}
+        if(!$wrap.length) return;
+        if(!r.success){$wrap.css('min-height','').html('<p class="text-danger text-center py-4">查询失败</p>');return;}
         var rows=r.data||[];
-        if(!rows.length){$('#wardTableWrap').html('<p class="text-muted text-center py-4">该月暂无每日统计数据，请先在各科室标签页中录入数据</p>');return;}
+        if(!rows.length){$wrap.css('min-height','').html('<p class="text-muted text-center py-4">该月暂无每日统计数据，请先在各科室标签页中录入数据</p>');return;}
         // 按科室分组
         var grouped={};
         rows.forEach(function(d){
@@ -8639,8 +8643,8 @@ function loadWardMonthlySummary() {
             html+='<tr class="table-secondary font-weight-bold"><td colspan="2">'+area+' 小计</td><td class="text-center">'+areaS+'</td><td class="text-right">'+areaA.toFixed(2)+'</td></tr>';
         });
         html+='<tr class="font-weight-bold" style="background:#e8f0fe;"><td colspan="2">全部科室 合计</td><td class="text-center">'+grandSessions+'</td><td class="text-right">'+grandAmount.toFixed(2)+'</td></tr></tbody></table>';
-        $('#wardTableWrap').html(html);
-    }).fail(function(){ $('#wardTableWrap').html('<p class="text-danger text-center py-4">网络错误</p>'); });
+        $wrap.css('min-height','').hide().html(html).fadeIn(200);
+    }).fail(function(){ $wrap.css('min-height','').html('<p class="text-danger text-center py-4">网络错误</p>'); });
 }
 
 function openWardEntry() {
