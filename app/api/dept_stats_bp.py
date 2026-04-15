@@ -2233,7 +2233,7 @@ def get_charts():
     result['ward_daily_item_ranking'] = _rows_to_dicts(db.session.execute(text(f"""
         SELECT item_name as item, SUM(session_count) as sessions, SUM(amount) as amount
         FROM ward_daily {rank_where}
-        GROUP BY item_name ORDER BY sessions DESC LIMIT 15
+        GROUP BY item_name ORDER BY sessions DESC
     """), rank_params).fetchall())
 
     return jsonify({'success': True, 'data': result})
