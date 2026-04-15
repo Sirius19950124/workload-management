@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 科室工作量统计 & 转介统计 - 完全重写版
 三类数据独立：门诊、病房、儿童医院
@@ -181,6 +181,7 @@ def _migrate_schema():
         ('outpatient_monthly', 'amount', 'FLOAT DEFAULT 0'),
         ('ward_monthly', 'amount', 'FLOAT DEFAULT 0'),
         ('referral_monthly', 'metric_count', 'INTEGER DEFAULT 0'),
+        ('dept_items', 'unit_price', 'REAL DEFAULT 0'),
     ]
     inspector = inspect(db.engine)
     for table, col, col_type in migrations:
@@ -280,47 +281,43 @@ def batch_add_items():
 @dept_stats_bp.route('/items/import-excel', methods=['POST'])
 @log_op('import', '科室统计导入Excel')
 def import_items_excel():
-    """从Excel批量导入项目到项目库+月度数据
-    支持格式：
-    - 项目名称（仅建库）
-    - 项目名称, 月份, 人次, 金额（建库+写月度数据，支持多月份）
-    - 项目名称, 人次, 金额（建库+写月度数据，用表单年月）
-    - 病区, 项目名称, 月份, 人次（病房格式）
-    """
+    """从Excel批量导入项目到项目库+月度数据"""
     ensure_tables()
     if 'file' not in request.files:
         return jsonify({'success': False, 'error': '请上传文件'}), 400
-    
+
     item_type = request.form.get('type', 'outpatient')
     sub = request.form.get('sub', '').strip()
     year = request.form.get('year', '').strip()
     file = request.files['file']
-    
+
+    # 解析months参数（前端JSON字符串）
+    months_raw = request.form.get('months', '[]')
+    try:
+        import json as _json
+        months_list = _json.loads(months_raw) if months_raw else []
+    except Exception:
+        months_list = []
+
     if not year:
         year = str(datetime.now().year)
-    
+
     try:
         wb = openpyxl.load_workbook(file, data_only=True)
-        count = 0
-        monthly_count = 0
-        errors = []
-        sort_idx = 0
-        # 预解析月份参数（避免在循环内重复解析）
-        months_list = []
-        import json as _json
-        months_raw = request.form.get('months', '[]')
-        import logging
-        logging.getLogger().info(f'[import] months_raw={months_raw}')
-        try: months_list = _json.loads(months_raw)
-        except Exception as e:
-            logging.getLogger().info(f'[import] months parse error: {e}')
-        logging.getLogger().info(f'[import] months_list={months_list}, year={year}')
-        skip_sheet_keywords = ('说明', '填写说明', '使用说明', '提示', 'readme', 'instruction')
-        
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'无法读取Excel文件: {str(e)}'}), 400
+
+    count = 0
+    monthly_count = 0
+    errors = []
+    sort_idx = 0
+    skip_sheet_keywords = ('说明', '填写说明', '使用说明', '提示', 'readme', 'instruction')
+
+    try:
         for ws in wb.worksheets:
             if any(kw in ws.title.lower() for kw in skip_sheet_keywords):
                 continue
-            
+
             # 扫描表头，定位各列
             header_map = {}
             header_row_idx = 0
@@ -343,14 +340,14 @@ def import_items_excel():
                 if header_map:
                     header_row_idx = ri
                     break
-            
+
             has_explicit_header = bool(header_map)
             name_col = header_map.get('name', 0)
             area_col = header_map.get('area')
             month_col = header_map.get('month')
             sessions_col = header_map.get('sessions')
             amount_col = header_map.get('amount')
-            
+
             # 如果没有明确表头，用启发式检测双列
             has_two_cols = False
             if not has_explicit_header:
@@ -360,22 +357,22 @@ def import_items_excel():
                             try: float(str(row[1]).strip())
                             except ValueError: has_two_cols = True
                         break
-            
+
             skip_headers = ('项目名称', '项目', '名称', '病区', 'name', '病区/分类', '分类', '人次', '金额', '月份', '月', '数量', '费用', 'amount', 'month', 'area')
-            
+
             current_area = None  # 继承上一行的病区
             for row in ws.iter_rows(values_only=True):
                 if not row:
                     continue
-                
+
                 # 解析各列值
                 first_val = str(row[0]).strip() if row[0] else ''
                 second_val = str(row[1]).strip() if len(row) > 1 and row[1] else ''
-                
+
                 # 跳过表头行
                 if first_val in skip_headers or second_val in skip_headers:
                     continue
-                
+
                 # 获取项目名称（优先B列）
                 name = ''
                 if has_explicit_header and name_col < len(row) and row[name_col]:
@@ -386,7 +383,7 @@ def import_items_excel():
                     name = second_val
                 else:
                     name = first_val
-                
+
                 # 过滤纯数字
                 if not name:
                     continue
@@ -395,7 +392,7 @@ def import_items_excel():
                     continue
                 except ValueError:
                     pass
-                
+
                 # 获取病区（继承模式：空A列用上一个病区）
                 # 注意：outpatient/children 等无子分类的类型，不要从A列自动推断病区
                 if has_explicit_header and area_col is not None and area_col < len(row) and row[area_col]:
@@ -412,7 +409,7 @@ def import_items_excel():
                     # 病房类型的标题行
                     current_area = first_val
                     continue
-                
+
                 # 门诊/儿童医院等无子分类的类型，强制area为空
                 if item_type in ('outpatient', 'children'):
                     area = ''
@@ -421,7 +418,7 @@ def import_items_excel():
                 # children_doctor等不需要病区的类型，允许area为空
                 if not area and item_type not in ('children_doctor', 'children', 'outpatient', 'ward'):
                     continue
-                
+
                 # 获取月份
                 row_month = None
                 if month_col is not None and month_col < len(row) and row[month_col]:
@@ -438,7 +435,7 @@ def import_items_excel():
                             row_month = int(m.group(1))
                             if row_month < 1 or row_month > 12:
                                 row_month = None
-                
+
                 # 获取人次和金额
                 sessions = 0
                 amount = 0
@@ -448,7 +445,7 @@ def import_items_excel():
                 if amount_col is not None and amount_col < len(row) and row[amount_col] is not None and str(row[amount_col]).strip() != '':
                     try: amount = float(str(row[amount_col]).strip())
                     except: pass
-                
+
                 # 无明确表头时，尝试固定位置读取
                 if not has_explicit_header and sessions_col is None and amount_col is None:
                     data_start = 1 if not has_two_cols else 2
@@ -458,7 +455,7 @@ def import_items_excel():
                     if len(row) > data_start + 1 and row[data_start + 1] is not None and str(row[data_start + 1]).strip() != '':
                         try: amount = float(str(row[data_start + 1]).strip())
                         except: pass
-                
+
                 try:
                     # 导入项目到项目库
                     db.session.execute(text("""
@@ -471,7 +468,7 @@ def import_items_excel():
                     """), {'type': item_type, 'name': name, 'sub': area, 'sort_order': sort_idx})
                     sort_idx += 1
                     count += 1
-                    
+
                     # 写入月度统计（有选中月份就写入，允许人次数为0）
                     if months_list:
                         for mon in months_list:
@@ -516,7 +513,7 @@ def import_items_excel():
                                 monthly_count += 1
                 except Exception as e:
                     errors.append(f'{name}: {str(e)}')
-        
+
         db.session.commit()
         return jsonify({'success': True, 'data': {'count': count, 'monthly_count': monthly_count, 'errors': errors}})
     except Exception as e:
@@ -852,16 +849,20 @@ def import_metrics_excel():
 
 @dept_stats_bp.route('/outpatient', methods=['GET'])
 def get_outpatient():
-    """获取门诊月度数据"""
+    """获取门诊月度数据（支持按月筛选）"""
     ensure_tables()
     year = request.args.get('year', date.today().year, type=int)
-    
-    rows = db.session.execute(text("""
-        SELECT item_name, month, session_count, amount
-        FROM outpatient_monthly WHERE year = :year
-        ORDER BY month, item_name
-    """), {'year': year}).fetchall()
-    
+    month = request.args.get('month', type=int)
+
+    sql = "SELECT item_name, month, session_count, amount FROM outpatient_monthly WHERE year = :year"
+    params = {'year': year}
+    if month:
+        sql += " AND month = :month"
+        params['month'] = month
+    sql += " ORDER BY month, item_name"
+
+    rows = db.session.execute(text(sql), params).fetchall()
+
     return jsonify({'success': True, 'data': [
         {'item': r[0], 'month': r[1], 'sessions': r[2] or 0, 'amount': r[3] or 0}
         for r in rows
@@ -892,6 +893,7 @@ def save_outpatient():
     year = data.get('year')
     month = data.get('month')
     records = data.get('records', [])
+    trigger_type = data.get('trigger_type', 'auto_save')
 
     if not year or not month or not records:
         return jsonify({'success': False, 'error': '缺少必要参数'}), 400
@@ -901,7 +903,7 @@ def save_outpatient():
         _create_snapshot('outpatient', f'{year}-{month}', 'outpatient_monthly',
             ['item_name', 'year', 'month'],
             "SELECT * FROM outpatient_monthly WHERE year=:y AND month=:m",
-            {'y': int(year), 'm': int(month)})
+            {'y': int(year), 'm': int(month)}, trigger_type=trigger_type)
     except Exception:
         pass
 
@@ -978,6 +980,7 @@ def save_ward():
     year = data.get('year')
     month = data.get('month')
     records = data.get('records', [])
+    trigger_type = data.get('trigger_type', 'auto_save')
 
     if not year or not month or not records:
         return jsonify({'success': False, 'error': '缺少必要参数'}), 400
@@ -987,7 +990,7 @@ def save_ward():
         _create_snapshot('ward_monthly', f'{year}-{month}', 'ward_monthly',
             ['ward_area', 'item_name', 'year', 'month'],
             "SELECT * FROM ward_monthly WHERE year=:y AND month=:m",
-            {'y': int(year), 'm': int(month)})
+            {'y': int(year), 'm': int(month)}, trigger_type=trigger_type)
     except Exception:
         pass
 
@@ -1212,6 +1215,142 @@ def seed_ward_daily_prices():
     return jsonify({'success': True})
 
 
+# ============================================================================
+# 通用项目管理（门诊/儿童/转介 的项目编排 + 单价）
+# ============================================================================
+
+@dept_stats_bp.route('/items/manage', methods=['GET'])
+def get_module_items():
+    """获取某模块的项目列表（含排序和分类），为空时自动从数据表初始化"""
+    ensure_tables()
+    item_type = request.args.get('type', '').strip()
+    if not item_type:
+        return jsonify({'success': False, 'error': '缺少type参数'}), 400
+    rows = db.session.execute(text("""
+        SELECT item_name, sub_category, sort_order FROM dept_items
+        WHERE item_type = :itype AND is_active = 1
+        ORDER BY sort_order, item_name
+    """), {'itype': item_type}).fetchall()
+
+    # 为空时自动从对应数据表初始化项目列表
+    if not rows:
+        _auto_seed_module_items(item_type)
+        rows = db.session.execute(text("""
+            SELECT item_name, sub_category, sort_order FROM dept_items
+            WHERE item_type = :itype AND is_active = 1
+            ORDER BY sort_order, item_name
+        """), {'itype': item_type}).fetchall()
+
+    # 去重：同名项目只保留 sort_order 最小的一条
+    seen = {}
+    unique_rows = []
+    for r in rows:
+        name = r[0]
+        if name not in seen:
+            seen[name] = True
+            unique_rows.append(r)
+
+    return jsonify({'success': True, 'data': [
+        {'item_name': r[0], 'sub_category': r[1] or '', 'sort_order': int(r[2] or 0)}
+        for r in unique_rows
+    ]})
+
+
+def _auto_seed_module_items(item_type):
+    """从对应数据表自动提取项目名，初始化到 dept_items（幂等，仅提取当前有效数据）"""
+    # 无效名称黑名单（汇总行、测试数据、空值变体）
+    _invalid_names = {'合计', '总计', '小计', '日期', '(未分类)', '-', '',
+                      '测试', '新项目a', '新项目b', '新项目c',
+                      '新项目A', '新项目B', '新项目C', '新项目D',
+                      '测试科', '测试科室', 'test'}
+    try:
+        if item_type == 'referral':
+            # 转介：从 referral_doctors 表取医生（按科室分组）
+            rows = db.session.execute(text("""
+                SELECT doctor_name, department FROM referral_doctors
+                WHERE is_active = 1 AND doctor_name IS NOT NULL AND doctor_name != ''
+                ORDER BY department, doctor_name
+            """)).fetchall()
+            if not rows:
+                return
+            idx = 0
+            for r in rows:
+                name = (r[0] or '').strip()  # doctor_name (第1列)
+                dept = (r[1] or '').strip()   # department → sub_category (第2列)
+                if not name or name in _invalid_names:
+                    continue
+                # 额外过滤：含"测试"、纯数字、过短
+                if '测试' in name or name.isdigit() or len(name) < 2:
+                    continue
+                db.session.execute(text("""
+                    INSERT OR IGNORE INTO dept_items (item_type, item_name, sub_category, unit_price, sort_order)
+                    VALUES (:itype, :name, :subcat, 0, :sort)
+                """), {'itype': item_type, 'name': name, 'subcat': dept, 'sort': idx})
+                idx += 1
+            db.session.commit()
+            return
+
+        # 其他模块：从月度数据表取项目名
+        table_map = {
+            'outpatient': ('outpatient_monthly', 'item_name'),
+            'children': ('children_monthly', 'item_name'),
+            'children_doctor': ('children_doctor_monthly', "COALESCE(metric_name,doctor_name||'')"),
+        }
+        if item_type not in table_map:
+            return
+        table_name, name_col = table_map[item_type]
+        # 只取当前年份的有效数据，避免已删除的陈旧记录被重新引入
+        cur_year = datetime.now().year
+        rows = db.session.execute(text(f"""
+            SELECT DISTINCT {name_col} AS item_name FROM {table_name}
+            WHERE {name_col} IS NOT NULL AND {name_col} != ''
+              AND year = :cur_year
+            ORDER BY {name_col}
+        """), {'cur_year': cur_year}).fetchall()
+        if not rows:
+            return
+        idx = 0
+        for r in rows:
+            name = (r[0] or '').strip()
+            if not name or name in _invalid_names:
+                continue
+            if name.isdigit() or len(name) < 2:
+                continue
+            db.session.execute(text("""
+                INSERT OR IGNORE INTO dept_items (item_type, item_name, sub_category, unit_price, sort_order)
+                VALUES (:itype, :name, '', 0, :sort)
+            """), {'itype': item_type, 'name': name, 'sort': idx})
+            idx += 1
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+
+
+@dept_stats_bp.route('/items/manage', methods=['POST'])
+def save_module_items():
+    """批量保存模块项目（全量替换：先清空再插入，避免重复）"""
+    ensure_tables()
+    data = request.get_json() or {}
+    item_type = data.get('type', '').strip()
+    items = data.get('items', [])
+    if not item_type:
+        return jsonify({'success': False, 'error': '缺少type参数'}), 400
+    # 先清空该类型的所有旧数据（避免重复）
+    db.session.execute(text("DELETE FROM dept_items WHERE item_type = :itype"), {'itype': item_type})
+    # 全量插入新数据
+    for idx, it in enumerate(items):
+        name = (it.get('name') or it.get('item_name') or '').strip()
+        subcat = (it.get('sub_category') or '').strip()
+        if not name:
+            continue
+        db.session.execute(text("""
+            INSERT INTO dept_items (item_type, item_name, sub_category, unit_price, sort_order, is_active)
+            VALUES (:itype, :name, :subcat, 0, :sort, 1)
+        """), {'itype': item_type, 'name': name, 'subcat': subcat, 'sort': idx})
+    db.session.commit()
+    return jsonify({'success': True, 'data': {'count': len(items)}})
+
+
 @dept_stats_bp.route('/ward/daily', methods=['GET'])
 def get_ward_daily():
     """查询每日数据"""
@@ -1300,10 +1439,11 @@ def _create_ward_daily_snapshot(area, trigger_type='auto_save'):
 def _create_snapshot(module, scope_key, table_name, key_columns, query_sql,
                      params, trigger_type='auto_save'):
     """通用快照：查询当前数据→序列化JSON→存入data_snapshots表（含节流）"""
-    rows = db.session.execute(text(query_sql), params).fetchall()
+    result = db.session.execute(text(query_sql), params)
+    cols = list(result.keys()) if result else []
+    rows = result.fetchall()
     if not rows:
         return
-    cols = [d[0] for d in rows[0].cursor.description] if rows else []
     snapshot_data = [dict(zip(cols, r)) for r in rows]
     _now_local = "datetime('now','localtime')"
     # import/sync 类型：始终创建新快照（重要回滚点，不节流）
@@ -1727,6 +1867,7 @@ def save_children_monthly():
     year = data.get('year')
     month = data.get('month')
     records = data.get('records', [])
+    trigger_type = data.get('trigger_type', 'auto_save')
 
     if not year or not month or not records:
         return jsonify({'success': False, 'error': '缺少必要参数'}), 400
@@ -1736,7 +1877,7 @@ def save_children_monthly():
         _create_snapshot('children_monthly', f'{year}-{month}', 'children_monthly',
             ['item_name', 'year', 'month'],
             "SELECT * FROM children_monthly WHERE year=:y AND month=:m",
-            {'y': int(year), 'm': int(month)})
+            {'y': int(year), 'm': int(month)}, trigger_type=trigger_type)
     except Exception:
         pass
 
@@ -1852,6 +1993,7 @@ def save_children_doctor_monthly():
     year = data.get('year')
     month = data.get('month')
     records = data.get('records', [])
+    trigger_type = data.get('trigger_type', 'auto_save')
     if not year or not month or not records:
         return jsonify({'success': False, 'error': '缺少必要参数'}), 400
 
@@ -1860,7 +2002,7 @@ def save_children_doctor_monthly():
         _create_snapshot('children_doctor', f'{year}-{month}', 'children_doctor_monthly',
             ['doctor_name', 'year', 'month'],
             "SELECT * FROM children_doctor_monthly WHERE year=:y AND month=:m",
-            {'y': int(year), 'm': int(month)})
+            {'y': int(year), 'm': int(month)}, trigger_type=trigger_type)
     except Exception:
         pass
 
@@ -2267,16 +2409,24 @@ def save_referral_data():
     year = data.get('year')
     month = data.get('month')
     records = data.get('records', [])
+    trigger_type = data.get('trigger_type', 'auto_save')
 
-    if not year or not month or not records:
+    if not year or not records:
         return jsonify({'success': False, 'error': '缺少必要参数'}), 400
 
     # 自动快照
     try:
-        _create_snapshot('referral', f'{year}-{month}', 'referral_monthly',
-            ['department', 'doctor_name', 'year', 'month', 'metric_name'],
-            "SELECT * FROM referral_monthly WHERE year=:y AND month=:m",
-            {'y': int(year), 'm': int(month)})
+        y=int(year)
+        if int(month or 0) > 0:
+            _create_snapshot('referral', f'{y}-{month}', 'referral_monthly',
+                ['department', 'doctor_name', 'year', 'month', 'metric_name'],
+                "SELECT * FROM referral_monthly WHERE year=:y AND month=:m",
+                {'y': y, 'm': int(month)}, trigger_type=trigger_type)
+        else:
+            _create_snapshot('referral', str(y), 'referral_monthly',
+                ['department', 'doctor_name', 'year', 'month', 'metric_name'],
+                "SELECT * FROM referral_monthly WHERE year=:y",
+                {'y': y}, trigger_type=trigger_type)
     except Exception:
         pass
 
@@ -2316,7 +2466,7 @@ def delete_referral_by_key():
     """按科室+医生删除转介月度记录"""
     ensure_tables()
     data = request.get_json() or {}
-    year = data.get('year', type=int)
+    year = int(data.get('year') or 0)
     department = data.get('department', '')
     doctor_name = data.get('doctor_name', '')
     if not year or not department:
@@ -2572,3 +2722,60 @@ def import_referral_monthly_json():
         db.session.rollback()
         return jsonify({'success': False, 'error': str(e)}), 500
 
+
+
+@dept_stats_bp.route('/init', methods=['GET'])
+def batch_init():
+    """批量初始化接口：一次请求返回科室统计模块需要的所有基础数据"""
+    ensure_tables()
+    year = request.args.get('year', date.today().year, type=int)
+    month = request.args.get('month', type=int)
+    result = {}
+
+    # 1. 门诊项目列表
+    items_rows = db.session.execute(text("""
+        SELECT item_name, sort_order FROM dept_items
+        WHERE item_type='outpatient' ORDER BY sort_order, item_name
+    """)).fetchall()
+    result['outpatient_items'] = [{'name': r[0], 'sort': r[1]} for r in items_rows]
+
+    # 2. 病区列表
+    areas_rows = db.session.execute(text("""
+        SELECT DISTINCT ward_area FROM ward_daily WHERE ward_area IS NOT NULL AND ward_area != ''
+        UNION
+        SELECT DISTINCT ward_area FROM ward_item_prices WHERE ward_area IS NOT NULL AND ward_area != ''
+        ORDER BY ward_area
+    """)).fetchall()
+    result['ward_areas'] = [r[0] for r in areas_rows]
+    if not result['ward_areas']:
+        result['ward_areas'] = ['产科', '妇科', '外科', '新生儿科', '产康中心']
+
+    # 3. 转介科室
+    ref_rows = db.session.execute(text("""
+        SELECT DISTINCT department FROM referral_monthly ORDER BY department
+    """)).fetchall()
+    result['referral_departments'] = [r[0] for r in ref_rows]
+
+    # 4-5. 当前月数据（如果指定了月份）
+    if month:
+        out_rows = db.session.execute(text("""
+            SELECT item_name, session_count, amount FROM outpatient_monthly
+            WHERE year=:year AND month=:month ORDER BY item_name
+        """), {'year': year, 'month': month}).fetchall()
+        result['outpatient_data'] = [
+            {'item': r[0], 'sessions': r[1] or 0, 'amount': r[2] or 0} for r in out_rows
+        ]
+        summary_rows = db.session.execute(text("""
+            SELECT ward_area, item_name,
+                   COALESCE(SUM(session_count),0) as sessions,
+                   COALESCE(SUM(amount),0) as amount
+            FROM ward_daily
+            WHERE strftime('%Y', record_date)=:year_str AND strftime('%m', record_date)=:month_str
+            GROUP BY ward_area, item_name
+            ORDER BY ward_area, item_name
+        """), {'year_str': str(year), 'month_str': f'{month:02d}'}).fetchall()
+        result['ward_summary'] = [
+            {'area': r[0], 'item': r[1], 'sessions': r[2], 'amount': r[3]} for r in summary_rows
+        ]
+
+    return jsonify({'success': True, 'data': result})

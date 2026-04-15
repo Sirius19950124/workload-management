@@ -864,7 +864,14 @@
             margin-top: 4px;
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <!-- 预加载关键资源（不等HTML解析完就开始下载） -->
+    <link rel="preload" href="/static/css/bootstrap.min.css" as="style">
+    <link rel="preload" href="/static/css/font-awesome.min.css" as="style">
+    <link rel="preload" href="/static/js/chart.min.js" as="script">
+    <link rel="preload" href="/static/js/jquery.min.js" as="script">
+    <link rel="preload" href="/static/js/bootstrap.bundle.min.js" as="script">
+    <link rel="preload" href="/static/js/select2.min.js" as="script">
+    <script src="/static/js/chart.min.js"></script>
 </head>
 <body>
     <!-- Toast 通知容器 -->
@@ -1296,15 +1303,22 @@
                             <div class="tab-content">
                                 <!-- 门诊 -->
                                 <div class="tab-pane fade show active" id="deptTabOutpatient">
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                                        <!-- 左侧：查询区 -->
                                         <div class="d-flex align-items-center">
                                             <select class="form-control form-control-sm mr-2" id="outMonth" style="width:100px;"></select>
                                             <button class="btn btn-sm btn-primary" onclick="loadOutpatientData()"><i class="fas fa-search mr-1"></i>查询</button>
+                                            <button class="btn btn-sm btn-success ml-1" id="outSyncBtn" onclick="syncOutpatientData()" title="保存当前表格全部数据并创建快照（可回滚）"><i class="fas fa-save mr-1"></i>全量保存</button>
+                                            <button class="btn btn-sm btn-outline-info ml-1" onclick="openModuleItemManage('outpatient','门诊')" title="编排项目显示顺序"><i class="fas fa-cog mr-1"></i>项目编排</button>
                                             <button class="btn btn-sm btn-outline-danger ml-2" id="batchDelOutBtn" onclick="batchDeleteOut()" style="display:none;"><i class="fas fa-trash-alt mr-1"></i>批量删除 (<span id="batchDelOutCount">0</span>)</button>
                                         </div>
-                                        <button class="btn btn-sm btn-success" onclick="openOutpatientEntry()"><i class="fas fa-edit mr-1"></i>录入数据</button>
-                                        <button class="btn btn-sm btn-outline-secondary" onclick="exportTableToExcel('outpatientMonthlyWrap','门诊月度统计')"><i class="fas fa-file-excel mr-1"></i>导出</button>
-                                        <button class="btn btn-sm btn-outline-warning ml-1" onclick="openGenericRollback('outpatient','门诊')" title="回滚到之前的版本"><i class="fas fa-undo mr-1"></i>回滚</button>
+                                        <!-- 右侧：操作按钮组 -->
+                                        <div class="d-flex align-items-center flex-wrap gap-1">
+                                            <button class="btn btn-sm btn-success" onclick="openOutpatientEntry()"><i class="fas fa-edit mr-1"></i>录入</button>
+                                            <button class="btn btn-sm btn-outline-secondary" onclick="exportTableToExcel('outpatientTableWrap','门诊月度统计')"><i class="fas fa-file-excel mr-1"></i>导出</button>
+                                            <button class="btn btn-sm btn-outline-warning" onclick="openGenericRollback('outpatient','门诊')" title="回滚到之前的版本"><i class="fas fa-undo mr-1"></i>回滚</button>
+                                            <div id="outSaveInd" class="small ml-1" style="height:20px;min-width:60px;"></div>
+                                        </div>
                                     </div>
                                     <div id="outpatientTableWrap" style="overflow-x:auto;">
                                         <p class="text-muted text-center">请选择月份后查询</p>
@@ -1347,7 +1361,7 @@
                                                     <select class="form-control form-control-sm mr-2" id="wardDailyYear_1" style="width:100px;"><option value="2028">2028</option><option value="2027">2027</option><option value="2026" selected>2026</option><option value="2025">2025</option><option value="2024">2024</option><option value="2023">2023</option><option value="2022">2022</option></select>
                                                     <select class="form-control form-control-sm mr-2" id="wardDailyMonth_1" style="width:90px;"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select>
                                                     <button class="btn btn-sm btn-primary" onclick="loadWardDaily(1)"><i class="fas fa-search mr-1"></i>查询</button>
-                                                    <button class="btn btn-sm btn-outline-secondary ml-1" id="wardDailySaveBtn_1" onclick="saveWardDailyEdit(1)" title="强制全量保存所有单元格（正常情况下输入会自动保存）"><i class="fas fa-sync mr-1"></i>全量保存</button>
+                                                    <button class="btn btn-sm btn-success ml-1" id="wardDailySaveBtn_1" onclick="saveWardDailyEdit(1)" title="保存当前数据并创建快照（可回滚）"><i class="fas fa-save mr-1"></i>全量保存</button>
                                                 </div>
                                                 <div class="d-flex flex-wrap">
                                                     <button class="btn btn-sm btn-outline-info mr-1 mb-1" onclick="openWardPriceManage(1)"><i class="fas fa-cog mr-1"></i>项目单价</button>
@@ -1372,7 +1386,7 @@
                                                     <select class="form-control form-control-sm mr-2" id="wardDailyYear_2" style="width:100px;"><option value="2028">2028</option><option value="2027">2027</option><option value="2026" selected>2026</option><option value="2025">2025</option><option value="2024">2024</option><option value="2023">2023</option><option value="2022">2022</option></select>
                                                     <select class="form-control form-control-sm mr-2" id="wardDailyMonth_2" style="width:90px;"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select>
                                                     <button class="btn btn-sm btn-primary" onclick="loadWardDaily(2)"><i class="fas fa-search mr-1"></i>查询</button>
-                                                    <button class="btn btn-sm btn-outline-secondary ml-1" id="wardDailySaveBtn_2" onclick="saveWardDailyEdit(2)" title="强制全量保存所有单元格（正常情况下输入会自动保存）"><i class="fas fa-sync mr-1"></i>全量保存</button>
+                                                    <button class="btn btn-sm btn-success ml-1" id="wardDailySaveBtn_2" onclick="saveWardDailyEdit(2)" title="保存当前数据并创建快照（可回滚）"><i class="fas fa-save mr-1"></i>全量保存</button>
                                                 </div>
                                                 <div class="d-flex flex-wrap">
                                                     <button class="btn btn-sm btn-outline-info mr-1 mb-1" onclick="openWardPriceManage(2)"><i class="fas fa-cog mr-1"></i>项目单价</button>
@@ -1397,7 +1411,7 @@
                                                     <select class="form-control form-control-sm mr-2" id="wardDailyYear_3" style="width:100px;"><option value="2028">2028</option><option value="2027">2027</option><option value="2026" selected>2026</option><option value="2025">2025</option><option value="2024">2024</option><option value="2023">2023</option><option value="2022">2022</option></select>
                                                     <select class="form-control form-control-sm mr-2" id="wardDailyMonth_3" style="width:90px;"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select>
                                                     <button class="btn btn-sm btn-primary" onclick="loadWardDaily(3)"><i class="fas fa-search mr-1"></i>查询</button>
-                                                    <button class="btn btn-sm btn-outline-secondary ml-1" id="wardDailySaveBtn_3" onclick="saveWardDailyEdit(3)" title="强制全量保存所有单元格（正常情况下输入会自动保存）"><i class="fas fa-sync mr-1"></i>全量保存</button>
+                                                    <button class="btn btn-sm btn-success ml-1" id="wardDailySaveBtn_3" onclick="saveWardDailyEdit(3)" title="保存当前数据并创建快照（可回滚）"><i class="fas fa-save mr-1"></i>全量保存</button>
                                                 </div>
                                                 <div class="d-flex flex-wrap">
                                                     <button class="btn btn-sm btn-outline-info mr-1 mb-1" onclick="openWardPriceManage(3)"><i class="fas fa-cog mr-1"></i>项目单价</button>
@@ -1422,7 +1436,7 @@
                                                     <select class="form-control form-control-sm mr-2" id="wardDailyYear_4" style="width:100px;"><option value="2028">2028</option><option value="2027">2027</option><option value="2026" selected>2026</option><option value="2025">2025</option><option value="2024">2024</option><option value="2023">2023</option><option value="2022">2022</option></select>
                                                     <select class="form-control form-control-sm mr-2" id="wardDailyMonth_4" style="width:90px;"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select>
                                                     <button class="btn btn-sm btn-primary" onclick="loadWardDaily(4)"><i class="fas fa-search mr-1"></i>查询</button>
-                                                    <button class="btn btn-sm btn-outline-secondary ml-1" id="wardDailySaveBtn_4" onclick="saveWardDailyEdit(4)" title="强制全量保存所有单元格（正常情况下输入会自动保存）"><i class="fas fa-sync mr-1"></i>全量保存</button>
+                                                    <button class="btn btn-sm btn-success ml-1" id="wardDailySaveBtn_4" onclick="saveWardDailyEdit(4)" title="保存当前数据并创建快照（可回滚）"><i class="fas fa-save mr-1"></i>全量保存</button>
                                                 </div>
                                                 <div class="d-flex flex-wrap">
                                                     <button class="btn btn-sm btn-outline-info mr-1 mb-1" onclick="openWardPriceManage(4)"><i class="fas fa-cog mr-1"></i>项目单价</button>
@@ -1447,7 +1461,7 @@
                                                     <select class="form-control form-control-sm mr-2" id="wardDailyYear_5" style="width:100px;"><option value="2028">2028</option><option value="2027">2027</option><option value="2026" selected>2026</option><option value="2025">2025</option><option value="2024">2024</option><option value="2023">2023</option><option value="2022">2022</option></select>
                                                     <select class="form-control form-control-sm mr-2" id="wardDailyMonth_5" style="width:90px;"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select>
                                                     <button class="btn btn-sm btn-primary" onclick="loadWardDaily(5)"><i class="fas fa-search mr-1"></i>查询</button>
-                                                    <button class="btn btn-sm btn-outline-secondary ml-1" id="wardDailySaveBtn_5" onclick="saveWardDailyEdit(5)" title="强制全量保存所有单元格（正常情况下输入会自动保存）"><i class="fas fa-sync mr-1"></i>全量保存</button>
+                                                    <button class="btn btn-sm btn-success ml-1" id="wardDailySaveBtn_5" onclick="saveWardDailyEdit(5)" title="保存当前数据并创建快照（可回滚）"><i class="fas fa-save mr-1"></i>全量保存</button>
                                                 </div>
                                                 <div class="d-flex flex-wrap">
                                                     <button class="btn btn-sm btn-outline-info mr-1 mb-1" onclick="openWardPriceManage(5)"><i class="fas fa-cog mr-1"></i>项目单价</button>
@@ -1475,31 +1489,41 @@
 
                                     <div class="tab-content">
                                         <div class="tab-pane fade show active" id="childMonthly">
-                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
                                                 <div class="d-flex align-items-center">
                                                     <select class="form-control form-control-sm mr-2" id="childMonth" style="width:100px;"></select>
                                                     <button class="btn btn-sm btn-primary" onclick="loadChildrenMonthly()"><i class="fas fa-search mr-1"></i>查询</button>
+                                                    <button class="btn btn-sm btn-success ml-1" id="childMonSyncBtn" onclick="syncChildrenMonthly()" title="保存当前数据并创建快照（可回滚）"><i class="fas fa-save mr-1"></i>全量保存</button>
+                                                    <button class="btn btn-sm btn-outline-info ml-1" onclick="openModuleItemManage('children','儿童医院月度')" title="编排项目显示顺序"><i class="fas fa-cog mr-1"></i>项目编排</button>
                                                     <button class="btn btn-sm btn-outline-danger ml-2" id="batchDelChildMonBtn" onclick="batchDeleteChildMon()" style="display:none;"><i class="fas fa-trash-alt mr-1"></i>批量删除 (<span id="batchDelChildMonCount">0</span>)</button>
                                                 </div>
-                                                <button class="btn btn-sm btn-success" onclick="openChildrenMonthlyEntry()"><i class="fas fa-edit mr-1"></i>录入数据</button>
-                                                <button class="btn btn-sm btn-outline-secondary" onclick="exportTableToExcel('childrenMonthlyWrap','儿童医院月度统计')"><i class="fas fa-file-excel mr-1"></i>导出</button>
-                                                <button class="btn btn-sm btn-outline-warning ml-1" onclick="openGenericRollback('children_monthly','儿童医院月度')" title="回滚到之前的版本"><i class="fas fa-undo mr-1"></i>回滚</button>
+                                                <div class="d-flex align-items-center flex-wrap gap-1">
+                                                    <button class="btn btn-sm btn-success" onclick="openChildrenMonthlyEntry()"><i class="fas fa-edit mr-1"></i>录入</button>
+                                                    <button class="btn btn-sm btn-outline-secondary" onclick="exportTableToExcel('childrenMonthlyWrap','儿童医院月度统计')"><i class="fas fa-file-excel mr-1"></i>导出</button>
+                                                    <button class="btn btn-sm btn-outline-warning" onclick="openGenericRollback('children_monthly','儿童医院月度')" title="回滚到之前的版本"><i class="fas fa-undo mr-1"></i>回滚</button>
+                                                    <div id="childMonSaveInd" class="small ml-1" style="height:20px;min-width:60px;"></div>
+                                                </div>
                                             </div>
                                             <div id="childrenMonthlyWrap" style="overflow-x:auto;">
                                                 <p class="text-muted text-center">请选择月份后查询</p>
                                             </div>
                                         </div>
                                         <div class="tab-pane fade" id="childDaily">
-                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
                                                 <div class="d-flex align-items-center">
                                                     <select class="form-control form-control-sm mr-2" id="childDoctorYear" style="width:100px;"></select>
                                                     <select class="form-control form-control-sm mr-2" id="childDoctorMonth" style="width:100px;"></select>
                                                     <button class="btn btn-sm btn-primary" onclick="loadChildrenDoctor()"><i class="fas fa-search mr-1"></i>查询</button>
+                                                    <button class="btn btn-sm btn-success ml-1" id="childDocSyncBtn" onclick="syncChildrenDoctor()" title="保存当前数据并创建快照（可回滚）"><i class="fas fa-save mr-1"></i>全量保存</button>
+                                                    <button class="btn btn-sm btn-outline-info ml-1" onclick="openModuleItemManage('children_doctor','医生开单统计')" title="编排医生/指标显示顺序"><i class="fas fa-cog mr-1"></i>项目编排</button>
                                                     <button class="btn btn-sm btn-outline-danger ml-2" id="batchDelChildDocBtn" onclick="batchDeleteChildDoc()" style="display:none;"><i class="fas fa-trash-alt mr-1"></i>批量删除 (<span id="batchDelChildDocCount">0</span>)</button>
                                                 </div>
-                                                <button class="btn btn-sm btn-success" onclick="openChildrenDoctorEntry()"><i class="fas fa-edit mr-1"></i>录入数据</button>
-                                                <button class="btn btn-sm btn-outline-secondary" onclick="exportTableToExcel('childrenDoctorWrap','医生开单统计')"><i class="fas fa-file-excel mr-1"></i>导出</button>
-                                                <button class="btn btn-sm btn-outline-warning ml-1" onclick="openGenericRollback('children_doctor','医生开单统计')" title="回滚到之前的版本"><i class="fas fa-undo mr-1"></i>回滚</button>
+                                                <div class="d-flex align-items-center flex-wrap gap-1">
+                                                    <button class="btn btn-sm btn-success" onclick="openChildrenDoctorEntry()"><i class="fas fa-edit mr-1"></i>录入</button>
+                                                    <button class="btn btn-sm btn-outline-secondary" onclick="exportTableToExcel('childrenDoctorWrap','医生开单统计')"><i class="fas fa-file-excel mr-1"></i>导出</button>
+                                                    <button class="btn btn-sm btn-outline-warning" onclick="openGenericRollback('children_doctor','医生开单统计')" title="回滚到之前的版本"><i class="fas fa-undo mr-1"></i>回滚</button>
+                                                    <div id="childDocSaveInd" class="small ml-1" style="height:20px;min-width:60px;"></div>
+                                                </div>
                                             </div>
                                             <div id="childrenDoctorWrap" style="overflow-x:auto;">
                                                 <p class="text-muted text-center">请选择年月后查询</p>
@@ -1542,6 +1566,8 @@
                                     <select class="form-control form-control-sm mr-2" id="referralYear" style="width:100px;"></select>
                                     <select class="form-control form-control-sm mr-2" id="referralDeptFilter" style="width:120px;"><option value="">全部科室</option></select>
                                     <button class="btn btn-sm btn-primary" onclick="loadReferralData()"><i class="fas fa-search mr-1"></i>查询</button>
+                                    <button class="btn btn-sm btn-success ml-1" id="refSyncBtn" onclick="syncReferralData()" title="保存当前表格全部数据并创建快照（可回滚）"><i class="fas fa-save mr-1"></i>全量保存</button>
+                                    <button class="btn btn-sm btn-outline-info ml-1" onclick="openModuleItemManage('referral','转介统计')" title="编排医生显示顺序"><i class="fas fa-cog mr-1"></i>项目编排</button>
                                 </div>
                                 <div>
                                     <span class="mr-2 text-muted small">导入月份:</span><span id="refImportMonthChecks" class="d-inline-flex flex-wrap"></span>
@@ -1550,6 +1576,7 @@
                                     <button class="btn btn-sm btn-outline-secondary mr-1" onclick="window.open('/api/referral/template','_blank')"><i class="fas fa-download mr-1"></i>下载数据模板</button>
                                     <button class="btn btn-sm btn-outline-secondary" onclick="exportTableToExcel('referralDataWrap','转介统计')"><i class="fas fa-file-excel mr-1"></i>导出</button>
                                     <button class="btn btn-sm btn-outline-warning ml-1" onclick="openGenericRollback('referral','转介统计')" title="回滚到之前的版本"><i class="fas fa-undo mr-1"></i>回滚</button>
+                                    <div id="refSaveInd" class="small ml-1" style="height:20px;min-width:60px;"></div>
                                 </div>
                             </div>
                             <!-- 导入预览 -->
@@ -2721,6 +2748,36 @@
         </div>
     </div>
 
+    <!-- 通用项目编排模态框（门诊/儿童/转介 共用，仅拖拽排序） -->
+    <div class="modal fade" id="moduleItemManageModal" tabindex="-1">
+        <div class="modal-dialog"><div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="moduleItemManageTitle"><i class="fas fa-cog mr-1"></i>项目编排</h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted small mb-2" id="moduleItemManageDesc">拖拽调整显示顺序。</p>
+                <table class="table table-sm table-bordered">
+                    <thead class="thead-light"><tr>
+                        <th><i class="fas fa-arrows-alt text-muted mr-1"></i><span id="moduleItemThText">名称（可拖拽排序）</span></th>
+                        <th style="width:50px;"></th>
+                    </tr></thead>
+                    <tbody id="moduleItemTableBody"></tbody>
+                </table>
+                <div class="mt-2 input-group input-group-sm">
+                    <input type="text" class="form-control" id="newModuleName" placeholder="新名称">
+                    <div class="input-group-append">
+                        <button class="btn btn-primary" onclick="addModuleItem()">添加</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="saveModuleItems()"><i class="fas fa-save mr-1"></i>保存</button>
+            </div>
+        </div></div>
+    </div>
+
     <!-- 病房每日回滚模态框 -->
     <div class="modal fade" id="wardRollbackModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
@@ -3146,8 +3203,17 @@
     <script src="/static/js/bootstrap.bundle.min.js"></script>
     <!-- Select2 for searchable dropdowns -->
     <script src="/static/js/select2.min.js"></script>
-    <!-- SheetJS for Excel file reading -->
-    <script src="/static/js/xlsx.full.min.js"></script>
+    <!-- SheetJS 懒加载：只在需要导入/导出Excel时才加载（节省882KB首屏） -->
+    <script>
+    var _xlsxReady=null;
+    function ensureXlsx(cb){
+        if(window.XLSX){ cb(); return; }
+        if(!_xlsxReady){
+            _xlsxReady=$.getScript('/static/js/xlsx.full.min.js');
+            _xlsxReady.done(function(){ if(cb) cb(); });
+        } else { _xlsxReady.done(function(){ if(cb) cb(); }); }
+    }
+    </script>
     <!-- Pinyin library - 简化版内联实现 -->
     <script>
         // 简易拼音库（如果无法加载外部库）
@@ -3356,17 +3422,40 @@
             $('#filterEndDate').val(today);
             $('#batchDate').val(today);
 
-            loadTherapists();
-            loadTreatmentItems();
-            loadCategories();
-            loadDashboard();
-            loadRecentUsed();
-            loadTreatmentItemsForQuery();
-            initAchievements();  // 初始化成就系统
-            checkStandaloneMode(); // 检查是否为独立运行模式
-            // 🔧 修复：页面加载时立即加载设置
-            loadEntrySettings();
-            initRatingPanel();  // 初始化评价面板
+            // 并行加载所有独立模块（原15+个串行请求 → 并行）
+            var _initPromises = [];
+            function _p(fn) { var d=$.Deferred(); fn(function(){d.resolve();}); return d.promise(); }
+
+            _initPromises.push(_p(loadTherapists));
+            _initPromises.push(_p(loadTreatmentItems));
+            _initPromises.push(_p(loadCategories));
+            _initPromises.push(_p(loadDashboard));
+            _initPromises.push(_p(loadRecentUsed));
+            _initPromises.push(_p(loadTreatmentItemsForQuery));
+            _initPromises.push(_p(initAchievements));
+            _initPromises.push(_p(checkStandaloneMode));
+            _initPromises.push(_p(loadEntrySettings));
+            _initPromises.push(_p(initRatingPanel));
+
+            // 科室统计模块：用批量接口一次加载
+            _initPromises.push($.get('/api/dept-stats/init',{year:$('#deptStatsYear').val(),month:$('#outMonth').val()||$('#wardMonth').val()}).done(function(r){
+                if(r.success&&r.data){
+                    var d=r.data;
+                    // 缓存门诊项目列表
+                    window._initOutpatientItems=d.outpatient_items||[];
+                    // 缓存病区列表
+                    if(d.ward_areas) window._initWardAreas=d.ward_areas;
+                    // 缓存转介科室
+                    if(d.referral_departments) window._initReferralDepts=d.referral_departments;
+                    // 如果有月度数据，直接渲染（避免切换标签时再请求）
+                    if(d.outpatient_data) window._initOutData={data:d.outpatient_data,month:$('#outMonth').val()};
+                    if(d.ward_summary) window._initWardSummary={data:d.ward_summary,month:$('#wardMonth').val()};
+                }
+            }));
+
+            $.when.apply($,_initPromises).done(function(){
+                console.log('[INIT] All modules loaded in parallel');
+            });
 
             // 初始添加5行 - 移至 checkAllDataLoaded() 中执行，确保数据加载完成
 
@@ -4654,7 +4743,7 @@
                 showToast('请先查询出数据再导出', 'warning');
                 return;
             }
-
+            ensureXlsx(function(){
             const rows = patientQueryData.patients.map((p, i) => ({
                 '序号': i + 1,
                 '患者姓名': p.patient_name,
@@ -4672,6 +4761,7 @@
             XLSX.utils.book_append_sheet(wb, ws, `按项目查患者-${patientQueryData.treatment_item_name}`);
             XLSX.writeFile(wb, `患者查询_${patientQueryData.treatment_item_name}_${patientQueryData.min_sessions}次起.xlsx`);
             showToast('导出成功', 'success');
+        }); // end ensureXlsx
         }
 
         // 加载记录列表
@@ -5318,6 +5408,7 @@
 
                 const reader = new FileReader();
                 reader.onload = function(e) {
+                    ensureXlsx(function(){
                     try {
                         const data = new Uint8Array(e.target.result);
                         const workbook = XLSX.read(data, { type: 'array' });
@@ -5423,6 +5514,7 @@
                     } catch (err) {
                         showToast('Excel文件解析失败：' + err.message, 'error');
                     }
+                    }); // end ensureXlsx
                 };
                 reader.readAsArrayBuffer(file);
             });
@@ -5467,6 +5559,7 @@
 
         // 下载治疗项目导入模板
         function downloadItemTemplate() {
+            ensureXlsx(function(){
             const templateData = [
                 ['项目编号', '项目名称', '类别', '权重系数'],
                 ['T001', '盆底电', '仪器治疗', 1.83],
@@ -5485,6 +5578,7 @@
 
             XLSX.writeFile(wb, '治疗项目导入模板.xlsx');
             showToast('模板下载成功', 'success');
+            }); // end ensureXlsx
         }
 
         // 执行项目导入
@@ -5588,6 +5682,7 @@
 
         // 下载工作量记录导入模板
         function downloadRecordsTemplate() {
+            ensureXlsx(function(){
             const templateData = [
                 ['日期', '治疗师', '患者', '治疗项目', '权重', '人次', '备注'],
                 ['2024-01-15', '李德裕', '张三', '盆底电', 1.0, 1, ''],
@@ -5613,6 +5708,7 @@
 
             XLSX.writeFile(wb, '工作量记录导入模板.xlsx');
             showToast('模板下载成功', 'success');
+            }); // end ensureXlsx
         }
 
         // Excel文件选择处理（记录导入）
@@ -5625,6 +5721,7 @@
 
                 const reader = new FileReader();
                 reader.onload = function(e) {
+                    ensureXlsx(function(){
                     try {
                         const data = new Uint8Array(e.target.result);
                         const workbook = XLSX.read(data, { type: 'array' });
@@ -5816,6 +5913,7 @@
                     } catch (err) {
                         showToast('Excel文件解析失败：' + err.message, 'error');
                     }
+                    }); // end ensureXlsx
                 };
                 reader.readAsArrayBuffer(file);
             });
@@ -5880,6 +5978,7 @@
 
         // 导出工作量记录到Excel
         function exportRecordsXLSX() {
+            ensureXlsx(function(){
             const startDate = $('#filterStartDate').val();
             const endDate = $('#filterEndDate').val();
             const params = {
@@ -5937,6 +6036,7 @@
                     showToast('没有可导出的记录', 'warning');
                 }
             });
+            }); // end ensureXlsx
         }
 
         // ==================== 数据备份与恢复 ====================
@@ -6848,7 +6948,7 @@
                 showToast('没有可导出的评价数据', 'warning');
                 return;
             }
-
+            ensureXlsx(function(){
             const excelData = [
                 ['患者', '治疗师', '治疗项目', '评分', '评价内容', '标签', '评价时间']
             ];
@@ -6874,6 +6974,7 @@
             const filename = `评价记录_${new Date().toISOString().slice(0,10)}.xlsx`;
             XLSX.writeFile(wb, filename);
             showToast(`成功导出 ${ratingsAllData.length} 条评价`, 'success');
+            }); // end ensureXlsx
         }
 
         // 治疗师列表缓存
@@ -6932,7 +7033,12 @@
         $('a[href="#tabDeptStats"]').on('shown.bs.tab', function() {
             if (!deptStatsLoaded) {
                 deptStatsLoaded = true;
-                loadOutpatientData();
+                // 优先使用批量初始化的缓存数据，避免额外请求
+                if(window._initOutData&&window._initOutData.month===$('#outMonth').val()){
+                    renderOutpatientFromCache(window._initOutData.data);
+                }else{
+                    loadOutpatientData();
+                }
             }
         });
 
@@ -6941,7 +7047,11 @@
         $('a[href="#tabReferral"]').on('shown.bs.tab', function() {
             if (!referralLoaded) {
                 referralLoaded = true;
-                loadReferralData();
+                if(window._initReferralDepts&&window._initReferralDepts.length){
+                    renderReferralDeptsCache(window._initReferralDepts);
+                }else{
+                    loadReferralData();
+                }
             }
         });
 
@@ -8518,50 +8628,145 @@ $(document).on('keydown', '.table input[type="number"]', function(e) {
 // ============================================================
 // 门诊
 // ============================================================
+
+// 门诊保存状态
+var _outSaveStatus = 'idle';
+function updateOutSaveIndicator(){
+    var $ind=$('#outSaveInd');
+    if(!$ind.length) return;
+    var s=_outSaveStatus||'idle';
+    if(s==='saving') $ind.html('<i class="fas fa-circle-notch fa-spin text-primary mr-1"></i>保存中...').removeClass('text-success text-muted').addClass('text-primary');
+    else if(s==='saved') $ind.html('<i class="fas fa-check-circle text-success mr-1"></i>已保存').removeClass('text-primary text-muted').addClass('text-success');
+    else $ind.html('').removeClass('text-primary text-success text-muted');
+}
+
+// 从批量初始化缓存渲染门诊数据（无需额外API请求）
+function renderOutpatientFromCache(data){
+    if(!data||!data.length) return;
+    var $wrap=$('#outpatientTableWrap');
+    var html='<table class="table table-sm table-bordered table-hover"><thead class="thead-light"><tr><th style="width:30px;"><input type="checkbox" id="outSelectAll" onchange="toggleOutSelectAll()"></th><th style="min-width:160px;">项目</th><th style="width:120px;">人次</th><th style="width:120px;">金额</th><th style="width:46px;">操作</th></tr></thead><tbody>';
+    var ts=0,ta=0;
+    data.forEach(function(d){
+        ts+=d.sessions;ta+=d.amount;
+        html+='<tr data-item="'+escHtml(d.item)+'" data-month="'+d.month+'"><td><input type="checkbox" class="out-row-cb"></td><td>'+escHtml(d.item)+'</td>';
+        html+='<td class="text-center"><input type="number" class="form-control form-control-sm text-center editable-cell" data-field="sessions" data-item="'+escHtml(d.item)+'" data-month="'+d.month+'" value="'+d.sessions+'" min="0" style="width:90px;display:inline-block;"></td>';
+        html+='<td class="text-center"><input type="number" class="form-control form-control-sm text-center editable-cell" data-field="amount" data-item="'+escHtml(d.item)+'" data-month="'+d.month+'" value="'+d.amount.toFixed(0)+'" min="0" style="width:90px;display:inline-block;"></td>';
+        html+='<td class="text-center"><button class="btn btn-outline-danger btn-xs del-out-btn" onclick="deleteOutRow(this,&quot;'+escHtml(d.item)+'&quot;,'+d.month+')" title="删除"><i class="fas fa-times"></i></button></td>';
+        html+='</tr>';
+    });
+    html+='<tr class="table-info font-weight-bold"><td></td><td>合计</td><td class="text-center" id="outTotalSessions">'+ts+'</td><td class="text-center" id="outTotalAmount">'+ta.toFixed(0)+'</td></tr></tbody></table>';
+    $wrap.html(html);
+    $wrap.find('.editable-cell').on('change',function(){
+        var $row=$(this).closest('tr');
+        var item=$row.data('item'), month=$row.data('month');
+        var sessions=parseFloat($row.find('[data-field="sessions"]').val())||0;
+        var amount=parseFloat($row.find('[data-field="amount"]').val())||0;
+        _outSaveStatus='saving'; updateOutSaveIndicator();
+        $.ajax({url:'/api/dept-stats/outpatient',method:'POST',contentType:'application/json',
+            data:JSON.stringify({year:$('#deptStatsYear').val(),month:month,records:[{item_name:item,session_count:sessions,amount:amount}]}),
+            success:function(r){_outSaveStatus='saved'; updateOutSaveIndicator(); if(r.success) updateOutTotals();},
+            error:function(){_outSaveStatus='idle'; updateOutSaveIndicator();}
+        });
+    });
+}
+// 门诊全量保存：读取当前表格全部数据 → 保存 → 创建快照（可回滚）
+function syncOutpatientData(){
+    var $btn=$('#outSyncBtn'), $wrap=$('#outpatientTableWrap');
+    var records=[];
+    $wrap.find('tbody tr:not(.table-info)').each(function(){
+        var item=$(this).data('item');
+        if(!item) return;
+        var month=$(this).data('month')||$('#outMonth').val();
+        var s=parseFloat($(this).find('[data-field="sessions"]').val())||0;
+        var a=parseFloat($(this).find('[data-field="amount"]').val())||0;
+        records.push({item_name:item, session_count:s, amount:a, month:parseInt(month)});
+    });
+    if(!records.length){showToast('没有数据可保存','warning');return;}
+    var y=$('#deptStatsYear').val(), m=$('#outMonth').val();
+    _outSaveStatus='saving'; updateOutSaveIndicator();
+    $btn.prop('disabled',true).html('<i class="fas fa-spinner fa-spin mr-1"></i>保存中...');
+    $.ajax({url:'/api/dept-stats/outpatient',method:'POST',contentType:'application/json',
+        data:JSON.stringify({year:y,month:m,records:records,trigger_type:'sync'}),
+        success:function(r){
+            _outSaveStatus='saved'; updateOutSaveIndicator();
+            $btn.prop('disabled',false).html('<i class="fas fa-save mr-1"></i>全量保存');
+            if(r.success) showToast('保存完成 '+ (r.data.count||records.length) +'条记录（已创建快照）','success');
+            else showToast(r.error||'保存失败','error');
+        },
+        error:function(){
+            _outSaveStatus='idle'; updateOutSaveIndicator();
+            $btn.prop('disabled',false).html('<i class="fas fa-save mr-1"></i>全量保存');
+            showToast('网络错误','error');
+        }
+    });
+}
+
+// 从缓存渲染转介科室下拉
+function renderReferralDeptsCache(depts){
+    if(!depts||!depts.length) return;
+    var $sel=$('#referralDept');
+    if(!$sel.length) return;
+    var val=$sel.val();
+    $sel.html('<option value="">全部科室</option>');
+    depts.forEach(function(d){ $sel.append('<option value="'+d+'">'+d+'</option>'); });
+    if(val) $sel.val(val);
+}
 function loadOutpatientData() {
     var y=$('#deptStatsYear').val(), m=$('#outMonth').val();
     if(!m) return;
-    $.get('/api/dept-stats/outpatient',{year:y},function(r){
-        if(!r.success) return;
-        var filtered=r.data.filter(function(d){return d.month==m;});
-        if(!filtered.length){$('#outpatientTableWrap').html('<p class="text-muted text-center">该月无数据，请先录入</p>');return;}
+    var $wrap=$('#outpatientTableWrap');
+    $wrap.html('<div class="text-center py-3"><i class="fas fa-spinner fa-spin mr-1"></i>加载中...</div>');
+    // 并行请求：数据 + 编排后的项目列表
+    $.when(
+        $.get('/api/dept-stats/outpatient',{year:y,month:m}),
+        $.get('/api/dept-stats/items/manage',{type:'outpatient'})
+    ).done(function(dataResp, itemsResp){
+        if(!$wrap.length) return;
+        var r=dataResp[0], ir=itemsResp[0];
+        if(!r.success){$wrap.html('<p class="text-danger text-center py-3">查询失败</p>');return;}
+        var data=r.data||[], managedItems=ir.data||[];
+        // 构建排序映射：item_name -> sort_order
+        var orderMap={};
+        managedItems.forEach(function(it){ orderMap[it.item_name]=it.sort_order; });
+        // 按编排顺序排序（未编排的排最后）
+        data.sort(function(a,b){
+            var oa=orderMap[a.item]!=undefined?orderMap[a.item]:9999;
+            var ob=orderMap[b.item]!=undefined?orderMap[b.item]:9999;
+            return oa-ob || (a.item>b?1:-1);
+        });
+        // 构建单价映射
+        var priceMap={};
+        managedItems.forEach(function(it){ priceMap[it.item_name]=it.unit_price; });
+        if(!data.length){$wrap.html('<p class="text-muted text-center py-3">该月无数据，请先录入</p>');return;}
         var html='<table class="table table-sm table-bordered table-hover"><thead class="thead-light"><tr><th style="width:30px;"><input type="checkbox" id="outSelectAll" onchange="toggleOutSelectAll()"></th><th style="min-width:160px;">项目</th><th style="width:120px;">人次</th><th style="width:120px;">金额</th><th style="width:46px;">操作</th></tr></thead><tbody>';
         var ts=0,ta=0;
-        filtered.forEach(function(d){
+        data.forEach(function(d){
+            var p=priceMap[d.item]||0;
+            var titleAttr=p>0?' title="单价：'+p+'元/次"':'';
             ts+=d.sessions;ta+=d.amount;
-            html+='<tr data-item="'+d.item+'" data-month="'+d.month+'"><td><input type="checkbox" class="out-row-cb"></td><td>'+d.item+'</td>';
-            html+='<td class="text-center"><input type="number" class="form-control form-control-sm text-center editable-cell" data-field="sessions" data-item="'+d.item+'" data-month="'+d.month+'" value="'+d.sessions+'" min="0" style="width:90px;display:inline-block;"></td>';
-            html+='<td class="text-center"><input type="number" class="form-control form-control-sm text-center editable-cell" data-field="amount" data-item="'+d.item+'" data-month="'+d.month+'" value="'+d.amount.toFixed(0)+'" min="0" style="width:90px;display:inline-block;"></td>';
-    html+='<td class=\"text-center\"><button class=\"btn btn-outline-danger btn-xs del-out-btn\" onclick=\"deleteOutRow(this,\''+escHtml(d.item)+'\','+d.month+')\" title=\"删除\"><i class=\"fas fa-times\"></i></button></td>';
+            html+='<tr data-item="'+escHtml(d.item)+'" data-month="'+d.month+'"><td><input type="checkbox" class="out-row-cb"></td><td'+titleAttr+'>'+escHtml(d.item)+(p>0?' <small class="text-muted">('+p+'元)</small>':'')+'</td>';
+            html+='<td class="text-center"><input type="number" class="form-control form-control-sm text-center editable-cell" data-field="sessions" data-item="'+escHtml(d.item)+'" data-month="'+d.month+'" data-price="'+p+'" value="'+d.sessions+'" min="0" style="width:90px;display:inline-block;"></td>';
+            html+='<td class="text-center"><input type="number" class="form-control form-control-sm text-center editable-cell" data-field="amount" data-item="'+escHtml(d.item)+'" data-month="'+d.month+'" value="'+d.amount.toFixed(0)+'" min="0" style="width:90px;display:inline-block;"></td>';
+            html+='<td class="text-center"><button class="btn btn-outline-danger btn-xs del-out-btn" onclick="deleteOutRow(this,&quot;'+escHtml(d.item)+'&quot;,'+d.month+')" title="删除"><i class="fas fa-times"></i></button></td>';
             html+='</tr>';
         });
         html+='<tr class="table-info font-weight-bold"><td></td><td>合计</td><td class="text-center" id="outTotalSessions">'+ts+'</td><td class="text-center" id="outTotalAmount">'+ta.toFixed(0)+'</td></tr></tbody></table>';
-        $('#outpatientTableWrap').html(html);
-        // 绑定编辑事件：失焦自动保存（保存该行完整数据）
-        $('#outpatientTableWrap .editable-cell').on('change',function(){
+        $wrap.html(html);
+        $wrap.find('.editable-cell').on('change',function(){
             var $row=$(this).closest('tr');
             var item=$row.data('item'), month=$row.data('month');
             var sessions=parseFloat($row.find('[data-field="sessions"]').val())||0;
             var amount=parseFloat($row.find('[data-field="amount"]').val())||0;
+            _outSaveStatus='saving'; updateOutSaveIndicator();
             $.ajax({url:'/api/dept-stats/outpatient',method:'POST',contentType:'application/json',
                 data:JSON.stringify({year:y,month:month,records:[{item_name:item,session_count:sessions,amount:amount}]}),
-                success:function(r){
-                    if(!r.success) return;
-                    updateOutTotals();
-                }
+                success:function(r){_outSaveStatus='saved'; updateOutSaveIndicator(); if(r.success) updateOutTotals();},
+                error:function(){_outSaveStatus='idle'; updateOutSaveIndicator();}
             });
         });
-    });
+    }).fail(function(){$wrap.html('<p class="text-danger text-center py-3">网络错误</p>');});
 }
-function updateOutTotals(){
-    var ts=0,ta=0;
-    $('#outpatientTableWrap tbody tr:not(.table-info)').each(function(){
-        ts+=parseFloat($(this).find('[data-field="sessions"]').val())||0;
-        ta+=parseFloat($(this).find('[data-field="amount"]').val())||0;
-    });
-    $('#outTotalSessions').text(ts);
-    $('#outTotalAmount').text(ta.toFixed(0));
-}
+
 
 function openOutpatientEntry() {
     loadItems('outpatient','',function(items){
@@ -8573,15 +8778,16 @@ function openOutpatientEntry() {
 function submitOutEntry() {
     var y=$('#outEntryYear').val();
     var months=getCheckedMonths('outMonthChecks');
-    if(!months.length) return showToast('请选择月份','warning');return
+    if(!months.length){showToast('请选择月份','warning');return;}
     var records = collectSpreadsheetData('outEntryTable', [{key:'session_count'},{key:'amount'}]);
     if(!records.length){if(!confirm('所有项目人次和金额都为空，确定要保存吗？'))return;records=$('#outEntryTable tbody tr').toArray().map(function(tr){return{item_name:$(tr).data('item-name'),session_count:0,amount:0};}).filter(function(r){return r.item_name;});}
     var total=months.length*records.length, done=0, saved=0;
+    _outSaveStatus='saving'; updateOutSaveIndicator();
     months.forEach(function(m){
         $.ajax({url:'/api/dept-stats/outpatient',method:'POST',contentType:'application/json',
             data:JSON.stringify({year:y,month:m,records:records}),
-            success:function(r){if(r.success){saved+=r.data.count;}done++;if(done===months.length){showToast('成功导入并写入'+saved+'条数据到'+months.length+'个月份','success');$('#outEntryModal').modal('hide');loadOutpatientData();}},
-            error:function(){done++;if(done===months.length)showToast('导入失败','error');}
+            success:function(r){if(r.success){saved+=r.data.count;}done++;if(done===months.length){_outSaveStatus='saved'; updateOutSaveIndicator(); showToast('成功导入并写入'+saved+'条数据到'+months.length+'个月份','success');$('#outEntryModal').modal('hide');loadOutpatientData();}},
+            error:function(){done++;if(done===months.length){_outSaveStatus='idle'; updateOutSaveIndicator(); showToast('导入失败','error');}}
         });
     });
 }
@@ -8590,6 +8796,7 @@ function downloadOutTemplate() { window.open('/api/dept-stats/items/template?typ
 function openOutItemsManage() { _manageItemType='outpatient';_manageItemSub='';$('#itemsManageTitle').text('门诊项目管理');loadManageItems();$('#itemsManageModal').modal('show'); }
 function importOutItems(input) {
     if(!input.files.length) return;
+    ensureXlsx(function(){
     var reader=new FileReader();
     reader.onload=function(e){
         try{
@@ -8597,13 +8804,38 @@ function importOutItems(input) {
             var ws=wb.Sheets[wb.SheetNames[0]];
             var data=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
             if(data.length<2){ showToast('Excel格式不正确或为空','error'); return; }
-            var header=data[0], items=[], nameCol=0, sessionsCol=-1, amountCol=-1;
-            // 定位列：项目名称、人次、金额
+            var header=data[0], items=[], nameCol=-1, sessionsCol=-1, amountCol=-1;
+            // 定位列：项目名称、人次、金额（支持更多变体）
             for(var c=0;c<header.length;c++){
                 var h=String(header[c]||'').trim().toLowerCase();
-                if(h==='项目名称'||h==='项目'||h==='名称'||h==='name') nameCol=c;
-                else if(h==='人次'||h==='数量'||h==='session_count') sessionsCol=c;
-                else if(h==='金额'||h==='费用'||h==='amount') amountCol=c;
+                if(h==='项目名称'||h==='项目'||h==='名称'||h==='name'||h==='项目名') nameCol=c;
+                else if(h==='人次'||h==='数量'||h==='session_count'||h==='人次/数量') sessionsCol=c;
+                else if(h==='金额'||h==='费用'||h==='amount'||h==='收入') amountCol=c;
+            }
+            // 如果没有识别到"项目名称"表头，尝试启发式：找包含最多非数字非空文本的列作为名称列
+            if(nameCol<0 && data.length>2){
+                var colScore=[];
+                for(var ci=0;ci<(header.length||5);ci++) colScore[ci]=0;
+                for(var ri=1;ri<data.length&&ri<50;ri++){
+                    var rrow=data[ri];
+                    for(var ci=0;ci<(rrow.length||header.length);ci++){
+                        var val=String(rrow[ci]||'').trim();
+                        if(val&&!/^[-+]?\d+(\.\d+)?$/.test(val)&&val!=='合计'&&val!=='总计'&&val!=='小计'&&val!=='日期'){
+                            colScore[ci]=(colScore[ci]||0)+1;
+                        }
+                    }
+                }
+                // 取得分最高的列作为名称列（排除第一列如果是纯数字或日期）
+                var bestCol=0, bestScore=0;
+                for(var ci=0;ci<colScore.length;ci++){
+                    if(colScore[ci]>bestScore){bestScore=colScore[ci];bestCol=ci;}
+                }
+                if(bestScore>=2) nameCol=bestCol;
+            }
+            // 如果仍然找不到，默认用第1列（index 0）
+            if(nameCol<0) nameCol=0;
+            // 打印前5行原始数据用于调试
+            for(var di=1;di<=Math.min(5,data.length-1);di++){
             }
             // 收集所有非表头行的项目数据
             var importData={};
@@ -8620,7 +8852,7 @@ function importOutItems(input) {
             if(!items.length){ showToast('未识别到任何项目','warning'); return; }
             // 先确保项目已入库（调用import-excel只建项目库，不写月度数据）
             var fd=new FormData();
-            fd.append('file',input.files[0]);
+            fd.append('file',_importFile);
             fd.append('type','outpatient');
             fd.append('year',document.getElementById('outEntryYear').value);
             $.ajax({url:'/api/dept-stats/items/import-excel',type:'POST',data:fd,processData:false,contentType:false,
@@ -8643,11 +8875,18 @@ function importOutItems(input) {
                             '<div class="alert alert-info"><i class="fas fa-info-circle mr-1"></i>已从Excel预览 <strong>'+items.length+'</strong> 个项目（'+mStr.join(',')+'），请核对后点击保存</div>';
                     },300);
                 },
-                error:function(){showToast('项目入库失败','error');}
+                error:function(xhr){
+                    var msg='项目入库失败';
+                    try{var j=JSON.parse(xhr.responseText||''); if(j&&j.error) msg=j.error;}
+                    catch(e){if(xhr.responseText) msg=xhr.responseText.substring(0,200);}
+                    showToast(msg,'error');
+                }
             });
         }catch(err){ showToast('解析Excel失败: '+err.message,'error'); console.error(err); }
     };
-    reader.readAsArrayBuffer(input.files[0]); input.value='';
+    var _importFile = input.files[0];  // 保存文件引用，避免input.value清空后丢失
+    reader.readAsArrayBuffer(_importFile); input.value='';
+    }); // end ensureXlsx
 }
 // ============================================================
 // 病房
@@ -8712,7 +8951,7 @@ function openWardEntry() {
 function submitWardEntry() {
     var y=$('#wardEntryYear').val();
     var months=getCheckedMonths('wardMonthChecks');
-    if(!months.length) return showToast('请选择月份','warning');return
+    if(!months.length){showToast('请选择月份','warning');return;}
     // 收集所有项目行（包括全0的），因为用户可能要清零
     var records = [];
     $('#wardEntryTable tbody tr').each(function(){
@@ -8921,15 +9160,15 @@ function saveWardDailyEdit(areaIdx){
     });
     if(!records.length){ showToast('没有数据需要保存','warning'); return; }
     var $btn=$('#wardDailySaveBtn_'+areaIdx);
-    $btn.prop('disabled',true).html('<i class="fas fa-spinner fa-spin mr-1"></i>同步中...');
+    $btn.prop('disabled',true).html('<i class="fas fa-spinner fa-spin mr-1"></i>保存中...');
     $.ajax({url:'/api/dept-stats/ward/daily',method:'POST',contentType:'application/json',
-        data:JSON.stringify({records:records,auto_calc:true}),
+        data:JSON.stringify({records:records,auto_calc:true,trigger_type:'sync'}),
         success:function(r){
-            if(r.success){ _wdSaveStatus[areaIdx]='saved'; updateWardSaveIndicator(areaIdx); showToast('全量保存完成 '+ (r.data.count||records.length) +'条记录','success'); loadWardDaily(areaIdx); }
+            if(r.success){ _wdSaveStatus[areaIdx]='saved'; updateWardSaveIndicator(areaIdx); showToast('保存完成 '+ (r.data.count||records.length) +'条记录（已创建快照）','success'); loadWardDaily(areaIdx); }
             else{ _wdSaveStatus[areaIdx]='idle'; updateWardSaveIndicator(areaIdx); showToast(r.error||'保存失败','error'); }
         },
         error:function(){ _wdSaveStatus[areaIdx]='idle'; updateWardSaveIndicator(areaIdx); showToast('网络错误','error'); },
-        complete:function(){$btn.prop('disabled',false).html('<i class="fas fa-sync mr-1"></i>全量保存');}
+        complete:function(){$btn.prop('disabled',false).html('<i class="fas fa-save mr-1"></i>全量保存');}
     });
 }
 
@@ -9073,6 +9312,71 @@ function addWardPrice(){
 }
 function deleteWardPrice(name){ $('tr[data-item="'+name+'"]').remove(); }
 
+// === 通用项目编排（门诊/儿童/转介 共用，仅拖拽排序） ===
+var _currentModuleType='', _currentModuleDisplayName='';
+
+function openModuleItemManage(moduleType, displayName){
+    _currentModuleType=moduleType;
+    _currentModuleDisplayName=displayName;
+    // 根据模块类型设置表头文字
+    var labelMap={'outpatient':'项目名称','children':'项目名称','children_doctor':'指标名称','referral':'医生姓名（按科室）'};
+    $('#moduleItemManageTitle').html('<i class="fas fa-cog mr-1"></i>'+displayName+' — 项目编排');
+    $('#moduleItemThText').text((labelMap[moduleType]||'名称')+'（可拖拽排序）');
+    $('#moduleItemTableBody').html('<tr><td colspan="2" class="text-center text-muted py-3"><i class="fas fa-spinner fa-spin mr-1"></i>加载中...</td></tr>');
+    $('#moduleItemManageModal').modal('show');
+    $.get('/api/dept-stats/items/manage',{type:moduleType},function(r){
+        if(!r.success){ $('#moduleItemTableBody').html('<tr><td colspan="2" class="text-danger text-center py-3">加载失败</td></tr>'); return; }
+        var items=r.data||[];
+        var h='';
+        items.forEach(function(it){
+            var display=it.item_name;
+            // 转介：显示科室前缀
+            if(moduleType==='referral'&&it.sub_category) display=it.sub_category+' — '+it.item_name;
+            h+='<tr data-item="'+escAttr(it.item_name)+'" draggable="true">'+
+              '<td style="cursor:grab;"><i class="fas fa-grip-vertical text-muted mr-1"></i>'+escHtml(display)+'</td>'+
+              '<td><button class="btn btn-sm btn-outline-danger btn-xs" onclick="$(this).closest(\'tr\').remove()">删</button></td></tr>';
+        });
+        if(!items.length) h='<tr><td colspan="2" class="text-muted text-center py-3">暂无项目，请在下方添加</td></tr>';
+        $('#moduleItemTableBody').html(h);
+        initModuleItemDragDrop();
+    }).fail(function(){ $('#moduleItemTableBody').html('<tr><td colspan="2" class="text-danger text-center py-3">网络错误</td></tr>'); });
+}
+function saveModuleItems(){
+    var items=[];
+    $('#moduleItemTableBody tr[data-item]').each(function(i){
+        items.push({name:$(this).data('item'), sort:i});
+    });
+    if(!items.length){showToast('没有项目可保存','warning'); return;}
+    $.ajax({url:'/api/dept-stats/items/manage',method:'POST',contentType:'application/json',
+        data:JSON.stringify({type:_currentModuleType, items:items}),
+        success:function(r){
+            if(r.success){ showToast('保存成功（'+(r.data.count||items.length)+'项）','success'); $('#moduleItemManageModal').modal('hide'); refreshAfterItemManage(); }
+            else showToast(r.error||'保存失败','error');
+        },
+        error:function(){ showToast('网络错误','error'); }
+    });
+}
+function addModuleItem(){
+    var n=$('#newModuleName').val().trim();
+    if(!n){ showToast('请输入名称','warning'); return; }
+    $('#moduleItemTableBody tr:not([data-item])').remove();
+    var $row=$('<tr data-item="'+escAttr(n)+'" draggable="true">'+
+        '<td style="cursor:grab;"><i class="fas fa-grip-vertical text-muted mr-1"></i>'+escHtml(n)+'</td>'+
+        '<td><button class="btn btn-sm btn-outline-danger btn-xs" onclick="$(this).closest(\'tr\').remove()">删</button></td></tr>');
+    $('#moduleItemTableBody').append($row);
+    bindDragRow($row[0]);
+    $('#newModuleName').val('');
+}
+function refreshAfterItemManage(){
+    if(_currentModuleType==='outpatient') loadOutpatientData();
+    else if(_currentModuleType==='children') loadChildrenMonthly();
+    else if(_currentModuleType==='children_doctor') loadChildrenDoctor();
+    else if(_currentModuleType==='referral') loadReferralData();
+}
+function initModuleItemDragDrop(){
+    $('#moduleItemTableBody tr[draggable=true]').each(function(){ bindDragRow(this); });
+}
+
 // === 数据回滚 ===
 var _currentRollbackAreaIdx=0;
 function openWardRollback(areaIdx){
@@ -9120,14 +9424,16 @@ function openGenericRollback(module, displayName){
     $('#genericRollbackTitle').html('<i class="fas fa-undo mr-2"></i>'+displayName+' — 数据回滚');
     $('#genericRollbackList').html('<tr><td colspan="5" class="text-center text-muted py-3"><i class="fas fa-spinner fa-spin mr-1"></i>加载快照列表...</td></tr>');
     $('#genericRollbackModal').modal('show');
-    // 根据模块确定scope_key
-    var scopeKey='';
-    if(module==='outpatient') scopeKey=$('#outMonth').val();
-    else if(module==='ward_monthly') scopeKey=$('#wardMonth').val();
-    else if(module==='children_monthly') scopeKey=$('#childMonth').val();
+    // 根据模块确定scope_key（必须与后端_create_snapshot的格式一致：year-month）
+    var scopeKey='', y=$('#deptStatsYear').val();
+    if(module==='outpatient') scopeKey=y+'-'+$('#outMonth').val();
+    else if(module==='ward_monthly') scopeKey=y+'-'+$('#wardMonth').val();
+    else if(module==='children_monthly') scopeKey=y+'-'+$('#childMonth').val();
     else if(module==='children_doctor') scopeKey=$('#childDoctorYear').val()+'-'+$('#childDoctorMonth').val();
-    else if(module==='referral') scopeKey=$('#referralYear').val();
-    $.get('/api/dept-stats/snapshots',{module:module,scope_key:scopeKey},function(r){
+    else if(module==='referral') scopeKey=''; // 转介按年查询，不限制scope_key显示所有快照
+    var queryParams={module:module};
+    if(scopeKey) queryParams.scope_key=scopeKey;
+    $.get('/api/dept-stats/snapshots',queryParams,function(r){
         if(!r.success||!r.data.length){
             $('#genericRollbackList').html('<tr><td colspan="5" class="text-center text-muted py-3">暂无可用快照（保存数据时会自动创建）</td></tr>');
             return;
@@ -9209,6 +9515,7 @@ function bindDragRow(row){
 }
 
 function downloadWardDailyTemplate(areaIdx){
+    ensureXlsx(function(){
     var y=$('#wardDailyYear_'+areaIdx).val()||new Date().getFullYear();
     var m=$('#wardDailyMonth_'+areaIdx).val()||(new Date().getMonth()+1);
     var areaName=WARD_AREAS[areaIdx-1];
@@ -9277,10 +9584,12 @@ function downloadWardDailyTemplate(areaIdx){
         XLSX.writeFile(wb,'病房每日统计模板'+areaName+'_'+y+'年'+m+'月.xlsx');
         showToast('模板已下载','success');
     });
+    }); // end ensureXlsx
 }
 
 function importWardDailyExcel(input,areaIdx){
     if(!input.files.length) return;
+    ensureXlsx(function(){
     var reader=new FileReader();
     reader.onload=function(e){
         try{
@@ -9322,11 +9631,14 @@ function importWardDailyExcel(input,areaIdx){
             });
         }catch(err){ showToast('导入Excel失败: '+err.message,'error'); console.error(err); }
     };
-    reader.readAsArrayBuffer(input.files[0]); input.value='';
+    var _importFile = input.files[0];  // 保存文件引用，避免input.value清空后丢失
+    reader.readAsArrayBuffer(_importFile); input.value='';
+    }); // end ensureXlsx
 }
 function exportWardDailyExcel(areaIdx){
     var $table=$('#wardDailyTableWrap_'+areaIdx+' table');
     if(!$table.length||$table.find('tbody tr').length<=1){ showToast('无数据可导出','warning'); return; }
+    ensureXlsx(function(){
     var y=$('#wardDailyYear_'+areaIdx).val(), m=$('#wardDailyMonth_'+areaIdx).val();
     var wb=XLSX.utils.book_new(), wsData=[];
     // Header row
@@ -9355,6 +9667,7 @@ function exportWardDailyExcel(areaIdx){
     for(var i=1;i<hdr.length;i++) ws['!cols'].push({wch:10});
     XLSX.utils.book_append_sheet(wb,ws,'病房每日统计');
     XLSX.writeFile(wb,'病房每日统计'+WARD_AREAS[areaIdx-1]+'_'+y+'年'+m+'月.xlsx');
+    }); // end ensureXlsx
 }
 
 // Per-areaIdx XHR abort tokens + generation counter to prevent stale callbacks
@@ -9411,21 +9724,110 @@ function loadWardDailyCharts(y,m,areaIdx){
 // ============================================================
 // 儿童医院
 // ============================================================
+
+var _childMonSaveStatus='idle', _childDocSaveStatus='idle';
+function updateChildMonSaveIndicator(){
+    var $ind=$('#childMonSaveInd'); if(!$ind.length) return;
+    var s=_childMonSaveStatus||'idle';
+    if(s==='saving') $ind.html('<i class="fas fa-circle-notch fa-spin text-primary mr-1"></i>保存中...');
+    else if(s==='saved') $ind.html('<i class="fas fa-check-circle text-success mr-1"></i>已保存');
+    else $ind.html('');
+}
+function updateChildDocSaveIndicator(){
+    var $ind=$('#childDocSaveInd'); if(!$ind.length) return;
+    var s=_childDocSaveStatus||'idle';
+    if(s==='saving') $ind.html('<i class="fas fa-circle-notch fa-spin text-primary mr-1"></i>保存中...');
+    else if(s==='saved') $ind.html('<i class="fas fa-check-circle text-success mr-1"></i>已保存');
+    else $ind.html('');
+}
+
+function syncChildrenMonthly(){
+    var $btn=$('#childMonSyncBtn'), $wrap=$('#childrenMonthlyWrap');
+    var records=[];
+    $wrap.find('tbody tr:not(.table-info)').each(function(){
+        var item=$(this).data('item'); if(!item) return;
+        var month=$(this).data('month')||$('#childMonth').val();
+        var s=parseFloat($(this).find('[data-field="sessions"]').val())||0;
+        var a=parseFloat($(this).find('[data-field="amount"]').val())||0;
+        records.push({item_name:item, session_count:s, amount:a, month:parseInt(month)});
+    });
+    if(!records.length){showToast('没有数据可保存','warning');return;}
+    var y=$('#deptStatsYear').val(), m=$('#childMonth').val();
+    _childMonSaveStatus='saving'; updateChildMonSaveIndicator();
+    $btn.prop('disabled',true).html('<i class="fas fa-spinner fa-spin mr-1"></i>保存中...');
+    $.ajax({url:'/api/dept-stats/children/monthly',method:'POST',contentType:'application/json',
+        data:JSON.stringify({year:y,month:m,records:records,trigger_type:'sync'}),
+        success:function(r){
+            _childMonSaveStatus='saved'; updateChildMonSaveIndicator();
+            $btn.prop('disabled',false).html('<i class="fas fa-save mr-1"></i>全量保存');
+            if(r.success) showToast('保存完成 '+ (r.data.count||records.length) +'条记录（已创建快照）','success');
+            else showToast(r.error||'保存失败','error');
+        },
+        error:function(){
+            _childMonSaveStatus='idle'; updateChildMonSaveIndicator();
+            $btn.prop('disabled',false).html('<i class="fas fa-save mr-1"></i>全量保存');
+            showToast('网络错误','error');
+        }
+    });
+}
+
+function syncChildrenDoctor(){
+    var $btn=$('#childDocSyncBtn'), $wrap=$('#childrenDoctorWrap');
+    var records=[];
+    $wrap.find('tbody tr:not(.table-info)').each(function(){
+        var doctor=$(this).data('doctor'); if(!doctor) return;
+        var month=$(this).data('month')||$('#childDoctorMonth').val();
+        $(this).find('[data-field]').each(function(){
+            var metric=$(this).data('metric'); if(!metric) return;
+            var v=parseFloat($(this).val())||0;
+            records.push({doctor_name:doctor, month:parseInt(month), metric_name:metric, metric_count:v});
+        });
+    });
+    if(!records.length){showToast('没有数据可保存','warning');return;}
+    var y=$('#childDoctorYear').val(), m=$('#childDoctorMonth').val();
+    _childDocSaveStatus='saving'; updateChildDocSaveIndicator();
+    $btn.prop('disabled',true).html('<i class="fas fa-spinner fa-spin mr-1"></i>保存中...');
+    $.ajax({url:'/api/dept-stats/children/doctor-monthly',method:'POST',contentType:'application/json',
+        data:JSON.stringify({year:y,month:m,records:records,trigger_type:'sync'}),
+        success:function(r){
+            _childDocSaveStatus='saved'; updateChildDocSaveIndicator();
+            $btn.prop('disabled',false).html('<i class="fas fa-save mr-1"></i>全量保存');
+            if(r.success) showToast('保存完成 '+ (r.data.count||records.length) +'条记录（已创建快照）','success');
+            else showToast(r.error||'保存失败','error');
+        },
+        error:function(){
+            _childDocSaveStatus='idle'; updateChildDocSaveIndicator();
+            $btn.prop('disabled',false).html('<i class="fas fa-save mr-1"></i>全量保存');
+            showToast('网络错误','error');
+        }
+    });
+}
 function loadChildrenMonthly() {
     const y=$('#deptStatsYear').val(), m=$('#childMonth').val();
     if(!m) return;
-    $.get('/api/dept-stats/children/monthly',{year:y},function(r){
-        if(!r.success) return;
+    $('#childrenMonthlyWrap').html('<div class="text-center py-3"><i class="fas fa-spinner fa-spin mr-1"></i>加载中...</div>');
+    $.when(
+        $.get('/api/dept-stats/children/monthly',{year:y}),
+        $.get('/api/dept-stats/items/manage',{type:'children'})
+    ).done(function(dataResp, itemsResp){
+        var r=dataResp[0], ir=itemsResp[0];
+        if(!r.success){ $('#childrenMonthlyWrap').html('<p class="text-danger text-center py-3">查询失败</p>'); return; }
         const filtered=r.data.filter(d=>d.month==m);
+        const managedItems=ir.data||[];
+        // 排序映射
+        var orderMap={}; managedItems.forEach(function(it){ orderMap[it.item_name]=it.sort_order; });
+        var priceMap={}; managedItems.forEach(function(it){ priceMap[it.item_name]=it.unit_price; });
+        filtered.sort(function(a,b){ var oa=orderMap[a.item]!=undefined?orderMap[a.item]:9999; var ob=orderMap[b.item]!=undefined?orderMap[b.item]:9999; return oa-ob||(a.item>b?1:-1); });
         if(!filtered.length){$('#childrenMonthlyWrap').html('<p class="text-muted text-center">该月无数据</p>');return;}
         let html='<table class="table table-sm table-bordered table-hover"><thead class="thead-light"><tr><th style="width:30px;"><input type="checkbox" id="childMonSelectAll" onchange="toggleChildMonSelectAll()"></th><th>项目</th><th style="width:120px;">人次</th><th style="width:120px;">金额</th><th style="width:46px;">操作</th></tr></thead><tbody>';
         let t=0,a=0;
         filtered.forEach(d=>{
-            var sv=d.sessions, av=d.amount||0;
+            var sv=d.sessions, av=d.amount||0, p=priceMap[d.item]||0;
             t+=sv; a+=av;
+            var titleAttr=p>0?' title="单价：'+p+'元/次"':'';
             var sCell = `<input type="number" class="form-control form-control-sm text-center child-editable" data-field="session_count" value="${sv}" min="0" style="width:90px;display:inline-block;">`;
             var aCell = `<input type="number" class="form-control form-control-sm text-center child-editable" data-field="amount" value="${av.toFixed(2)}" min="0" step="0.01" style="width:90px;display:inline-block;">`;
-            html+=`<tr data-item="${d.item}" data-month="${d.month}"><td><input type="checkbox" class="child-mon-cb"></td><td>${d.item}</td><td class="text-center">${sCell}</td><td class="text-center">${aCell}</td><td class="text-center"><button class="btn btn-outline-danger btn-xs" onclick="deleteChildMonRow(\x27${d.item}\x27,${d.month})" title="删除"><i class="fas fa-times"></i></button></td></tr>`;
+            html+=`<tr data-item="${d.item}" data-month="${d.month}"><td><input type="checkbox" class="child-mon-cb"></td><td${titleAttr}>${d.item}${p>0?' <small class="text-muted">('+p+'元)</small>':''}</td><td class="text-center">${sCell}</td><td class="text-center">${aCell}</td><td class="text-center"><button class="btn btn-outline-danger btn-xs" onclick="deleteChildMonRow(\x27${d.item}\x27,${d.month})" title="删除"><i class="fas fa-times"></i></button></td></tr>`;
         });
         html+=`<tr class="font-weight-bold" style="background:#e8f0fe;"><td></td><td>合计</td><td class="text-center" id="childGrandTotal">${t}</td><td class="text-center" id="childGrandAmtTotal">${a.toFixed(2)}</td><td></td></tr></tbody></table>`;
         $('#childrenMonthlyWrap').html(html);
@@ -9443,15 +9845,23 @@ function loadChildrenMonthly() {
                 }
             });
         });
-    });
+    }).fail(function(){ $('#childrenMonthlyWrap').html('<p class="text-danger text-center py-3">网络错误</p>'); });
 }
 
 function loadChildrenDoctor() {
     const y=$('#childDoctorYear').val(), m=$('#childDoctorMonth').val();
     if(!m) return;
-    $.get('/api/dept-stats/children/doctor-monthly',{year:y},function(r){
-        if(!r.success) return;
+    $('#childrenDoctorWrap').html('<div class="text-center py-3"><i class="fas fa-spinner fa-spin mr-1"></i>加载中...</div>');
+    $.when(
+        $.get('/api/dept-stats/children/doctor-monthly',{year:y}),
+        $.get('/api/dept-stats/items/manage',{type:'children_doctor'})
+    ).done(function(dataResp, itemsResp){
+        var r=dataResp[0], ir=itemsResp[0];
+        if(!r.success){ $('#childrenDoctorWrap').html('<p class="text-danger text-center py-3">查询失败</p>'); return; }
         const filtered=r.data.filter(d=>d.month==m);
+        const managedItems=ir.data||[];
+        var orderMap={}; managedItems.forEach(function(it){ orderMap[it.item_name]=it.sort_order; });
+        filtered.sort(function(a,b){ var oa=orderMap[a.metric]!=undefined?orderMap[a.metric]:9999; var ob=orderMap[b.metric]!=undefined?orderMap[b.metric]:9999; return oa-ob||(a.metric>b.metric?1:-1); });
         if(!filtered.length){$('#childrenDoctorWrap').html('<p class="text-muted text-center">该月无数据</p>');return;}
         let html='<table class="table table-sm table-bordered table-hover"><thead class="thead-light"><tr><th style="width:30px;"><input type="checkbox" id="childDocSelectAll" onchange="toggleChildDocSelectAll()"></th><th>医生姓名</th><th>人次</th><th style="width:46px;">操作</th></tr></thead><tbody>';
         let t=0;filtered.forEach(d=>{t+=d.sessions;html+=`<tr><td><input type="checkbox" class="child-doc-cb"></td><td>${d.doctor}</td><td class="text-center child-doc-editable" data-doctor="${d.doctor}" data-month="${d.month}"><input type="number" class="form-control form-control-sm text-center" value="${d.sessions}" min="0" style="width:90px;display:inline-block;"></td><td class="text-center"><button class="btn btn-outline-danger btn-xs" onclick="deleteChildDocRow(\x27${d.doctor}\x27,${d.month})" title="删除"><i class="fas fa-times"></i></button></td></tr>`;});
@@ -9470,7 +9880,7 @@ function loadChildrenDoctor() {
                 }
             });
         });
-    });
+    }).fail(function(){ $('#childrenDoctorWrap').html('<p class="text-danger text-center py-3">网络错误</p>'); });
 }
 
 function openChildrenDoctorEntry() {
@@ -9721,10 +10131,18 @@ function exportTableToExcel(containerId, title) {
 function loadReferralData() {
     var y = $('#referralYear').val();
     var dept = $('#referralDeptFilter').val();
-    // 不再强制要求选月份，按年+科室查询全部月度数据
-    $.get('/api/referral/data', { year: y, department: dept || '' }, function (r) {
+    // 并行请求：数据 + 编排后的科室列表
+    $.when(
+        $.get('/api/referral/data', { year: y, department: dept || '' }),
+        $.get('/api/dept-stats/items/manage', { type: 'referral' })
+    ).done(function (dataResp, itemsResp) {
+        var r = dataResp[0], ir = itemsResp[0];
         if (!r.success) { showToast(r.error || '查询失败', 'error'); return; }
         var data = r.data || [];
+        const managedItems = ir.data || [];
+        // 医生排序映射（从项目编排获取）
+        var doctorOrderMap = {};
+        managedItems.forEach(function (it) { doctorOrderMap[it.item_name] = it.sort_order; });
         if (!data.length) {
             $('#referralDataWrap').html('<p class="text-muted text-center">暂无数据</p>');
             loadReferralCharts(y, dept);
@@ -9746,14 +10164,30 @@ function loadReferralData() {
         var h = '<table class="table table-sm table-bordered table-hover"><thead class="thead-light"><tr><th>科室</th><th>医生</th>';
         monthArr.forEach(function (m) { h += '<th>' + m + '月</th>'; });
         h += '<th>合计</th><th style="width:70px">操作</th></tr></thead><tbody>';
-        Object.keys(byDept).sort().forEach(function (dk) {
+        // 按编排顺序排列科室（取该科室下医生的最低sort_order）
+        var sortedDepts = Object.keys(byDept).sort(function (a, b) {
+            function deptMinSort(dept) {
+                var docs = Object.keys(byDept[dept]);
+                var min = 9999;
+                docs.forEach(function (d) { if (doctorOrderMap[d] !== undefined && doctorOrderMap[d] < min) min = doctorOrderMap[d]; });
+                return min;
+            }
+            return deptMinSort(a) - deptMinSort(b) || (a > b ? 1 : -1);
+        });
+        sortedDepts.forEach(function (dk) {
             var doctors = byDept[dk];
             var first = true;
-            Object.keys(doctors).sort().forEach(function (mk) {
+            // 按编排顺序排列医生（编排过的排前面）
+            var sortedDocs = Object.keys(doctors).sort(function (a, b) {
+                var oa = doctorOrderMap[a] !== undefined ? doctorOrderMap[a] : 9999;
+                var ob = doctorOrderMap[b] !== undefined ? doctorOrderMap[b] : 9999;
+                return oa - ob || (a > b ? 1 : -1);
+            });
+            sortedDocs.forEach(function (mk) {
                 var months = doctors[mk];
                 var total = 0;
                 h += '<tr>';
-                h += first ? '<td rowspan="' + Object.keys(doctors).length + '">' + escHtml(dk) + '</td>' : '';
+                h += first ? '<td rowspan="' + sortedDocs.length + '">' + escHtml(dk) + '</td>' : '';
                 h += '<td>' + escHtml(mk) + '</td>';
                 monthArr.forEach(function (m) {
                     var v = months[m] || 0;
@@ -9795,6 +10229,50 @@ function saveRefEdits() {
         },
         error: function () { showToast('网络错误', 'error'); }
     });
+}
+
+// 转介全量保存：读取当前表格全部数据 → 保存 → 创建快照（可回滚）
+function syncReferralData(){
+    var $btn=$('#refSyncBtn'), $wrap=$('#referralDataWrap');
+    var records=[];
+    $wrap.find('.ref-editable').each(function(){
+        var v=parseFloat($(this).val())||0;
+        records.push({
+            department:$(this).data('dept'),
+            doctor_name:$(this).data('doctor'),
+            month:parseInt($(this).data('month')),
+            metric_count:v,
+            metric_name:'转介'
+        });
+    });
+    if(!records.length){showToast('没有数据可保存','warning');return;}
+    var y=$('#referralYear').val();
+    _refSaveStatus='saving'; updateRefSaveIndicator();
+    $btn.prop('disabled',true).html('<i class="fas fa-spinner fa-spin mr-1"></i>保存中...');
+    $.ajax({url:'/api/referral/data',method:'POST',contentType:'application/json',
+        data:JSON.stringify({year:y,month:0,records:records,trigger_type:'sync'}),
+        success:function(r){
+            _refSaveStatus='saved'; updateRefSaveIndicator();
+            $btn.prop('disabled',false).html('<i class="fas fa-save mr-1"></i>全量保存');
+            if(r.success) showToast('保存完成 '+ (r.data.count||records.length) +'条记录（已创建快照）','success');
+            else showToast(r.error||'保存失败','error');
+        },
+        error:function(){
+            _refSaveStatus='idle'; updateRefSaveIndicator();
+            $btn.prop('disabled',false).html('<i class="fas fa-save mr-1"></i>全量保存');
+            showToast('网络错误','error');
+        }
+    });
+}
+
+var _refSaveStatus='idle';
+function updateRefSaveIndicator(){
+    var $ind=$('#refSaveInd');
+    if(!$ind.length) return;
+    var s=_refSaveStatus||'idle';
+    if(s==='saving') $ind.html('<i class="fas fa-circle-notch fa-spin text-primary mr-1"></i>保存中...');
+    else if(s==='saved') $ind.html('<i class="fas fa-check-circle text-success mr-1"></i>已保存');
+    else $ind.html('');
 }
 
 function deleteRefRow(btn, dept, doctor) {
