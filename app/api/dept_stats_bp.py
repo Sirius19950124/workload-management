@@ -138,6 +138,7 @@ TABLES_SQL = [
         item_name VARCHAR(100) NOT NULL,
         unit_price FLOAT NOT NULL DEFAULT 0,
         is_active BOOLEAN DEFAULT 1,
+        sort_order INTEGER DEFAULT 0,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         UNIQUE(ward_area, item_name)
     )""",
@@ -1106,19 +1107,19 @@ def get_ward_daily_prices():
     """获取病房项目单价列表"""
     ensure_tables()
     area = request.args.get('area', '')
-    query = "SELECT item_name, unit_price FROM ward_item_prices WHERE is_active = 1"
+    query = "SELECT item_name, unit_price, sort_order FROM ward_item_prices WHERE is_active = 1"
     params = {}
     if area:
         query += " AND ward_area = :area"
         params['area'] = area
-    query += " ORDER BY id"
+    query += " ORDER BY sort_order, item_name"
     rows = db.session.execute(text(query), params).fetchall()
     # 如果没有数据，先种子
     if not rows:
         _seed_ward_daily_defaults()
         rows = db.session.execute(text(query), params).fetchall()
     return jsonify({'success': True, 'data': [
-        {'item_name': r[0], 'unit_price': float(r[1])} for r in rows
+        {'item_name': r[0], 'unit_price': float(r[1]), 'sort_order': int(r[2])} for r in rows
     ]})
 
 
@@ -1134,15 +1135,16 @@ def save_ward_daily_prices():
     for p in prices:
         name = (p.get('item_name') or '').strip()
         price = float(p.get('unit_price') or 0)
+        sort_order = int(p.get('sort_order', 0))
         if not name:
             continue
         kept_names.add(name)
         db.session.execute(text("""
-            INSERT INTO ward_item_prices (ward_area, item_name, unit_price)
-            VALUES (:area, :name, :price)
+            INSERT INTO ward_item_prices (ward_area, item_name, unit_price, sort_order)
+            VALUES (:area, :name, :price, :sort_order)
             ON CONFLICT(ward_area, item_name) DO UPDATE SET
-                unit_price = :price, updated_at = CURRENT_TIMESTAMP
-        """), {'area': area, 'name': name, 'price': price})
+                unit_price = :price, sort_order = :sort_order, updated_at = CURRENT_TIMESTAMP
+        """), {'area': area, 'name': name, 'price': price, 'sort_order': sort_order})
     # Delete items that were removed from the list
     if area and kept_names:
         placeholders = ','.join([f':n{i}' for i in range(len(kept_names))])

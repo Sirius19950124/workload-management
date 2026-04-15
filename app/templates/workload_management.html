@@ -2665,7 +2665,7 @@
                 <div class="modal-body">
                     <p class="text-muted small mb-2">设置各治疗项目的单位价格，用于自动计算每日金额。</p>
                     <table class="table table-sm table-bordered">
-                        <thead class="thead-light"><tr><th>项目名称</th><th style="width:120px;">单价（元）</th><th style="width:70px;">操作</th></tr></thead>
+                        <thead class="thead-light"><tr><th><i class="fas fa-arrows-alt text-muted mr-1"></i>项目名称（可拖拽排序）</th><th style="width:120px;">单价（元）</th><th style="width:70px;">操作</th></tr></thead>
                         <tbody id="wardPriceTableBody"></tbody>
                     </table>
                     <div class="mt-2">
@@ -8780,8 +8780,8 @@ function updateWardChartsFromDOM(areaIdx){
         var amt=amtText&&amtText!=='-'?parseFloat(amtText.replace('¥',''))||0:0;
         if(dateStr){ labels.push(dateStr.substr(5)); trendVals.push(amt); }
     });
-    var tc=_charts['wardDailyTrend_'+areaIdx];
-    if(tc){ tc.data.labels=labels; tc.data.datasets[0].data=trendVals; tc.update(); }
+    var tc=Chart.getChart(document.getElementById('chartWardDailyTrend_'+areaIdx))||_charts['wardDailyTrend_'+areaIdx];
+    if(tc){ try{tc.data.labels=labels; tc.data.datasets[0].data=trendVals; tc.update();}catch(e){} }
     // Rank data: each item column → total sessions
     var rankLabels=[], rankVals=[];
     $table.find('thead th').slice(1,-1).each(function(){
@@ -8790,8 +8790,8 @@ function updateWardChartsFromDOM(areaIdx){
         var colTotal=parseFloat($('.wd-col-total[data-item="'+name+'"]').text())||0;
         rankLabels.push(name); rankVals.push(colTotal);
     });
-    var rc=_charts['wardDailyRank_'+areaIdx];
-    if(rc){ rc.data.labels=rankLabels; rc.data.datasets[0].data=rankVals; rc.update(); }
+    var rc=Chart.getChart(document.getElementById('chartWardDailyRank_'+areaIdx))||_charts['wardDailyRank_'+areaIdx];
+    if(rc){ try{rc.data.labels=rankLabels; rc.data.datasets[0].data=rankVals; rc.update();}catch(e){} }
 }
 
 function saveWardDailyEdit(areaIdx){
@@ -8931,13 +8931,13 @@ function openWardPriceManage(areaIdx){
             ];
         }
         var h='';
-        items.forEach(function(it){ h+='<tr data-item="'+escAttr(it.item_name)+'"><td>'+escHtml(it.item_name)+'</td><td><input type="number" class="form-control form-control-sm ward-price-input" value="'+it.unit_price+'" min="0" step="0.1" style="width:100px;"></td><td><button class="btn btn-sm btn-outline-danger btn-xs" onclick="$(this).closest(\'tr\').remove()">删</button></td></tr>'; });
-        $('#wardPriceTableBody').html(h); $('#wardPriceModal').modal('show');
+        items.forEach(function(it){ h+='<tr data-item="'+escAttr(it.item_name)+'" draggable="true"><td style="cursor:grab;"><i class="fas fa-grip-vertical text-muted mr-1"></i>'+escHtml(it.item_name)+'</td><td><input type="number" class="form-control form-control-sm ward-price-input" value="'+it.unit_price+'" min="0" step="0.1" style="width:100px;"></td><td><button class="btn btn-sm btn-outline-danger btn-xs" onclick="$(this).closest(\'tr\').remove()">删</button></td></tr>'; });
+        $('#wardPriceTableBody').html(h); initWardPriceDragDrop(); $('#wardPriceModal').modal('show');
     });
 }
 function saveWardPrices(){
     var prices=[];
-    $('#wardPriceTableBody tr[data-item]').each(function(){ prices.push({item_name:$(this).data('item'), unit_price:parseFloat($(this).find('.ward-price-input').val())||0}); });
+    $('#wardPriceTableBody tr[data-item]').each(function(i){ prices.push({item_name:$(this).data('item'), unit_price:parseFloat($(this).find('.ward-price-input').val())||0, sort_order:i}); });
     $.ajax({url:'/api/dept-stats/ward/daily/prices',method:'POST',contentType:'application/json',
         data:JSON.stringify({area:_currentWardArea,prices:prices}),
         success:function(r){if(r.success){showToast('单价保存成功','success');$('#wardPriceModal').modal('hide');if(_currentWardAreaIdx>0) loadWardDaily(_currentWardAreaIdx);}else{showToast(r.error||'保存失败','error');}},
@@ -8947,10 +8947,49 @@ function saveWardPrices(){
 function addWardPrice(){
     var n=$('#newWardPriceName').val().trim(), v=parseFloat($('#newWardPriceVal').val())||0;
     if(!n){ showToast('请输入项目名','warning'); return; }
-    $('#wardPriceTableBody').append('<tr data-item="'+escAttr(n)+'"><td>'+escHtml(n)+'</td><td><input type="number" class="form-control form-control-sm ward-price-input" value="'+v+'" min="0" step="0.1" style="width:100px;"></td><td><button class="btn btn-sm btn-outline-danger btn-xs" onclick="$(this).closest(\'tr\').remove()">删</button></td></tr>');
+    var $row=$('<tr data-item="'+escAttr(n)+'" draggable="true"><td style="cursor:grab;"><i class="fas fa-grip-vertical text-muted mr-1"></i>'+escHtml(n)+'</td><td><input type="number" class="form-control form-control-sm ward-price-input" value="'+v+'" min="0" step="0.1" style="width:100px;"></td><td><button class="btn btn-sm btn-outline-danger btn-xs" onclick="$(this).closest(\'tr\').remove()">删</button></td></tr>');
+    $('#wardPriceTableBody').append($row);
+    bindDragRow($row[0]);
     $('#newWardPriceName').val(''); $('#newWardPriceVal').val('');
 }
 function deleteWardPrice(name){ $('tr[data-item="'+name+'"]').remove(); }
+
+// Drag & Drop reordering for price table (native HTML5)
+var _dragSrcEl=null;
+function initWardPriceDragDrop(){
+    var $rows=$('#wardPriceTableBody tr[draggable=true]');
+    $rows.each(function(){ bindDragRow(this); });
+}
+function bindDragRow(row){
+    row.addEventListener('dragstart', function(e){
+        _dragSrcEl=this; this.style.opacity='0.4'; e.dataTransfer.effectAllowed='move'; e.dataTransfer.setData('text/plain','');
+    }, false);
+    row.addEventListener('dragend', function(e){
+        this.style.opacity=''; _dragSrcEl=null;
+        $('#wardPriceTableBody tr').css({'border-top':'','border-bottom':''});
+    }, false);
+    row.addEventListener('dragover', function(e){
+        e.preventDefault(); e.dataTransfer.dropEffect='move';
+        if(this!==_dragSrcEl){
+            var rect=this.getBoundingClientRect();
+            var mid=rect.top+rect.height/2;
+            if(e.clientY<mid) this.style.borderTop='2px solid #007bff';
+            else this.style.borderBottom='2px solid #007bff';
+        }
+    }, false);
+    row.addEventListener('dragleave', function(e){
+        if(this!==_dragSrcEl) this.style.borderTop=''; this.style.borderBottom='';
+    }, false);
+    row.addEventListener('drop', function(e){
+        e.preventDefault(); e.stopPropagation();
+        this.style.borderTop=''; this.style.borderBottom='';
+        if(this===_dragSrcEl||!_dragSrcEl) return;
+        var rect=this.getBoundingClientRect();
+        var mid=rect.top+rect.height/2;
+        if(e.clientY<mid) $(this).before(_dragSrcEl);
+        else $(this).after(_dragSrcEl);
+    }, false);
+}
 
 function downloadWardDailyTemplate(areaIdx){
     var y=$('#wardDailyYear_'+areaIdx).val()||new Date().getFullYear();
@@ -9098,21 +9137,26 @@ function exportWardDailyExcel(areaIdx){
 }
 
 function loadWardDailyCharts(y,m,areaIdx){
-    if(_charts['wardDailyTrend_'+areaIdx]){_charts['wardDailyTrend_'+areaIdx].destroy();_charts['wardDailyTrend_'+areaIdx]=null;}
-    if(_charts['wardDailyRank_'+areaIdx]){_charts['wardDailyRank_'+areaIdx].destroy();_charts['wardDailyRank_'+areaIdx]=null;}
+    // Safe destroy using Chart.getChart (handles race conditions)
+    var trendCanvas=document.getElementById('chartWardDailyTrend_'+areaIdx);
+    var rankCanvas=document.getElementById('chartWardDailyRank_'+areaIdx);
+    if(trendCanvas){var tc=Chart.getChart(trendCanvas);if(tc){tc.destroy();}}
+    if(rankCanvas){var rc=Chart.getChart(rankCanvas);if(rc){rc.destroy();}}
+    _charts['wardDailyTrend_'+areaIdx]=null;
+    _charts['wardDailyRank_'+areaIdx]=null;
     $.get('/api/dept-stats/charts',{year:y,month:m,ward_daily_area:WARD_AREAS[areaIdx-1]},function(r){
         if(!r.success) return;
         var d=r.data, trend=d.ward_daily_trend||[];
         if(trend.length){
             var $tab=$('#chartWardDailyTrend_'+areaIdx).closest('.tab-pane');
             if($tab.length&&!$tab.hasClass('active')){$tab.addClass('active show');}
-            _charts['wardDailyTrend_'+areaIdx]=new Chart(document.getElementById('chartWardDailyTrend_'+areaIdx),{type:'line',
+            _charts['wardDailyTrend_'+areaIdx]=new Chart(trendCanvas,{type:'line',
                 data:{labels:trend.map(function(x){return x.date.substr(5);}),datasets:[{label:'金额',data:trend.map(function(x){return x.amount||0;}),borderColor:'#e15759',backgroundColor:'rgba(225,87,89,0.1)',fill:true,tension:0.3}]},
                 options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
             if($tab.length)$tab.removeClass('active show');
         }
         var rank=d.ward_daily_item_ranking||[];
-        if(rank.length){ _charts['wardDailyRank_'+areaIdx]=new Chart(document.getElementById('chartWardDailyRank_'+areaIdx),{type:'bar',
+        if(rank.length){ _charts['wardDailyRank_'+areaIdx]=new Chart(rankCanvas,{type:'bar',
             data:{labels:rank.map(function(x){return x.item;}),datasets:[{data:rank.map(function(x){return x.sessions;}),backgroundColor:COLORS}]},
             options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}}}});}
     });
