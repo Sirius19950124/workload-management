@@ -5,7 +5,8 @@
 基础项目库：录入时下拉选择，不用手敲
 """
 
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
+import re
 import json
 from flask import Blueprint, request, jsonify, send_file
 from sqlalchemy import text, inspect
@@ -1123,22 +1124,35 @@ def get_ward_daily_prices():
 
 @dept_stats_bp.route('/ward/daily/prices', methods=['POST'])
 def save_ward_daily_prices():
-    """批量保存单价"""
+    """批量保存单价（含增删同步）"""
     ensure_tables()
     data = request.get_json()
     area = data.get('area', '')
     prices = data.get('prices', [])
+    # Collect names being saved
+    kept_names = set()
     for p in prices:
         name = (p.get('item_name') or '').strip()
         price = float(p.get('unit_price') or 0)
         if not name:
             continue
+        kept_names.add(name)
         db.session.execute(text("""
             INSERT INTO ward_item_prices (ward_area, item_name, unit_price)
             VALUES (:area, :name, :price)
             ON CONFLICT(ward_area, item_name) DO UPDATE SET
                 unit_price = :price, updated_at = CURRENT_TIMESTAMP
         """), {'area': area, 'name': name, 'price': price})
+    # Delete items that were removed from the list
+    if area and kept_names:
+        placeholders = ','.join([f':n{i}' for i in range(len(kept_names))])
+        params = {**{f'n{i}': n for i, n in enumerate(kept_names)}, 'area': area}
+        db.session.execute(text(f"""
+            DELETE FROM ward_item_prices WHERE ward_area = :area AND item_name NOT IN ({placeholders})
+        """), params)
+    elif area and not kept_names:
+        # If all items removed, clear all prices for this area
+        db.session.execute(text("DELETE FROM ward_item_prices WHERE ward_area = :area"), {'area': area})
     db.session.commit()
     return jsonify({'success': True})
 
@@ -1220,7 +1234,16 @@ def save_ward_daily():
         price_cache = {r[0]: float(r[1]) for r in pr}
 
     for r in records:
-        date_val = str(r.get('record_date') or '').strip()
+        raw_date = str(r.get('record_date') or '').strip()
+        # Convert Excel serial dates (e.g. 46054 → 2026-02-01)
+        date_val = raw_date
+        if raw_date and re.match(r'^\d{5,}$', raw_date):
+            try:
+                serial = int(raw_date)
+                dt = datetime(1899, 12, 30) + timedelta(days=serial)
+                date_val = dt.strftime('%Y-%m-%d')
+            except (ValueError, OverflowError):
+                pass
         area = str(r.get('ward_area') or '').strip() or ''
         name = str(r.get('item_name') or '').strip()
         sessions = int(r.get('session_count') or 0)
@@ -1576,6 +1599,7 @@ def get_charts():
     ensure_tables()
     year = request.args.get('year', date.today().year, type=int)
     ward_daily_area = request.args.get('ward_daily_area', '').strip()
+    ward_daily_month = request.args.get('month', '', type=str).strip()
 
     result = {}
 
@@ -1651,24 +1675,30 @@ def get_charts():
         GROUP BY item_name ORDER BY sessions DESC LIMIT 15
     """), {'y': year}).fetchall())
 
-    # 病房每日趋势（支持按科室过滤）
+    # 病房每日趋势（支持按科室+月份过滤）
     trend_params = {'y': str(year)}
     trend_where = "WHERE strftime('%Y', record_date) = :y"
     if ward_daily_area:
         trend_where += " AND ward_area = :wda"
         trend_params['wda'] = ward_daily_area
+    if ward_daily_month:
+        trend_where += " AND strftime('%m', record_date) = :wdm"
+        trend_params['wdm'] = ward_daily_month.zfill(2)
     result['ward_daily_trend'] = _rows_to_dicts(db.session.execute(text(f"""
         SELECT record_date as date, SUM(session_count) as sessions, SUM(amount) as amount
         FROM ward_daily {trend_where}
         GROUP BY record_date ORDER BY record_date
     """), trend_params).fetchall())
 
-    # 病房每日项目排名（支持按科室过滤）
+    # 病房每日项目排名（支持按科室+月份过滤）
     rank_params = {'y': str(year)}
     rank_where = "WHERE strftime('%Y', record_date) = :y"
     if ward_daily_area:
         rank_where += " AND ward_area = :wda"
         rank_params['wda'] = ward_daily_area
+    if ward_daily_month:
+        rank_where += " AND strftime('%m', record_date) = :wdm"
+        rank_params['wdm'] = ward_daily_month.zfill(2)
     result['ward_daily_item_ranking'] = _rows_to_dicts(db.session.execute(text(f"""
         SELECT item_name as item, SUM(session_count) as sessions, SUM(amount) as amount
         FROM ward_daily {rank_where}
