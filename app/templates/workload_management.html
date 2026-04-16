@@ -1528,6 +1528,9 @@
                                             <div id="childrenMonthlyWrap" style="overflow-x:auto;">
                                                 <p class="text-muted text-center">请选择月份后查询</p>
                                             </div>
+                                            <div class="row mt-3">
+                                                <div class="col-12"><div class="card"><div class="card-header py-2"><h6 class="mb-0">🧒 儿童医院月度趋势</h6></div><div class="card-body"><canvas id="chartChildTrend"></canvas></div></div></div>
+                                            </div>
                                         </div>
                                         <div class="tab-pane fade" id="childDaily">
                                             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
@@ -1549,6 +1552,10 @@
                                             <div id="childrenDoctorWrap" style="overflow-x:auto;">
                                                 <p class="text-muted text-center">请选择年月后查询</p>
                                             </div>
+                                            <div class="row mt-3">
+                                                <div class="col-md-6 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0">👨‍⚕️ 医生开单趋势</h6></div><div class="card-body"><canvas id="chartDoctorTrend"></canvas></div></div></div>
+                                                <div class="col-md-6 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0">👨‍⚕️ 医生开单排名</h6></div><div class="card-body" style="min-height:300px;"><canvas id="chartDoctorRank"></canvas></div></div></div>
+                                            </div>
                                         </div>
 
                                     </div>
@@ -1562,13 +1569,10 @@
                                     <div class="row">
                                         <div class="col-md-6 mb-4"><div class="card"><div class="card-header"><h6 class="mb-0">📈 门诊月度趋势（人次+金额）</h6></div><div class="card-body"><canvas id="chartOutTrend"></canvas></div></div></div>
                                         <div class="col-md-6 mb-4"><div class="card"><div class="card-header"><h6 class="mb-0">🏥 病房月度趋势（人次+金额）</h6></div><div class="card-body"><canvas id="chartWardTrend"></canvas></div></div></div>
-                                        <div class="col-md-6 mb-4"><div class="card"><div class="card-header"><h6 class="mb-0">🧒 儿童医院月度趋势</h6></div><div class="card-body"><canvas id="chartChildTrend"></canvas></div></div></div>
-                                        <div class="col-md-6 mb-4"><div class="card"><div class="card-header"><h6 class="mb-0">👨‍⚕️ 医生开单趋势</h6></div><div class="card-body"><canvas id="chartDoctorTrend"></canvas></div></div></div>
                                         <div class="col-md-6 mb-4"><div class="card"><div class="card-header"><h6 class="mb-0">🏆 门诊项目排名（人次）</h6></div><div class="card-body"><canvas id="chartOutRank"></canvas></div></div></div>
                                         <div class="col-md-6 mb-4"><div class="card"><div class="card-header"><h6 class="mb-0">🏆 病房项目排名（人次）</h6></div><div class="card-body"><canvas id="chartWardRank"></canvas></div></div></div>
                                         <div class="col-md-6 mb-4"><div class="card"><div class="card-header"><h6 class="mb-0">📊 病区人次占比（全年）</h6></div><div class="card-body"><canvas id="chartWardArea"></canvas></div></div></div>
                                         <div class="col-md-6 mb-4"><div class="card"><div class="card-header"><h6 class="mb-0">📊 病区金额占比（全年）</h6></div><div class="card-body"><canvas id="chartWardAreaAmount"></canvas></div></div></div>
-                                        <div class="col-md-6 mb-4"><div class="card"><div class="card-header"><h6 class="mb-0">👨‍⚕️ 医生开单排名</h6></div><div class="card-body"><canvas id="chartDoctorRank"></canvas></div></div></div>
                                         <div class="col-md-12 mb-4"><div class="card"><div class="card-header"><h6 class="mb-0">📈 环比增长率</h6></div><div class="card-body" id="growthWrap"><p class="text-muted text-center">需要至少2个月数据</p></div></div></div>
                                     </div>
                                 </div>
@@ -10220,6 +10224,7 @@ function downloadManageTemplate() { window.open('/api/dept-stats/items/template?
 // 图表
 // ============================================================
 $('a[href="#deptTabCharts"]').on('shown.bs.tab', loadDeptCharts);
+$('a[href="#deptTabChildren"]').on('shown.bs.tab', function(){ if(!_charts.childTrend) loadDeptCharts(); });
 $('a[href^="#wardDaily_"]').on('shown.bs.tab click', function(){
     if(!this._loaded){ this._loaded=1; }
     var href=$(this).attr('href');
