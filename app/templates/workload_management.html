@@ -10238,6 +10238,10 @@ function appendChartTable(chartInst, canvasId, colNames) {
     // 移除旧表格
     var oldTbl = canvas.parentElement.querySelector('.chart-data-table');
     if (oldTbl) oldTbl.remove();
+    // 获取卡片标题作为表头
+    var cardTitle = '';
+    var headerEl = canvas.closest('.card')?.querySelector('.card-header h6');
+    if (headerEl) cardTitle = headerEl.textContent.trim();
     // 判断是否为饼图/环形图（显示占比列）
     var isPie = (chartInst.config && (chartInst.config.type === 'doughnut' || chartInst.config.type === 'pie'));
     // 计算第一列数据的总计（用于占比）
@@ -10246,13 +10250,15 @@ function appendChartTable(chartInst, canvasId, colNames) {
         totalVal = datasets[0].data.reduce(function(a, b) { return a + (typeof b === 'number' ? b : 0); }, 0);
     }
     // 构建表格
-    var html = '<table class="table table-sm table-bordered table-hover chart-data-table mt-2" style="font-size:12px;"><thead class="thead-light"><tr><th>#</th>';
+    var html = '<table class="table table-sm table-bordered table-hover chart-data-table mt-2" style="font-size:12px;">';
+    if (cardTitle) html += '<caption class="font-weight-bold text-center py-1" style="caption-side:top;font-size:13px;">' + cardTitle + '</caption>';
+    html += '<thead class="thead-light"><tr>';
     colNames.forEach(function(n){ html += '<th>' + n + '</th>'; });
     datasets.forEach(function(ds){ html += '<th>' + (ds.label || '数值') + '</th>'; });
     if (isPie) html += '<th>占比</th>';
     html += '</tr></thead><tbody>';
     for (var i = 0; i < labels.length; i++) {
-        html += '<tr><td>' + (i + 1) + '</td><td>' + labels[i] + '</td>';
+        html += '<tr><td>' + labels[i] + '</td>';
         for (var d = 0; d < datasets.length; d++) {
             var v = datasets[d].data[i];
             html += '<td class="text-right">' + (typeof v === 'number' ? v.toLocaleString() : v) + '</td>';
@@ -10265,7 +10271,7 @@ function appendChartTable(chartInst, canvasId, colNames) {
         html += '</tr>';
     }
     // 合计行
-    var colspan = colNames.length + 1;
+    var colspan = colNames.length;
     html += '<tr class="table-secondary font-weight-bold"><td colspan="' + colspan + '">合计</td>';
     for (var d = 0; d < datasets.length; d++) {
         var sum = datasets[d].data.reduce(function(a, b) { return a + (typeof b === 'number' ? b : 0); }, 0);
