@@ -311,6 +311,9 @@ def import_items_excel():
     monthly_count = 0
     errors = []
     sort_idx = 0
+
+    # 清理该类型的旧项目（避免历史/测试项目累积），只保留本次导入的
+    db.session.execute(text("DELETE FROM dept_items WHERE item_type = :itype"), {'itype': item_type})
     skip_sheet_keywords = ('说明', '填写说明', '使用说明', '提示', 'readme', 'instruction')
 
     try:

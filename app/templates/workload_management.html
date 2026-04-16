@@ -8804,36 +8804,22 @@ function loadOutpatientData() {
     if(!m) return;
     var $wrap=$('#outpatientTableWrap');
     $wrap.html('<div class="text-center py-3"><i class="fas fa-spinner fa-spin mr-1"></i>加载中...</div>');
-    // 并行请求：数据 + 编排后的项目列表
-    $.when(
-        $.get('/api/dept-stats/outpatient',{year:y,month:m}),
-        $.get('/api/dept-stats/items/manage',{type:'outpatient'})
-    ).done(function(dataResp, itemsResp){
+    // 只请求数据，不从 /items/manage 触发自动种子（避免历史项目混入）
+    $.get('/api/dept-stats/outpatient',{year:y,month:m})
+    .done(function(r){
         if(!$wrap.length) return;
-        var r=dataResp[0], ir=itemsResp[0];
         if(!r.success){$wrap.html('<p class="text-danger text-center py-3">查询失败</p>');return;}
-        var data=r.data||[], managedItems=ir.data||[];
-        // 构建排序映射：item_name -> sort_order
-        var orderMap={};
-        managedItems.forEach(function(it){ orderMap[it.item_name]=it.sort_order; });
-        // 按编排顺序排序（未编排的排最后）
-        data.sort(function(a,b){
-            var oa=orderMap[a.item]!=undefined?orderMap[a.item]:9999;
-            var ob=orderMap[b.item]!=undefined?orderMap[b.item]:9999;
-            return oa-ob || (a.item>b?1:-1);
-        });
-        // 构建单价映射
-        var priceMap={};
-        managedItems.forEach(function(it){ priceMap[it.item_name]=it.unit_price; });
+        var data=r.data||[];
         if(!data.length){$wrap.html('<p class="text-muted text-center py-3">该月无数据，请先录入</p>');return;}
+        // 从数据本身提取项目列表（不用 dept_items，避免注入历史/测试项目）
+        var itemOrder={};
+        data.forEach(function(d,i){ if(!(d.item_name in itemOrder)) itemOrder[d.item_name]=i; });
         var html='<table class="table table-sm table-bordered table-hover"><thead class="thead-light"><tr><th style="width:30px;"><input type="checkbox" id="outSelectAll" onchange="toggleOutSelectAll()"></th><th style="min-width:160px;">项目</th><th style="width:120px;">人次</th><th style="width:120px;">金额</th><th style="width:46px;">操作</th></tr></thead><tbody>';
         var ts=0,ta=0;
         data.forEach(function(d){
-            var p=priceMap[d.item]||0;
-            var titleAttr=p>0?' title="单价：'+p+'元/次"':'';
             ts+=d.sessions;ta+=d.amount;
-            html+='<tr data-item="'+escHtml(d.item)+'" data-month="'+d.month+'"><td><input type="checkbox" class="out-row-cb"></td><td'+titleAttr+'>'+escHtml(d.item)+(p>0?' <small class="text-muted">('+p+'元)</small>':'')+'</td>';
-            html+='<td class="text-center"><input type="number" class="form-control form-control-sm text-center editable-cell" data-field="sessions" data-item="'+escHtml(d.item)+'" data-month="'+d.month+'" data-price="'+p+'" value="'+d.sessions+'" min="0" style="width:90px;display:inline-block;"></td>';
+            html+='<tr data-item="'+escHtml(d.item)+'" data-month="'+d.month+'"><td><input type="checkbox" class="out-row-cb"></td><td>'+escHtml(d.item)+'</td>';
+            html+='<td class="text-center"><input type="number" class="form-control form-control-sm text-center editable-cell" data-field="sessions" data-item="'+escHtml(d.item)+'" data-month="'+d.month+'" value="'+d.sessions+'" min="0" style="width:90px;display:inline-block;"></td>';
             html+='<td class="text-center"><input type="number" class="form-control form-control-sm text-center editable-cell" data-field="amount" data-item="'+escHtml(d.item)+'" data-month="'+d.month+'" value="'+d.amount.toFixed(0)+'" min="0" style="width:90px;display:inline-block;"></td>';
             html+='<td class="text-center"><button class="btn btn-outline-danger btn-xs del-out-btn" onclick="deleteOutRow(this,&quot;'+escHtml(d.item)+'&quot;,'+d.month+')" title="删除"><i class="fas fa-times"></i></button></td>';
             html+='</tr>';
