@@ -9882,7 +9882,8 @@ function loadWardDailyCharts(y,m,areaIdx,items){
             var $tab=$(tc).closest('.tab-pane');
             if($tab.length&&!$tab.hasClass('active')){$tab.addClass('active show');}
             var tCfg={type:'line',data:{labels:trend.map(function(x){return x.date.substr(5);}),datasets:[{label:'金额',data:trend.map(function(x){return x.amount||0;}),borderColor:'#e15759',backgroundColor:'rgba(225,87,89,0.1)',fill:true,tension:0.3}]},options:{responsive:true,animation:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}};
-            _charts['wardDailyTrend_'+areaIdx]=new Chart(tc,tCfg);
+            _charts['wardDailyTrend_'+areaIdx]=new Chart(tc,tCfg)
+            appendChartTable(_charts['wardDailyTrend_'+areaIdx],'chartWardDailyTrend_'+areaIdx,['日期']);
             if($tab.length)$tab.removeClass('active show');
         }
         if(_wardChartGen[areaIdx]!==myGen) return;
@@ -9913,7 +9914,8 @@ function loadWardDailyCharts(y,m,areaIdx,items){
                     scales:{y:{ticks:{autoSkip:false}}}
                 }
             };
-            _charts['wardDailyRank_'+areaIdx]=new Chart(rc,rCfg);
+            _charts['wardDailyRank_'+areaIdx]=new Chart(rc,rCfg)
+            appendChartTable(_charts['wardDailyRank_'+areaIdx],'chartWardDailyRank_'+areaIdx,['项目']);
         }
         // 金额排名图表
         if(_wardChartGen[areaIdx]!==myGen) return;
@@ -9939,6 +9941,7 @@ function loadWardDailyCharts(y,m,areaIdx,items){
                     scales:{y:{ticks:{autoSkip:false}}}
                 }
             });
+            appendChartTable(_charts['wardDailyAmountRank_'+areaIdx],'chartWardDailyAmountRank_'+areaIdx,['项目']);
         }
         // 本月人次+金额占比饼图
         if(_wardChartGen[areaIdx]!==myGen) return;
@@ -9946,10 +9949,12 @@ function loadWardDailyCharts(y,m,areaIdx,items){
         var ap=document.getElementById('chartWardDailyAmountPie_'+areaIdx);
         if(rank.length&&sp){
             _charts['wardDailySessionsPie_'+areaIdx]=new Chart(sp,{type:'doughnut',data:{labels:rank.map(function(x){return x.item;}),datasets:[{data:rank.map(function(x){return x.sessions||0;}),backgroundColor:genColors(rank.length)}]},options:{responsive:true,animation:false,plugins:{legend:{position:'right',labels:{font:{size:10}}},tooltip:{callbacks:{label:function(ctx){var t=ctx.dataset.data.reduce(function(a,b){return a+b;},0)||1;var p=(ctx.raw/t*100).toFixed(1);return ctx.label+': '+ctx.raw+'人次 ('+p+'%)';}}}}}});
+            appendChartTable(_charts['wardDailySessionsPie_'+areaIdx],'chartWardDailySessionsPie_'+areaIdx,['项目']);
         }
         if(_wardChartGen[areaIdx]!==myGen) return;
         if(rank.length&&ap){
             _charts['wardDailyAmountPie_'+areaIdx]=new Chart(ap,{type:'doughnut',data:{labels:rank.map(function(x){return x.item;}),datasets:[{data:rank.map(function(x){return x.amount||0;}),backgroundColor:genColors(rank.length)}]},options:{responsive:true,animation:false,plugins:{legend:{position:'right',labels:{font:{size:10}}},tooltip:{callbacks:{label:function(ctx){var t=ctx.dataset.data.reduce(function(a,b){return a+b;},0)||1;var p=(ctx.raw/t*100).toFixed(1);return ctx.label+': ¥'+ctx.raw.toLocaleString()+' ('+p+'%)';}}}}}});
+            appendChartTable(_charts['wardDailyAmountPie_'+areaIdx],'chartWardDailyAmountPie_'+areaIdx,['项目']);
         }
     }).fail(function(){
         _wardChartXhr[areaIdx]=null;
