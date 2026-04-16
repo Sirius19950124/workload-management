@@ -10532,12 +10532,13 @@ function loadReferralCharts(year, dept) {
             }
         } catch (e) { console.error('chartRefRank:', e); }
         try {
-            var dm = (d.dept_monthly || []);
-            if (dm.length) _charts.refTrend = new Chart(document.getElementById('chartRefTrend'), { type: 'line', data: { labels: [...new Set(dm.map(function (r) { return r.month + '月'; }))].sort(), datasets: (function () {
-                var depts = {}; dm.forEach(function (r) { if (!depts[r.department]) depts[r.department] = []; depts[r.department].push(r); });
+            var dm = (d.dept_monthly || []).filter(function(r){var m=parseInt(r.month); return m>=1 && m<=12;});
+            if (dm.length) _charts.refTrend = new Chart(document.getElementById('chartRefTrend'), { type: 'line', data: { labels: (function(){ var ms=[...new Set(dm.map(function(r){return parseInt(r.month);}))]; ms.sort(function(a,b){return a-b;}); return ms.map(function(m){return m+'月';}); })(), datasets: (function () {
+                var depts = {}; dm.forEach(function (r) { if (!depts[r.department]) depts[r.department] = {}; depts[r.department][parseInt(r.month)] = r.total; });
                 var colors = ['#4e79a7', '#e15759', '#59a14f', '#f28e2b', '#b07aa1'];
                 var ci = 0;
-                return Object.keys(depts).map(function (k) { return { label: k, data: depts[k].map(function (r) { var idx = parseInt(r.month) - 1; return r.total; }), borderColor: colors[ci % colors.length], backgroundColor: colors[ci % colors.length] + '33', fill: false, tension: 0.3 }; ci++; });
+                var months=[...new Set(dm.map(function(r){return parseInt(r.month);}))].sort(function(a,b){return a-b;});
+                return Object.keys(depts).map(function (k) { return { label: k, data: months.map(function(m){return depts[k][m]||0;}), borderColor: colors[ci % colors.length], backgroundColor: colors[ci % colors.length] + '33', fill: false, tension: 0.3 }; ci++; });
             })() }, options: { responsive: true, plugins: { legend: { display: true } } } });
         } catch (e) { console.error('chartRefTrend:', e); }
         try {
