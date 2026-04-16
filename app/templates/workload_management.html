@@ -8494,6 +8494,12 @@
     }
 // ============================================================
 const COLORS = ['#4e79a7','#f28e2b','#e15759','#76b7b2','#59a14f','#edc948','#b07aa1','#ff9da7','#9c755f','#bab0ac','#86bcb6','#8cd17d'];
+// 动态生成颜色（支持任意数量的数据项）
+function genColors(n){
+    var base=COLORS, r=[];
+    for(var i=0;i<n;i++) r.push(base[i%base.length]);
+    return r;
+}
 // Global error catcher
 window.onerror = function(msg, url, line) {
     document.title = 'JS ERROR: ' + msg + ' (line ' + line + ')';
@@ -9794,7 +9800,7 @@ function loadWardDailyCharts(y,m,areaIdx){
         if(_wardChartGen[areaIdx]!==myGen) return;
         var rank=d.ward_daily_item_ranking||[];
         if(rank.length&&rc){
-            var rCfg={type:'bar',data:{labels:rank.map(function(x){return x.item;}),datasets:[{data:rank.map(function(x){return x.sessions;}),backgroundColor:COLORS}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}}}};
+            var rCfg={type:'bar',data:{labels:rank.map(function(x){return x.item;}),datasets:[{data:rank.map(function(x){return x.sessions;}),backgroundColor:genColors(rank.length)}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{autoSkip:false}}}};
             _charts['wardDailyRank_'+areaIdx]=new Chart(rc,rCfg);
         }
     }).fail(function(){
@@ -10133,17 +10139,17 @@ function loadDeptCharts() {
         }
         const or2=(d.outpatient_ranking||[]).slice(0,10);
         if(or2.length){
-            _charts.outRank=new Chart(document.getElementById('chartOutRank'),{type:'bar',data:{labels:or2.map(r=>r.item),datasets:[{data:or2.map(r=>r.sessions),backgroundColor:COLORS}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}}}});
-            _charts.outPie=new Chart(document.getElementById('chartOutPie'),{type:'doughnut',data:{labels:or2.map(r=>r.item),datasets:[{data:or2.map(r=>r.amount||0),backgroundColor:COLORS}]},options:{responsive:true,plugins:{legend:{position:'right',labels:{font:{size:11}}}}}});
+            _charts.outRank=new Chart(document.getElementById('chartOutRank'),{type:'bar',data:{labels:or2.map(r=>r.item),datasets:[{data:or2.map(r=>r.sessions),backgroundColor:genColors(or2.length)}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}}}});
+            _charts.outPie=new Chart(document.getElementById('chartOutPie'),{type:'doughnut',data:{labels:or2.map(r=>r.item),datasets:[{data:or2.map(r=>r.amount||0),backgroundColor:genColors(or2.length)}]},options:{responsive:true,plugins:{legend:{position:'right',labels:{font:{size:11}}}}}});
         }
         const wr=(d.ward_ranking||[]).slice(0,10);
-        if(wr.length) _charts.wardRank=new Chart(document.getElementById('chartWardRank'),{type:'bar',data:{labels:wr.map(r=>r.area+'-'+r.item),datasets:[{data:wr.map(r=>r.sessions),backgroundColor:COLORS}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}}}});
+        if(wr.length) _charts.wardRank=new Chart(document.getElementById('chartWardRank'),{type:'bar',data:{labels:wr.map(r=>r.area+'-'+r.item),datasets:[{data:wr.map(r=>r.sessions),backgroundColor:genColors(wr.length)}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}}}});
         const wa=d.ward_area_total||[];
-        if(wa.length) _charts.wardArea=new Chart(document.getElementById('chartWardArea'),{type:'doughnut',data:{labels:wa.map(r=>r.area),datasets:[{data:wa.map(r=>r.sessions),backgroundColor:COLORS}]},options:{responsive:true,plugins:{legend:{position:'right'}}}});
-        if(wa.length) _charts.wardAreaAmount=new Chart(document.getElementById('chartWardAreaAmount'),{type:'doughnut',data:{labels:wa.map(r=>r.area),datasets:[{data:wa.map(r=>r.amount||0),backgroundColor:COLORS}]},options:{responsive:true,plugins:{legend:{position:'right'}}}});
+        if(wa.length) _charts.wardArea=new Chart(document.getElementById('chartWardArea'),{type:'doughnut',data:{labels:wa.map(r=>r.area),datasets:[{data:wa.map(r=>r.sessions),backgroundColor:genColors(wa.length)}]},options:{responsive:true,plugins:{legend:{position:'right'}}}});
+        if(wa.length) _charts.wardAreaAmount=new Chart(document.getElementById('chartWardAreaAmount'),{type:'doughnut',data:{labels:wa.map(r=>r.area),datasets:[{data:wa.map(r=>r.amount||0),backgroundColor:genColors(wa.length)}]},options:{responsive:true,plugins:{legend:{position:'right'}}}});
         // 医生开单排名
         const dr=(d.doctor_ranking||[]).slice(0,10);
-        if(dr.length) _charts.doctorRank=new Chart(document.getElementById('chartDoctorRank'),{type:'bar',data:{labels:dr.map(r=>r.doctor),datasets:[{data:dr.map(r=>r.sessions),backgroundColor:COLORS}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}}}});
+        if(dr.length) _charts.doctorRank=new Chart(document.getElementById('chartDoctorRank'),{type:'bar',data:{labels:dr.map(r=>r.doctor),datasets:[{data:dr.map(r=>r.sessions),backgroundColor:genColors(dr.length)}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}}}});
         renderGrowth(om,wm,cm);
     });
 }
