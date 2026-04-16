@@ -10246,6 +10246,12 @@ function appendChartTable(chartInst, canvasId, colNames) {
     if (!labels || !labels.length) return;
     var canvas = document.getElementById(canvasId);
     if (!canvas) return;
+    // 横向柱状图(indexAxis:y)限制canvas最大高度，防止撑爆页面
+    if (chartInst.config && chartInst.config.options && chartInst.config.options.indexAxis === 'y') {
+        var barMaxH = Math.min(Math.max(labels.length * 24 + 40, 280), 350);
+        canvas.style.maxHeight = barMaxH + 'px';
+        canvas.height = Math.min(canvas.height || 9999, barMaxH);
+    }
     // 移除旧表格
     var oldTbl = canvas.parentElement.querySelector('.chart-data-table');
     if (oldTbl) oldTbl.remove();
