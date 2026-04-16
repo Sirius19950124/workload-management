@@ -1381,6 +1381,9 @@ def download_all_backup():
     total = sum(v.get('count', 0) for v in backup['tables'].values())
     backup['summary'] = {'total_records': total, 'table_count': len(backup['tables'])}
     return jsonify(backup)
+
+
+@dept_stats_bp.route('/ward/daily', methods=['GET'])
 def get_ward_daily():
     """查询每日数据"""
     ensure_tables()
