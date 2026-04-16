@@ -9800,7 +9800,20 @@ function loadWardDailyCharts(y,m,areaIdx){
         if(_wardChartGen[areaIdx]!==myGen) return;
         var rank=d.ward_daily_item_ranking||[];
         if(rank.length&&rc){
-            var rCfg={type:'bar',data:{labels:rank.map(function(x){return x.item;}),datasets:[{data:rank.map(function(x){return x.sessions;}),backgroundColor:genColors(rank.length)}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{autoSkip:false}}}};
+            var rCfg={
+                type:'bar',
+                data:{
+                    labels:rank.map(function(x){return x.item;}),
+                    datasets:[{data:rank.map(function(x){return x.sessions;}),backgroundColor:genColors(rank.length)}]
+                },
+                options:{
+                    indexAxis:'y',
+                    responsive:true,
+                    maintainAspectRatio:false,
+                    plugins:{legend:{display:false}},
+                    scales:{y:{ticks:{autoSkip:false}}}
+                }
+            };
             _charts['wardDailyRank_'+areaIdx]=new Chart(rc,rCfg);
         }
     }).fail(function(){
@@ -10384,7 +10397,7 @@ function loadReferralCharts(year, dept) {
         var d = r.data;
         try {
             var dr = (d.doctor_ranking || []).slice(0, 10);
-            if (dr.length) _charts.refRank = new Chart(document.getElementById('chartRefRank'), { type: 'bar', data: { labels: dr.map(function (r) { return r.doctor; }), datasets: [{ data: dr.map(function (r) { return r.total; }), backgroundColor: COLORS }] }, options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } } } });
+            if (dr.length) _charts.refRank = new Chart(document.getElementById('chartRefRank'), { type: 'bar', data: { labels: dr.map(function (r) { return r.doctor; }), datasets: [{ data: dr.map(function (r) { return r.total; }), backgroundColor: genColors(dr.length) }] }, options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } } } });
         } catch (e) { console.error('chartRefRank:', e); }
         try {
             var dm = (d.dept_monthly || []);
@@ -10397,7 +10410,7 @@ function loadReferralCharts(year, dept) {
         } catch (e) { console.error('chartRefTrend:', e); }
         try {
             var dp = d.dept_yearly || [];
-            if (dp.length) _charts.refPie = new Chart(document.getElementById('chartRefPie'), { type: 'doughnut', data: { labels: dp.map(function (r) { return r.department; }), datasets: [{ data: dp.map(function (r) { return r.total; }), backgroundColor: COLORS }] }, options: { responsive: true, plugins: { legend: { position: 'right' } } } });
+            if (dp.length) _charts.refPie = new Chart(document.getElementById('chartRefPie'), { type: 'doughnut', data: { labels: dp.map(function (r) { return r.department; }), datasets: [{ data: dp.map(function (r) { return r.total; }), backgroundColor: genColors(dp.length) }] }, options: { responsive: true, plugins: { legend: { position: 'right' } } } });
         } catch (e) { console.error('chartRefPie:', e); }
         try {
             var docM = d.doctor_monthly || [];
