@@ -1324,8 +1324,8 @@
                                         <p class="text-muted text-center">请选择月份后查询</p>
                                     </div>
                                     <div class="row mt-3" id="outpatientChartsSection" style="display:none;">
-                                        <div class="col-md-6 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-chart-pie mr-1"></i>人次占比（本月）</h6></div><div class="card-body p-2 text-center"><canvas id="chartOutLocalSessionsPie" style="max-width:320px;margin:0 auto;"></canvas></div></div></div>
-                                        <div class="col-md-6 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-coins mr-1"></i>金额占比（本月）</h6></div><div class="card-body p-2 text-center"><canvas id="chartOutLocalAmountPie" style="max-width:320px;margin:0 auto;"></canvas></div></div></div>
+                                        <div class="col-md-6 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-chart-pie mr-1"></i>人次占比（本月）</h6></div><div class="card-body p-2 text-center" style="max-height:320px;overflow-y:auto;"><canvas id="chartOutLocalSessionsPie" style="max-width:220px;margin:0 auto;"></canvas></div></div></div>
+                                        <div class="col-md-6 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-coins mr-1"></i>金额占比（本月）</h6></div><div class="card-body p-2 text-center" style="max-height:320px;overflow-y:auto;"><canvas id="chartOutLocalAmountPie" style="max-width:220px;margin:0 auto;"></canvas></div></div></div>
                                         <div class="col-md-6 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-chart-bar mr-1"></i>人次排名</h6></div><div class="card-body p-2" style="min-height:350px;overflow-y:auto;"><canvas id="chartOutLocalRankSessions"></canvas></div></div></div>
                                         <div class="col-md-6 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-coins mr-1"></i>金额排名</h6></div><div class="card-body p-2" style="min-height:350px;overflow-y:auto;"><canvas id="chartOutLocalRankAmount"></canvas></div></div></div>
                                     </div>
@@ -8877,10 +8877,10 @@ function loadOutpatientData() {
 }
 function renderOutpatientCharts(data){
     if(!data||!data.length) return;
-    // 检查是否有非零数据
-    var hasData=data.some(function(d){return (d.sessions||0)>0||(d.amount||0)>0;});
-    // 如果全为0，隐藏canvas显示提示
-    if(!hasData){
+    // 只要有数据项就创建图表和表格（允许全0数据显示空图表+表格）
+    var hasItems = data.length > 0;
+    // 完全没有数据项才提示
+    if(!hasItems){
         $('#chartOutLocalSessionsPie,#chartOutLocalAmountPie,#chartOutLocalRankSessions,#chartOutLocalRankAmount').hide();
         $('#outLocalNoDataHint').remove();
         $('#outpatientChartsSection').prepend('<div id="outLocalNoDataHint" class="col-12 text-center text-muted py-4">该月暂无数据</div>');
@@ -8915,16 +8915,14 @@ function renderOutpatientCharts(data){
     // 本地人次占比饼图
     var lsp=document.getElementById('chartOutLocalSessionsPie');
     if(lsp){
-        lsp.width=300; lsp.height=300;
-        _charts.outLocalSessionsPie=new Chart(lsp,{type:'doughnut',data:{labels:labels,datasets:[{data:sessData,backgroundColor:genColors(data.length)}]},options:makePieOpt(function(ctx,p){return ctx.label+': '+ctx.raw.toLocaleString()+'人次 ('+p+'%)';
-        appendChartTable(_charts.outLocalSessionsPie,'chartOutLocalSessionsPie',['项目'])})});
+        _charts.outLocalSessionsPie=new Chart(lsp,{type:'doughnut',data:{labels:labels,datasets:[{data:sessData,backgroundColor:genColors(data.length)}]},options:makePieOpt(function(ctx,p){return ctx.label+': '+ctx.raw.toLocaleString()+'人次 ('+p+'%)';})});
+        appendChartTable(_charts.outLocalSessionsPie,'chartOutLocalSessionsPie',['项目'])
     }
     // 本地金额占比饼图
     var lap=document.getElementById('chartOutLocalAmountPie');
     if(lap){
-        lap.width=300; lap.height=300;
-        _charts.outLocalAmountPie=new Chart(lap,{type:'doughnut',data:{labels:labels,datasets:[{data:amtData,backgroundColor:genColors(data.length)}]},options:makePieOpt(function(ctx,p){return ctx.label+': ¥'+ctx.raw.toLocaleString()+' ('+p+'%)';
-        appendChartTable(_charts.outLocalAmountPie,'chartOutLocalAmountPie',['项目'])})});
+        _charts.outLocalAmountPie=new Chart(lap,{type:'doughnut',data:{labels:labels,datasets:[{data:amtData,backgroundColor:genColors(data.length)}]},options:makePieOpt(function(ctx,p){return ctx.label+': ¥'+ctx.raw.toLocaleString()+' ('+p+'%)';})});
+        appendChartTable(_charts.outLocalAmountPie,'chartOutLocalAmountPie',['项目'])
     }
     // 本地人次排名柱状图
     var lrs=document.getElementById('chartOutLocalRankSessions');
@@ -10659,7 +10657,7 @@ function loadReferralCharts(year, dept) {
             appendChartTable(_charts.refPie,'chartRefPie',['科室'])
         } catch (e) { console.error('chartRefPie:', e); }
         try {
-            var docM = d.doctor_monthly || [];
+            var docM = (d.doctor_monthly || []).filter(function(r){var m=parseInt(r.month); return m>=1 && m<=12;});
             if (docM.length) {
                 var byMonth = {}; docM.forEach(function (r) { byMonth[r.month] = (byMonth[r.month] || 0) + r.total; });
                 var mArr = Object.entries(byMonth).map(function (m) { return { month: parseInt(m[0]), sessions: m[1] }; }).sort(function (a, b) { return a.month - b.month; });
