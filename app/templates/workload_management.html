@@ -1027,17 +1027,17 @@
             <ul class="nav nav-tabs mb-3" role="tablist">
                 <li class="nav-item">
                     <a class="nav-link active" data-toggle="tab" href="#tabRecord">
-                        <i class="fas fa-plus-circle mr-1"></i>工作量登记
+                        <i class="fas fa-plus-circle mr-1"></i>门诊工作量登记
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" data-toggle="tab" href="#tabRecords">
-                        <i class="fas fa-list mr-1"></i>记录查询
+                        <i class="fas fa-list mr-1"></i>门诊记录查询
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" data-toggle="tab" href="#tabMonthly">
-                        <i class="fas fa-calendar mr-1"></i>月度汇总
+                        <i class="fas fa-calendar mr-1"></i>门诊记录汇总
                     </a>
                 </li>
                 <li class="nav-item">
@@ -1323,6 +1323,12 @@
                                     <div id="outpatientTableWrap" style="overflow-x:auto;">
                                         <p class="text-muted text-center">请选择月份后查询</p>
                                     </div>
+                                    <div class="row mt-3" id="outpatientChartsSection" style="display:none;">
+                                        <div class="col-md-6 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-chart-pie mr-1"></i>人次占比（本月）</h6></div><div class="card-body p-2"><canvas id="chartOutLocalSessionsPie"></canvas></div></div></div>
+                                        <div class="col-md-6 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-coins mr-1"></i>金额占比（本月）</h6></div><div class="card-body p-2"><canvas id="chartOutLocalAmountPie"></canvas></div></div></div>
+                                        <div class="col-md-6 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-chart-bar mr-1"></i>人次排名</h6></div><div class="card-body p-2" style="min-height:300px;overflow-y:auto;"><canvas id="chartOutLocalRankSessions"></canvas></div></div></div>
+                                        <div class="col-md-6 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-coins mr-1"></i>金额排名</h6></div><div class="card-body p-2" style="min-height:300px;overflow-y:auto;"><canvas id="chartOutLocalRankAmount"></canvas></div></div></div>
+                                    </div>
                                 </div>
                                 <!-- 病房 -->
                                 <div class="tab-pane fade" id="deptTabWard">
@@ -1374,8 +1380,11 @@
                                             <div id="wdSaveInd_1" class="small mb-1" style="height:20px;"></div>
                                             <div id="wardDailyTableWrap_1" style="overflow-x:auto;min-height:300px;"><p class="text-muted text-center py-4">请选择年月后查询，可直接在表格中编辑数据并保存</p></div>
                                             <div class="row mt-3" id="wardDailyChartsSection_1" style="display:none;">
-                                                <div class="col-md-8 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-chart-line mr-1"></i>每日金额趋势</h6></div><div class="card-body p-2"><canvas id="chartWardDailyTrend_1"></canvas></div></div></div>
-                                                <div class="col-md-4 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-chart-bar mr-1"></i>项目人次排名（本月）</h6></div><div class="card-body p-2" style="min-height:300px;overflow-y:auto;"><canvas id="chartWardDailyRank_1"></canvas></div></div></div>
+                                                <div class="col-md-6 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-chart-line mr-1"></i>每日金额趋势</h6></div><div class="card-body p-2"><canvas id="chartWardDailyTrend_1"></canvas></div></div></div>
+                                                <div class="col-md-3 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-chart-bar mr-1"></i>人次排名</h6></div><div class="card-body p-2" style="min-height:300px;overflow-y:auto;"><canvas id="chartWardDailyRank_1"></canvas></div></div></div>
+                                                <div class="col-md-3 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-coins mr-1"></i>金额排名</h6></div><div class="card-body p-2" style="min-height:300px;overflow-y:auto;"><canvas id="chartWardDailyAmountRank_1"></canvas></div></div></div>
+                                                <div class="col-md-6 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-chart-pie mr-1"></i>人次占比（本月）</h6></div><div class="card-body p-2"><canvas id="chartWardDailySessionsPie_1"></canvas></div></div></div>
+                                                <div class="col-md-6 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-coins mr-1"></i>金额占比（本月）</h6></div><div class="card-body p-2"><canvas id="chartWardDailyAmountPie_1"></canvas></div></div></div>
                                             </div>
                                         </div>
 
@@ -1399,8 +1408,11 @@
                                             <div id="wdSaveInd_2" class="small mb-1" style="height:20px;"></div>
                                             <div id="wardDailyTableWrap_2" style="overflow-x:auto;min-height:300px;"><p class="text-muted text-center py-4">请选择年月后查询，可直接在表格中编辑数据并保存</p></div>
                                             <div class="row mt-3" id="wardDailyChartsSection_2" style="display:none;">
-                                                <div class="col-md-8 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-chart-line mr-1"></i>每日金额趋势</h6></div><div class="card-body p-2"><canvas id="chartWardDailyTrend_2"></canvas></div></div></div>
-                                                <div class="col-md-4 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-chart-bar mr-1"></i>项目人次排名（本月）</h6></div><div class="card-body p-2" style="min-height:300px;overflow-y:auto;"><canvas id="chartWardDailyRank_2"></canvas></div></div></div>
+                                                <div class="col-md-6 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-chart-line mr-1"></i>每日金额趋势</h6></div><div class="card-body p-2"><canvas id="chartWardDailyTrend_2"></canvas></div></div></div>
+                                                <div class="col-md-3 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-chart-bar mr-1"></i>人次排名</h6></div><div class="card-body p-2" style="min-height:300px;overflow-y:auto;"><canvas id="chartWardDailyRank_2"></canvas></div></div></div>
+                                                <div class="col-md-3 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-coins mr-1"></i>金额排名</h6></div><div class="card-body p-2" style="min-height:300px;overflow-y:auto;"><canvas id="chartWardDailyAmountRank_2"></canvas></div></div></div>
+                                                <div class="col-md-6 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-chart-pie mr-1"></i>人次占比（本月）</h6></div><div class="card-body p-2"><canvas id="chartWardDailySessionsPie_2"></canvas></div></div></div>
+                                                <div class="col-md-6 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-coins mr-1"></i>金额占比（本月）</h6></div><div class="card-body p-2"><canvas id="chartWardDailyAmountPie_2"></canvas></div></div></div>
                                             </div>
                                         </div>
 
@@ -1424,8 +1436,11 @@
                                             <div id="wdSaveInd_3" class="small mb-1" style="height:20px;"></div>
                                             <div id="wardDailyTableWrap_3" style="overflow-x:auto;min-height:300px;"><p class="text-muted text-center py-4">请选择年月后查询，可直接在表格中编辑数据并保存</p></div>
                                             <div class="row mt-3" id="wardDailyChartsSection_3" style="display:none;">
-                                                <div class="col-md-8 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-chart-line mr-1"></i>每日金额趋势</h6></div><div class="card-body p-2"><canvas id="chartWardDailyTrend_3"></canvas></div></div></div>
-                                                <div class="col-md-4 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-chart-bar mr-1"></i>项目人次排名（本月）</h6></div><div class="card-body p-2" style="min-height:300px;overflow-y:auto;"><canvas id="chartWardDailyRank_3"></canvas></div></div></div>
+                                                <div class="col-md-6 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-chart-line mr-1"></i>每日金额趋势</h6></div><div class="card-body p-2"><canvas id="chartWardDailyTrend_3"></canvas></div></div></div>
+                                                <div class="col-md-3 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-chart-bar mr-1"></i>人次排名</h6></div><div class="card-body p-2" style="min-height:300px;overflow-y:auto;"><canvas id="chartWardDailyRank_3"></canvas></div></div></div>
+                                                <div class="col-md-3 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-coins mr-1"></i>金额排名</h6></div><div class="card-body p-2" style="min-height:300px;overflow-y:auto;"><canvas id="chartWardDailyAmountRank_3"></canvas></div></div></div>
+                                                <div class="col-md-6 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-chart-pie mr-1"></i>人次占比（本月）</h6></div><div class="card-body p-2"><canvas id="chartWardDailySessionsPie_3"></canvas></div></div></div>
+                                                <div class="col-md-6 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-coins mr-1"></i>金额占比（本月）</h6></div><div class="card-body p-2"><canvas id="chartWardDailyAmountPie_3"></canvas></div></div></div>
                                             </div>
                                         </div>
 
@@ -1449,8 +1464,11 @@
                                             <div id="wdSaveInd_4" class="small mb-1" style="height:20px;"></div>
                                             <div id="wardDailyTableWrap_4" style="overflow-x:auto;min-height:300px;"><p class="text-muted text-center py-4">请选择年月后查询，可直接在表格中编辑数据并保存</p></div>
                                             <div class="row mt-3" id="wardDailyChartsSection_4" style="display:none;">
-                                                <div class="col-md-8 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-chart-line mr-1"></i>每日金额趋势</h6></div><div class="card-body p-2"><canvas id="chartWardDailyTrend_4"></canvas></div></div></div>
-                                                <div class="col-md-4 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-chart-bar mr-1"></i>项目人次排名（本月）</h6></div><div class="card-body p-2" style="min-height:300px;overflow-y:auto;"><canvas id="chartWardDailyRank_4"></canvas></div></div></div>
+                                                <div class="col-md-6 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-chart-line mr-1"></i>每日金额趋势</h6></div><div class="card-body p-2"><canvas id="chartWardDailyTrend_4"></canvas></div></div></div>
+                                                <div class="col-md-3 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-chart-bar mr-1"></i>人次排名</h6></div><div class="card-body p-2" style="min-height:300px;overflow-y:auto;"><canvas id="chartWardDailyRank_4"></canvas></div></div></div>
+                                                <div class="col-md-3 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-coins mr-1"></i>金额排名</h6></div><div class="card-body p-2" style="min-height:300px;overflow-y:auto;"><canvas id="chartWardDailyAmountRank_4"></canvas></div></div></div>
+                                                <div class="col-md-6 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-chart-pie mr-1"></i>人次占比（本月）</h6></div><div class="card-body p-2"><canvas id="chartWardDailySessionsPie_4"></canvas></div></div></div>
+                                                <div class="col-md-6 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-coins mr-1"></i>金额占比（本月）</h6></div><div class="card-body p-2"><canvas id="chartWardDailyAmountPie_4"></canvas></div></div></div>
                                             </div>
                                         </div>
 
@@ -1474,8 +1492,11 @@
                                             <div id="wdSaveInd_5" class="small mb-1" style="height:20px;"></div>
                                             <div id="wardDailyTableWrap_5" style="overflow-x:auto;min-height:300px;"><p class="text-muted text-center py-4">请选择年月后查询，可直接在表格中编辑数据并保存</p></div>
                                             <div class="row mt-3" id="wardDailyChartsSection_5" style="display:none;">
-                                                <div class="col-md-8 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-chart-line mr-1"></i>每日金额趋势</h6></div><div class="card-body p-2"><canvas id="chartWardDailyTrend_5"></canvas></div></div></div>
-                                                <div class="col-md-4 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-chart-bar mr-1"></i>项目人次排名（本月）</h6></div><div class="card-body p-2" style="min-height:300px;overflow-y:auto;"><canvas id="chartWardDailyRank_5"></canvas></div></div></div>
+                                                <div class="col-md-6 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-chart-line mr-1"></i>每日金额趋势</h6></div><div class="card-body p-2"><canvas id="chartWardDailyTrend_5"></canvas></div></div></div>
+                                                <div class="col-md-3 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-chart-bar mr-1"></i>人次排名</h6></div><div class="card-body p-2" style="min-height:300px;overflow-y:auto;"><canvas id="chartWardDailyRank_5"></canvas></div></div></div>
+                                                <div class="col-md-3 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-coins mr-1"></i>金额排名</h6></div><div class="card-body p-2" style="min-height:300px;overflow-y:auto;"><canvas id="chartWardDailyAmountRank_5"></canvas></div></div></div>
+                                                <div class="col-md-6 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-chart-pie mr-1"></i>人次占比（本月）</h6></div><div class="card-body p-2"><canvas id="chartWardDailySessionsPie_5"></canvas></div></div></div>
+                                                <div class="col-md-6 mb-3"><div class="card"><div class="card-header py-2"><h6 class="mb-0"><i class="fas fa-coins mr-1"></i>金额占比（本月）</h6></div><div class="card-body p-2"><canvas id="chartWardDailyAmountPie_5"></canvas></div></div></div>
                                             </div>
                                         </div>
                                     </div>
@@ -1544,10 +1565,12 @@
                                         <div class="col-md-6 mb-4"><div class="card"><div class="card-header"><h6 class="mb-0">🧒 儿童医院月度趋势</h6></div><div class="card-body"><canvas id="chartChildTrend"></canvas></div></div></div>
                                         <div class="col-md-6 mb-4"><div class="card"><div class="card-header"><h6 class="mb-0">👨‍⚕️ 医生开单趋势</h6></div><div class="card-body"><canvas id="chartDoctorTrend"></canvas></div></div></div>
                                         <div class="col-md-6 mb-4"><div class="card"><div class="card-header"><h6 class="mb-0">🏆 门诊项目排名（人次）</h6></div><div class="card-body"><canvas id="chartOutRank"></canvas></div></div></div>
-                                        <div class="col-md-6 mb-4"><div class="card"><div class="card-header"><h6 class="mb-0">📊 门诊金额占比</h6></div><div class="card-body"><canvas id="chartOutPie"></canvas></div></div></div>
+                                        <div class="col-md-6 mb-4"><div class="card"><div class="card-header"><h6 class="mb-0">📊 门诊金额占比（全年）</h6></div><div class="card-body"><canvas id="chartOutPie"></canvas></div></div></div>
+                                        <div class="col-md-6 mb-4"><div class="card"><div class="card-header d-flex justify-content-between align-items-center"><h6 class="mb-0">📊 门诊人次占比</h6><select class="form-control form-control-sm" id="outPieMonthSel" style="width:80px;" onchange="refreshOutMonthlyPies()"></select></div><div class="card-body p-2" style="min-height:250px;position:relative;"><div id="outPieSessHint" class="text-center text-muted" style="display:none;padding-top:100px;">该月暂无数据</div><canvas id="chartOutMonthSessionsPie" style="width:100%!important;max-width:400px;margin:0 auto;"></canvas></div></div></div>
+                                        <div class="col-md-6 mb-4"><div class="card"><div class="card-header d-flex justify-content-between align-items-center"><h6 class="mb-0">📊 门诊金额占比</h6></div><div class="card-body p-2" style="min-height:250px;position:relative;"><div id="outPieAmtHint" class="text-center text-muted" style="display:none;padding-top:100px;">该月暂无数据</div><canvas id="chartOutMonthAmountPie" style="width:100%!important;max-width:400px;margin:0 auto;"></canvas></div></div></div>
                                         <div class="col-md-6 mb-4"><div class="card"><div class="card-header"><h6 class="mb-0">🏆 病房项目排名（人次）</h6></div><div class="card-body"><canvas id="chartWardRank"></canvas></div></div></div>
-                                        <div class="col-md-6 mb-4"><div class="card"><div class="card-header"><h6 class="mb-0">📊 病区人次占比</h6></div><div class="card-body"><canvas id="chartWardArea"></canvas></div></div></div>
-                                        <div class="col-md-6 mb-4"><div class="card"><div class="card-header"><h6 class="mb-0">📊 病区金额占比</h6></div><div class="card-body"><canvas id="chartWardAreaAmount"></canvas></div></div></div>
+                                        <div class="col-md-6 mb-4"><div class="card"><div class="card-header"><h6 class="mb-0">📊 病区人次占比（全年）</h6></div><div class="card-body"><canvas id="chartWardArea"></canvas></div></div></div>
+                                        <div class="col-md-6 mb-4"><div class="card"><div class="card-header"><h6 class="mb-0">📊 病区金额占比（全年）</h6></div><div class="card-body"><canvas id="chartWardAreaAmount"></canvas></div></div></div>
                                         <div class="col-md-6 mb-4"><div class="card"><div class="card-header"><h6 class="mb-0">👨‍⚕️ 医生开单排名</h6></div><div class="card-body"><canvas id="chartDoctorRank"></canvas></div></div></div>
                                         <div class="col-md-12 mb-4"><div class="card"><div class="card-header"><h6 class="mb-0">📈 环比增长率</h6></div><div class="card-body" id="growthWrap"><p class="text-muted text-center">需要至少2个月数据</p></div></div></div>
                                     </div>
@@ -1602,7 +1625,7 @@
                             <div class="row mt-4" id="referralChartsArea">
                                 <div class="col-md-6 mb-4"><div class="card"><div class="card-header py-2"><h6 class="mb-0">🏆 医生转介排名</h6></div><div class="card-body" style="min-height:250px;overflow-y:auto;"><canvas id="chartRefRank"></canvas></div></div></div>
                                 <div class="col-md-6 mb-4"><div class="card"><div class="card-header py-2"><h6 class="mb-0">📈 科室月度趋势</h6></div><div class="card-body"><canvas id="chartRefTrend"></canvas></div></div></div>
-                                <div class="col-md-6 mb-4"><div class="card"><div class="card-header py-2"><h6 class="mb-0">📊 科室占比</h6></div><div class="card-body"><canvas id="chartRefPie"></canvas></div></div></div>
+                                <div class="col-md-6 mb-4"><div class="card"><div class="card-header py-2"><h6 class="mb-0">📊 科室占比（全年）</h6></div><div class="card-body"><canvas id="chartRefPie"></canvas></div></div></div>
                                 <div class="col-md-6 mb-4"><div class="card"><div class="card-header py-2"><h6 class="mb-0">📈 医生月度趋势</h6></div><div class="card-body"><canvas id="chartRefDocTrend"></canvas></div></div></div>
                             </div>
                         </div>
@@ -8810,7 +8833,10 @@ function loadOutpatientData() {
         if(!$wrap.length) return;
         if(!r.success){$wrap.html('<p class="text-danger text-center py-3">查询失败</p>');return;}
         var data=r.data||[];
-        if(!data.length){$wrap.html('<p class="text-muted text-center py-3">该月无数据，请先录入</p>');return;}
+        // 过滤已知垃圾项目名称（防御性过滤，防止历史脏数据混入）
+        var _junkNames=['新项目A','新项目B','新项目C','测试','合计','项目A','项目B','项目C'];
+        data=data.filter(function(d){return _junkNames.indexOf(d.item||'')===-1;});
+        if(!data.length){$wrap.html('<p class="text-muted text-center py-3">该月无数据，请先录入</p>');$('#outpatientChartsSection').hide();return;}
         // 从数据本身提取项目列表（不用 dept_items，避免注入历史/测试项目）
         var itemOrder={};
         data.forEach(function(d,i){ if(!(d.item_name in itemOrder)) itemOrder[d.item_name]=i; });
@@ -8838,7 +8864,70 @@ function loadOutpatientData() {
                 error:function(){_outSaveStatus='idle'; updateOutSaveIndicator();}
             });
         });
-    }).fail(function(){$wrap.html('<p class="text-danger text-center py-3">网络错误</p>');});
+        // 先显示容器再渲染（Chart.js在display:none的容器中无法正确计算尺寸）
+        $('#outpatientChartsSection').show();
+        // 渲染本月图表（门诊tab本地 + 图表分析页）
+        renderOutpatientCharts(data);
+    }).fail(function(){$wrap.html('<p class="text-danger text-center py-3">网络错误</p>');$('#outpatientChartsSection').hide();});
+}
+function renderOutpatientCharts(data){
+    if(!data||!data.length) return;
+    // 检查是否有非零数据
+    var hasData=data.some(function(d){return (d.sessions||0)>0||(d.amount||0)>0;});
+    // 如果全为0，隐藏canvas显示提示
+    if(!hasData){
+        $('#outpatientChartsSection .canvas').hide();
+        $('#outpatientChartsSection .card-body').prepend('<div class="text-center text-muted py-4">该月暂无数据</div>');
+        return;
+    }
+    // 有数据时移除可能存在的提示，确保canvas可见
+    $('#outpatientChartsSection .card-body > .text-muted:first').remove();
+    $('#outpatientChartsSection .canvas').show();
+    var labels=data.map(function(d){return d.item;});
+    var sessData=data.map(function(d){return d.sessions||0;});
+    var amtData=data.map(function(d){return d.amount||0;});
+    // 通用饼图配置
+    function makePieOpt(labelFn){
+        return {responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{position:'right',labels:{font:{size:11}}},tooltip:{callbacks:{label:function(ctx){var t=ctx.dataset.data.reduce(function(a,b){return a+b;},0)||1;var p=(ctx.raw/t*100).toFixed(1);return labelFn(ctx,p);}}}}};
+    }
+    // ====== 1) 图表分析页的2个饼图（全年汇总区）======
+    ['outMonthSessionsPie','outMonthAmountPie'].forEach(function(k){
+        if(_charts[k]){try{_charts[k].destroy();}catch(e){}_charts[k]=null;}
+    });
+    var sp=document.getElementById('chartOutMonthSessionsPie');
+    var ap=document.getElementById('chartOutMonthAmountPie');
+    if(sp) _charts.outMonthSessionsPie=new Chart(sp,{type:'doughnut',data:{labels:labels,datasets:[{data:sessData,backgroundColor:genColors(data.length)}]},options:makePieOpt(function(ctx,p){return ctx.label+': '+ctx.raw.toLocaleString()+' ('+p+'%)';})});
+    if(ap){
+        _charts.outMonthAmountPie=new Chart(ap,{type:'doughnut',data:{labels:labels,datasets:[{data:amtData,backgroundColor:genColors(data.length)}]},options:makePieOpt(function(ctx,p){return ctx.label+': ¥'+ctx.raw.toLocaleString()+' ('+p+'%)';})});
+    }
+    // ====== 2) 门诊tab本地的4个图表 ======
+    ['outLocalSessionsPie','outLocalAmountPie','outLocalRankSessions','outLocalRankAmount'].forEach(function(k){
+        if(_charts[k]){try{_charts[k].destroy();}catch(e){}_charts[k]=null;}
+    });
+    // 本地人次占比饼图
+    var lsp=document.getElementById('chartOutLocalSessionsPie');
+    if(lsp) _charts.outLocalSessionsPie=new Chart(lsp,{type:'doughnut',data:{labels:labels,datasets:[{data:sessData,backgroundColor:genColors(data.length)}]},options:makePieOpt(function(ctx,p){return ctx.label+': '+ctx.raw.toLocaleString()+'人次 ('+p+'%)';})});
+    // 本地金额占比饼图
+    var lap=document.getElementById('chartOutLocalAmountPie');
+    if(lap){
+        _charts.outLocalAmountPie=new Chart(lap,{type:'doughnut',data:{labels:labels,datasets:[{data:amtData,backgroundColor:genColors(data.length)}]},options:makePieOpt(function(ctx,p){return ctx.label+': ¥'+ctx.raw.toLocaleString()+' ('+p+'%)';})});
+    }
+    // 本地人次排名柱状图
+    var lrs=document.getElementById('chartOutLocalRankSessions');
+    if(lrs){
+        var sessRank=data.slice().sort(function(a,b){return b.sessions-a.sessions;});
+        var rh=Math.min(Math.max(sessRank.length*26+60,300),700);
+        lrs.height=rh; lrs.style.height=rh+'px';
+        _charts.outLocalRankSessions=new Chart(lrs,{type:'bar',data:{labels:sessRank.map(function(x){return x.item;}),datasets:[{data:sessRank.map(function(x){return x.sessions;}),backgroundColor:genColors(sessRank.length)}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false}},scales:{y:{ticks:{autoSkip:false}}}}});
+    }
+    // 本地金额排名柱状图
+    var lra=document.getElementById('chartOutLocalRankAmount');
+    if(lra){
+        var amtRank=data.slice().sort(function(a,b){return (b.amount||0)-(a.amount||0);});
+        var arh=Math.min(Math.max(amtRank.length*26+60,300),700);
+        lra.height=arh; lra.style.height=arh+'px';
+        _charts.outLocalRankAmount=new Chart(lra,{type:'bar',data:{labels:amtRank.map(function(x){return x.item;}),datasets:[{data:amtRank.map(function(x){return x.amount||0;}),backgroundColor:genColors(amtRank.length)}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false}},scales:{y:{ticks:{autoSkip:false}}}}});
+    }
 }
 
 
@@ -9107,7 +9196,7 @@ function loadWardDaily(areaIdx){
         $.get('/api/dept-stats/ward/daily',{year:y,month:m,area:areaName},function(dr){
             if(!dr.success){ showToast('查询数据失败','error'); return; }
             renderWardDailyView(dr.data||[],items,parseInt(y),parseInt(m),areaIdx);
-            loadWardDailyCharts(parseInt(y),parseInt(m),areaIdx);
+            loadWardDailyCharts(parseInt(y),parseInt(m),areaIdx,items);
         }).fail(function(){showToast('网络错误：无法加载数据','error');});
     }).fail(function(){showToast('网络错误：无法加载单价配置','error');});
 }
@@ -9748,14 +9837,14 @@ function exportWardDailyExcel(areaIdx){
 var _wardChartXhr={};
 var _wardChartGen={};
 
-function loadWardDailyCharts(y,m,areaIdx){
+function loadWardDailyCharts(y,m,areaIdx,items){
     // 1) Abort any previous in-flight chart request for this area
     if(_wardChartXhr[areaIdx]){ try{_wardChartXhr[areaIdx].abort();}catch(e){} _wardChartXhr[areaIdx]=null; }
     // 2) Bump generation — stale callbacks will check this and bail out
     _wardChartGen[areaIdx]=(_wardChartGen[areaIdx]||0)+1;
     var myGen=_wardChartGen[areaIdx];
     // 3) Replace canvas DOM elements (guarantees no lingering Chart.js refs)
-    ['chartWardDailyTrend_'+areaIdx,'chartWardDailyRank_'+areaIdx].forEach(function(id){
+    ['chartWardDailyTrend_'+areaIdx,'chartWardDailyRank_'+areaIdx,'chartWardDailyAmountRank_'+areaIdx,'chartWardDailySessionsPie_'+areaIdx,'chartWardDailyAmountPie_'+areaIdx].forEach(function(id){
         var el=document.getElementById(id);
         if(!el) return;
         var p=el.parentNode,n=document.createElement('canvas');
@@ -9765,6 +9854,9 @@ function loadWardDailyCharts(y,m,areaIdx){
     });
     _charts['wardDailyTrend_'+areaIdx]=null;
     _charts['wardDailyRank_'+areaIdx]=null;
+    _charts['wardDailyAmountRank_'+areaIdx]=null;
+    _charts['wardDailySessionsPie_'+areaIdx]=null;
+    _charts['wardDailyAmountPie_'+areaIdx]=null;
     // 4) Fire request with abort capability
     _wardChartXhr[areaIdx]=$.get('/api/dept-stats/charts',{year:y,month:m,ward_daily_area:WARD_AREAS[areaIdx-1]},function(r){
         // If a newer request was started after us, discard this stale response
@@ -9779,12 +9871,18 @@ function loadWardDailyCharts(y,m,areaIdx){
         if(trend.length&&tc){
             var $tab=$(tc).closest('.tab-pane');
             if($tab.length&&!$tab.hasClass('active')){$tab.addClass('active show');}
-            var tCfg={type:'line',data:{labels:trend.map(function(x){return x.date.substr(5);}),datasets:[{label:'金额',data:trend.map(function(x){return x.amount||0;}),borderColor:'#e15759',backgroundColor:'rgba(225,87,89,0.1)',fill:true,tension:0.3}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}};
+            var tCfg={type:'line',data:{labels:trend.map(function(x){return x.date.substr(5);}),datasets:[{label:'金额',data:trend.map(function(x){return x.amount||0;}),borderColor:'#e15759',backgroundColor:'rgba(225,87,89,0.1)',fill:true,tension:0.3}]},options:{responsive:true,animation:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}};
             _charts['wardDailyTrend_'+areaIdx]=new Chart(tc,tCfg);
             if($tab.length)$tab.removeClass('active show');
         }
         if(_wardChartGen[areaIdx]!==myGen) return;
         var rank=d.ward_daily_item_ranking||[];
+        // 只保留表格中有的项目（items来自 ward_item_prices 官方清单）
+        if(items&&items.length){
+            var validItems={};
+            items.forEach(function(it){ validItems[it.item_name]=1; });
+            rank=rank.filter(function(r){return validItems[r.item];});
+        }
         if(rank.length&&rc){
             // 根据项目数量动态调整 canvas 高度（每项约26px + 边距）
             var h=Math.min(Math.max(rank.length*26+60,300),700);
@@ -9800,11 +9898,48 @@ function loadWardDailyCharts(y,m,areaIdx){
                     indexAxis:'y',
                     responsive:true,
                     maintainAspectRatio:false,
+                    animation:false,
                     plugins:{legend:{display:false}},
                     scales:{y:{ticks:{autoSkip:false}}}
                 }
             };
             _charts['wardDailyRank_'+areaIdx]=new Chart(rc,rCfg);
+        }
+        // 金额排名图表
+        if(_wardChartGen[areaIdx]!==myGen) return;
+        var arc=document.getElementById('chartWardDailyAmountRank_'+areaIdx);
+        if(rank.length&&arc){
+            // 按金额降序排列
+            var amountRank=rank.slice().sort(function(a,b){return (b.amount||0)-(a.amount||0);});
+            var ah=Math.min(Math.max(amountRank.length*26+60,300),700);
+            arc.height=ah; arc.style.height=ah+'px';
+            arc.parentNode.style.maxHeight=(ah+20)+'px';
+            _charts['wardDailyAmountRank_'+areaIdx]=new Chart(arc,{
+                type:'bar',
+                data:{
+                    labels:amountRank.map(function(x){return x.item;}),
+                    datasets:[{data:amountRank.map(function(x){return x.amount||0;}),backgroundColor:genColors(amountRank.length)}]
+                },
+                options:{
+                    indexAxis:'y',
+                    responsive:true,
+                    maintainAspectRatio:false,
+                    animation:false,
+                    plugins:{legend:{display:false}},
+                    scales:{y:{ticks:{autoSkip:false}}}
+                }
+            });
+        }
+        // 本月人次+金额占比饼图
+        if(_wardChartGen[areaIdx]!==myGen) return;
+        var sp=document.getElementById('chartWardDailySessionsPie_'+areaIdx);
+        var ap=document.getElementById('chartWardDailyAmountPie_'+areaIdx);
+        if(rank.length&&sp){
+            _charts['wardDailySessionsPie_'+areaIdx]=new Chart(sp,{type:'doughnut',data:{labels:rank.map(function(x){return x.item;}),datasets:[{data:rank.map(function(x){return x.sessions||0;}),backgroundColor:genColors(rank.length)}]},options:{responsive:true,animation:false,plugins:{legend:{position:'right',labels:{font:{size:10}}},tooltip:{callbacks:{label:function(ctx){var t=ctx.dataset.data.reduce(function(a,b){return a+b;},0)||1;var p=(ctx.raw/t*100).toFixed(1);return ctx.label+': '+ctx.raw+'人次 ('+p+'%)';}}}}}});
+        }
+        if(_wardChartGen[areaIdx]!==myGen) return;
+        if(rank.length&&ap){
+            _charts['wardDailyAmountPie_'+areaIdx]=new Chart(ap,{type:'doughnut',data:{labels:rank.map(function(x){return x.item;}),datasets:[{data:rank.map(function(x){return x.amount||0;}),backgroundColor:genColors(rank.length)}]},options:{responsive:true,animation:false,plugins:{legend:{position:'right',labels:{font:{size:10}}},tooltip:{callbacks:{label:function(ctx){var t=ctx.dataset.data.reduce(function(a,b){return a+b;},0)||1;var p=(ctx.raw/t*100).toFixed(1);return ctx.label+': ¥'+ctx.raw.toLocaleString()+' ('+p+'%)';}}}}}});
         }
     }).fail(function(){
         _wardChartXhr[areaIdx]=null;
@@ -10120,9 +10255,22 @@ $(document).on('click', 'a[href^="#wardDaily_"]', function(){
 function loadDeptCharts() {
     destroyCharts();
     const y=$('#deptStatsYear').val();
-    $.get('/api/dept-stats/charts',{year:y},function(r){
-        if(!r.success) return;
-        const d=r.data;
+    const m=$('#outMonth').val();
+    // 初始化本月饼图的月份选择器
+    var $msel=$('#outPieMonthSel');
+    if(!$msel.find('option').length){
+        for(var mi=1;mi<=12;mi++) { $msel.append('<option value="'+mi+'">'+mi+'月</option>'); }
+    }
+    $msel.val(m);
+    // 确保canvas可见、提示隐藏
+    $('#outPieSessHint,#outPieAmtHint').hide();
+    $('#chartOutMonthSessionsPie,#chartOutMonthAmountPie').show();
+    // 并行请求：全年汇总 + 单月门诊明细
+    var req1=$.get('/api/dept-stats/charts',{year:y});
+    var req2=m ? $.get('/api/dept-stats/outpatient',{year:y,month:m}) : null;
+    $.when(req1,req2||{}).done(function(r1,r2){
+        if(!r1[0].success) return;
+        const d=r1[0].data;
         const om=d.outpatient_monthly||[];
         if(om.length){
             _charts.outTrend=new Chart(document.getElementById('chartOutTrend'),{type:'line',data:{labels:om.map(r=>r.month+'月'),datasets:[{label:'人次',data:om.map(r=>r.sessions),borderColor:'#4e79a7',backgroundColor:'rgba(78,121,167,0.1)',fill:true,tension:0.3,yAxisID:'y'},{label:'金额',data:om.map(r=>r.amount||0),borderColor:'#59a14f',backgroundColor:'rgba(89,161,79,0.1)',fill:false,tension:0.3,yAxisID:'y1'}]},options:{responsive:true,scales:{y:{type:'linear',position:'left',title:{display:true,text:'人次'}},y1:{type:'linear',position:'right',grid:{drawOnChartArea:false},title:{display:true,text:'金额'}}}}});
@@ -10143,17 +10291,69 @@ function loadDeptCharts() {
         const or2=(d.outpatient_ranking||[]).slice(0,10);
         if(or2.length){
             _charts.outRank=new Chart(document.getElementById('chartOutRank'),{type:'bar',data:{labels:or2.map(r=>r.item),datasets:[{data:or2.map(r=>r.sessions),backgroundColor:genColors(or2.length)}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}}}});
-            _charts.outPie=new Chart(document.getElementById('chartOutPie'),{type:'doughnut',data:{labels:or2.map(r=>r.item),datasets:[{data:or2.map(r=>r.amount||0),backgroundColor:genColors(or2.length)}]},options:{responsive:true,plugins:{legend:{position:'right',labels:{font:{size:11}}}}}});
+            _charts.outPie=new Chart(document.getElementById('chartOutPie'),{type:'doughnut',data:{labels:or2.map(r=>r.item),datasets:[{data:or2.map(r=>r.amount||0),backgroundColor:genColors(or2.length)}]},options:{responsive:true,plugins:{legend:{position:'right',labels:{font:{size:11}}},tooltip:{callbacks:{label:function(ctx){var t=ctx.dataset.data.reduce(function(a,b){return a+b;},0)||1;var p=(ctx.raw/t*100).toFixed(1);return ctx.label+': '+ctx.raw.toLocaleString()+' ('+p+'%)';}}}}}});
         }
         const wr=(d.ward_ranking||[]).slice(0,10);
         if(wr.length) _charts.wardRank=new Chart(document.getElementById('chartWardRank'),{type:'bar',data:{labels:wr.map(r=>r.area+'-'+r.item),datasets:[{data:wr.map(r=>r.sessions),backgroundColor:genColors(wr.length)}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}}}});
         const wa=d.ward_area_total||[];
-        if(wa.length) _charts.wardArea=new Chart(document.getElementById('chartWardArea'),{type:'doughnut',data:{labels:wa.map(r=>r.area),datasets:[{data:wa.map(r=>r.sessions),backgroundColor:genColors(wa.length)}]},options:{responsive:true,plugins:{legend:{position:'right'}}}});
-        if(wa.length) _charts.wardAreaAmount=new Chart(document.getElementById('chartWardAreaAmount'),{type:'doughnut',data:{labels:wa.map(r=>r.area),datasets:[{data:wa.map(r=>r.amount||0),backgroundColor:genColors(wa.length)}]},options:{responsive:true,plugins:{legend:{position:'right'}}}});
+        if(wa.length) _charts.wardArea=new Chart(document.getElementById('chartWardArea'),{type:'doughnut',data:{labels:wa.map(r=>r.area),datasets:[{data:wa.map(r=>r.sessions),backgroundColor:genColors(wa.length)}]},options:{responsive:true,plugins:{legend:{position:'right'},tooltip:{callbacks:{label:function(ctx){var t=ctx.dataset.data.reduce(function(a,b){return a+b;},0)||1;var p=(ctx.raw/t*100).toFixed(1);return ctx.label+': '+ctx.raw+'人次 ('+p+'%)';}}}}}});
+        if(wa.length) _charts.wardAreaAmount=new Chart(document.getElementById('chartWardAreaAmount'),{type:'doughnut',data:{labels:wa.map(r=>r.area),datasets:[{data:wa.map(r=>r.amount||0),backgroundColor:genColors(wa.length)}]},options:{responsive:true,plugins:{legend:{position:'right'},tooltip:{callbacks:{label:function(ctx){var t=ctx.dataset.data.reduce(function(a,b){return a+b;},0)||1;var p=(ctx.raw/t*100).toFixed(1);return ctx.label+': ¥'+ctx.raw.toLocaleString()+' ('+p+'%)';}}}}}});
         // 医生开单排名
         const dr=(d.doctor_ranking||[]).slice(0,10);
         if(dr.length) _charts.doctorRank=new Chart(document.getElementById('chartDoctorRank'),{type:'bar',data:{labels:dr.map(r=>r.doctor),datasets:[{data:dr.map(r=>r.sessions),backgroundColor:genColors(dr.length)}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}}}});
         renderGrowth(om,wm,cm);
+        // 用并行请求返回的单月门诊数据渲染"本月"饼图（与全年图在同一回调中同步创建）
+        if(m&&r2&&r2[0]&&r2[0].success){
+            var data2=r2[0].data||[];
+            var _jn=['新项目A','新项目B','新项目C','测试','合计','项目A','项目B','项目C'];
+            data2=data2.filter(function(d){return _jn.indexOf(d.item||'')===-1;});
+            var $hintS=$('#outPieSessHint'),$hintA=$('#outPieAmtHint');
+            var $canS=$('#chartOutMonthSessionsPie'),$canA=$('#chartOutMonthAmountPie');
+            var hasData2=data2.some(function(d){return (d.sessions||0)>0||(d.amount||0)>0;});
+            if(data2.length&&hasData2){
+                $hintS.hide();$hintA.hide();$canS.show();$canA.show();
+                var labels2=data2.map(function(d){return d.item;});
+                var sessD=data2.map(function(d){return d.sessions||0;});
+                var amtD=data2.map(function(d){return d.amount||0;});
+                function pieOpt(lfn){return {responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{position:'right',labels:{font:{size:11}}},tooltip:{callbacks:{label:function(ctx){var t=ctx.dataset.data.reduce(function(a,b){return a+b;},0)||1;var p=(ctx.raw/t*100).toFixed(1);return lfn(ctx,p);}}}}};}
+                var sp2=document.getElementById('chartOutMonthSessionsPie');
+                var ap2=document.getElementById('chartOutMonthAmountPie');
+                if(sp2) _charts.outMonthSessionsPie=new Chart(sp2,{type:'doughnut',data:{labels:labels2,datasets:[{data:sessD,backgroundColor:genColors(data2.length)}]},options:pieOpt(function(ctx,p){return ctx.label+': '+ctx.raw.toLocaleString()+' ('+p+'%)';})});
+                if(ap2) _charts.outMonthAmountPie=new Chart(ap2,{type:'doughnut',data:{labels:labels2,datasets:[{data:amtD,backgroundColor:genColors(data2.length)}]},options:pieOpt(function(ctx,p){return ctx.label+': ¥'+ctx.raw.toLocaleString()+' ('+p+'%)';})});
+            } else {
+                $canS.hide();$canA.hide();$hintS.show();$hintA.show();
+            }
+        }
+    });
+}
+// 门诊本月饼图：月份切换时刷新
+function refreshOutMonthlyPies(){
+    var y=$('#deptStatsYear').val(), m=$('#outPieMonthSel').val();
+    if(!m) return;
+    // 先销毁旧图表
+    if(_charts.outMonthSessionsPie){try{_charts.outMonthSessionsPie.destroy();}catch(e){}_charts.outMonthSessionsPie=null;}
+    if(_charts.outMonthAmountPie){try{_charts.outMonthAmountPie.destroy();}catch(e){}_charts.outMonthAmountPie=null;}
+    $.get('/api/dept-stats/outpatient',{year:y,month:m}).done(function(r){
+        if(!r.success) return;
+        var data=r.data||[];
+        var _jn=['新项目A','新项目B','新项目C','测试','合计','项目A','项目B','项目C'];
+        data=data.filter(function(d){return _jn.indexOf(d.item||'')===-1;});
+        var $hs=$('#outPieSessHint'),$ha=$('#outPieAmtHint');
+        var $cs=$('#chartOutMonthSessionsPie'),$ca=$('#chartOutMonthAmountPie');
+        var hasData=data.some(function(d){return (d.sessions||0)>0||(d.amount||0)>0;});
+        if(data.length&&hasData){
+            $hs.hide();$ha.hide();$cs.show();$ca.show();
+            var lbs=data.map(function(d){return d.item;});
+            var sD=data.map(function(d){return d.sessions||0;});
+            var aD=data.map(function(d){return d.amount||0;});
+            function pO(lfn){return {responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{position:'right',labels:{font:{size:11}}},tooltip:{callbacks:{label:function(ctx){var t=ctx.dataset.data.reduce(function(a,b){return a+b;},0)||1;var p=(ctx.raw/t*100).toFixed(1);return lfn(ctx,p);}}}}};}
+            var sp=document.getElementById('chartOutMonthSessionsPie');
+            var ap=document.getElementById('chartOutMonthAmountPie');
+            if(sp) _charts.outMonthSessionsPie=new Chart(sp,{type:'doughnut',data:{labels:lbs,datasets:[{data:sD,backgroundColor:genColors(data.length)}]},options:pO(function(ctx,p){return ctx.label+': '+ctx.raw+' ('+p+'%)';})});
+            if(ap) _charts.outMonthAmountPie=new Chart(ap,{type:'doughnut',data:{labels:lbs,datasets:[{data:aD,backgroundColor:genColors(data.length)}]},options:pO(function(ctx,p){return ctx.label+': ¥'+ctx.raw.toLocaleString()+' ('+p+'%)';})});
+        } else {
+            $cs.hide();$ca.hide();$hs.show();$ha.show();
+        }
     });
 }
 
@@ -10405,7 +10605,7 @@ function loadReferralCharts(year, dept) {
         } catch (e) { console.error('chartRefTrend:', e); }
         try {
             var dp = d.dept_yearly || [];
-            if (dp.length) _charts.refPie = new Chart(document.getElementById('chartRefPie'), { type: 'doughnut', data: { labels: dp.map(function (r) { return r.department; }), datasets: [{ data: dp.map(function (r) { return r.total; }), backgroundColor: genColors(dp.length) }] }, options: { responsive: true, plugins: { legend: { position: 'right' } } } });
+            if (dp.length) _charts.refPie = new Chart(document.getElementById('chartRefPie'), { type: 'doughnut', data: { labels: dp.map(function (r) { return r.department; }), datasets: [{ data: dp.map(function (r) { return r.total; }), backgroundColor: genColors(dp.length) }] }, options: { responsive: true, plugins: { legend: { position: 'right' }, tooltip: { callbacks: { label: function (ctx) { var t = ctx.dataset.data.reduce(function (a, b) { return a + b; }, 0) || 1; var p = (ctx.raw / t * 100).toFixed(1); return ctx.label + ': ' + ctx.raw + '人次 (' + p + '%)'; } } } } } });
         } catch (e) { console.error('chartRefPie:', e); }
         try {
             var docM = d.doctor_monthly || [];
