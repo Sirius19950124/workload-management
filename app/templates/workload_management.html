@@ -10260,8 +10260,10 @@ function appendChartTable(chartInst, canvasId, colNames) {
     if (datasets.length > 0) {
         totalVal = datasets[0].data.reduce(function(a, b) { return a + (typeof b === 'number' ? b : 0); }, 0);
     }
-    // 构建表格
-    var html = '<table class="table table-sm table-bordered table-hover chart-data-table mt-2" style="font-size:12px;">';
+    // 构建表格（限制最大高度，超出滚动）
+    var maxRows = Math.min(labels.length, 10);
+    var tblHeight = Math.min(30 + maxRows * 26, 300);
+    var html = '<table class="table table-sm table-bordered table-hover chart-data-table mt-2" style="font-size:12px;max-height:' + tblHeight + 'px;overflow-y:auto;">';
     if (cardTitle) html += '<caption class="font-weight-bold text-center py-1" style="caption-side:top;font-size:13px;">' + cardTitle + '</caption>';
     html += '<thead class="thead-light"><tr>';
     colNames.forEach(function(n){ html += '<th>' + n + '</th>'; });
