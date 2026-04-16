@@ -1566,10 +1566,7 @@
                                         <div class="col-md-6 mb-4"><div class="card"><div class="card-header"><h6 class="mb-0">👨‍⚕️ 医生开单趋势</h6></div><div class="card-body"><canvas id="chartDoctorTrend"></canvas></div></div></div>
                                         <div class="col-md-6 mb-4"><div class="card"><div class="card-header"><h6 class="mb-0">🏆 门诊项目排名（人次）</h6></div><div class="card-body"><canvas id="chartOutRank"></canvas></div></div></div>
                                         <div class="col-md-6 mb-4"><div class="card"><div class="card-header"><h6 class="mb-0">🏆 病房项目排名（人次）</h6></div><div class="card-body"><canvas id="chartWardRank"></canvas></div></div></div>
-                                        <div class="col-md-6 mb-4"><div class="card"><div class="card-header d-flex justify-content-between align-items-center"><h6 class="mb-0">📊 门诊人次占比</h6><select class="form-control form-control-sm" id="outPieMonthSel" style="width:80px;" onchange="refreshOutMonthlyPies()"></select></div><div class="card-body p-2" style="min-height:250px;position:relative;"><div id="outPieSessHint" class="text-center text-muted" style="display:none;padding-top:100px;">该月暂无数据</div><canvas id="chartOutMonthSessionsPie" style="width:100%!important;max-width:400px;margin:0 auto;"></canvas></div></div></div>
-                                        <div class="col-md-6 mb-4"><div class="card"><div class="card-header d-flex justify-content-between align-items-center"><h6 class="mb-0">📊 门诊金额占比</h6></div><div class="card-body p-2" style="min-height:250px;position:relative;"><div id="outPieAmtHint" class="text-center text-muted" style="display:none;padding-top:100px;">该月暂无数据</div><canvas id="chartOutMonthAmountPie" style="width:100%!important;max-width:400px;margin:0 auto;"></canvas></div></div></div>
                                         <div class="col-md-6 mb-4"><div class="card"><div class="card-header"><h6 class="mb-0">📊 病区人次占比（全年）</h6></div><div class="card-body"><canvas id="chartWardArea"></canvas></div></div></div>
-                                        <div class="col-md-6 mb-4"><div class="card"><div class="card-header"><h6 class="mb-0">📊 病区金额占比（全年）</h6></div><div class="card-body"><canvas id="chartWardAreaAmount"></canvas></div></div></div>
                                         <div class="col-md-6 mb-4"><div class="card"><div class="card-header"><h6 class="mb-0">📊 病区金额占比（全年）</h6></div><div class="card-body"><canvas id="chartWardAreaAmount"></canvas></div></div></div>
                                         <div class="col-md-6 mb-4"><div class="card"><div class="card-header"><h6 class="mb-0">👨‍⚕️ 医生开单排名</h6></div><div class="card-body"><canvas id="chartDoctorRank"></canvas></div></div></div>
                                         <div class="col-md-12 mb-4"><div class="card"><div class="card-header"><h6 class="mb-0">📈 环比增长率</h6></div><div class="card-body" id="growthWrap"><p class="text-muted text-center">需要至少2个月数据</p></div></div></div>
@@ -10260,22 +10257,10 @@ $(document).on('click', 'a[href^="#wardDaily_"]', function(){
 function loadDeptCharts() {
     destroyCharts();
     const y=$('#deptStatsYear').val();
-    const m=$('#outMonth').val();
-    // 初始化本月饼图的月份选择器
-    var $msel=$('#outPieMonthSel');
-    if(!$msel.find('option').length){
-        for(var mi=1;mi<=12;mi++) { $msel.append('<option value="'+mi+'">'+mi+'月</option>'); }
-    }
-    $msel.val(m);
-    // 确保canvas可见、提示隐藏
-    $('#outPieSessHint,#outPieAmtHint').hide();
-    $('#chartOutMonthSessionsPie,#chartOutMonthAmountPie').show();
-    // 并行请求：全年汇总 + 单月门诊明细
-    var req1=$.get('/api/dept-stats/charts',{year:y});
-    var req2=m ? $.get('/api/dept-stats/outpatient',{year:y,month:m}) : null;
-    $.when(req1,req2||{}).done(function(r1,r2){
-        if(!r1[0].success) return;
-        const d=r1[0].data;
+    // 并行请求：全年汇总数据
+    $.get('/api/dept-stats/charts',{year:y}).done(function(r1){
+        if(!r1.success) return;
+        const d=r1.data;
         const om=d.outpatient_monthly||[];
         if(om.length){
             _charts.outTrend=new Chart(document.getElementById('chartOutTrend'),{type:'line',data:{labels:om.map(r=>r.month+'月'),datasets:[{label:'人次',data:om.map(r=>r.sessions),borderColor:'#4e79a7',backgroundColor:'rgba(78,121,167,0.1)',fill:true,tension:0.3,yAxisID:'y'},{label:'金额',data:om.map(r=>r.amount||0),borderColor:'#59a14f',backgroundColor:'rgba(89,161,79,0.1)',fill:false,tension:0.3,yAxisID:'y1'}]},options:{responsive:true,scales:{y:{type:'linear',position:'left',title:{display:true,text:'人次'}},y1:{type:'linear',position:'right',grid:{drawOnChartArea:false},title:{display:true,text:'金额'}}}}});
@@ -10296,7 +10281,6 @@ function loadDeptCharts() {
         const or2=(d.outpatient_ranking||[]).slice(0,10);
         if(or2.length){
             _charts.outRank=new Chart(document.getElementById('chartOutRank'),{type:'bar',data:{labels:or2.map(r=>r.item),datasets:[{data:or2.map(r=>r.sessions),backgroundColor:genColors(or2.length)}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}}}});
-            _charts.outPie=new Chart(document.getElementById('chartOutPie'),{type:'doughnut',data:{labels:or2.map(r=>r.item),datasets:[{data:or2.map(r=>r.amount||0),backgroundColor:genColors(or2.length)}]},options:{responsive:true,plugins:{legend:{position:'right',labels:{font:{size:11}}},tooltip:{callbacks:{label:function(ctx){var t=ctx.dataset.data.reduce(function(a,b){return a+b;},0)||1;var p=(ctx.raw/t*100).toFixed(1);return ctx.label+': '+ctx.raw.toLocaleString()+' ('+p+'%)';}}}}}});
         }
         const wr=(d.ward_ranking||[]).slice(0,10);
         if(wr.length) _charts.wardRank=new Chart(document.getElementById('chartWardRank'),{type:'bar',data:{labels:wr.map(r=>r.area+'-'+r.item),datasets:[{data:wr.map(r=>r.sessions),backgroundColor:genColors(wr.length)}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}}}});
@@ -10307,58 +10291,6 @@ function loadDeptCharts() {
         const dr=(d.doctor_ranking||[]).slice(0,10);
         if(dr.length) _charts.doctorRank=new Chart(document.getElementById('chartDoctorRank'),{type:'bar',data:{labels:dr.map(r=>r.doctor),datasets:[{data:dr.map(r=>r.sessions),backgroundColor:genColors(dr.length)}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}}}});
         renderGrowth(om,wm,cm);
-        // 用并行请求返回的单月门诊数据渲染"本月"饼图（与全年图在同一回调中同步创建）
-        if(m&&r2&&r2[0]&&r2[0].success){
-            var data2=r2[0].data||[];
-            var _jn=['新项目A','新项目B','新项目C','测试','合计','项目A','项目B','项目C'];
-            data2=data2.filter(function(d){return _jn.indexOf(d.item||'')===-1;});
-            var $hintS=$('#outPieSessHint'),$hintA=$('#outPieAmtHint');
-            var $canS=$('#chartOutMonthSessionsPie'),$canA=$('#chartOutMonthAmountPie');
-            var hasData2=data2.some(function(d){return (d.sessions||0)>0||(d.amount||0)>0;});
-            if(data2.length&&hasData2){
-                $hintS.hide();$hintA.hide();$canS.show();$canA.show();
-                var labels2=data2.map(function(d){return d.item;});
-                var sessD=data2.map(function(d){return d.sessions||0;});
-                var amtD=data2.map(function(d){return d.amount||0;});
-                function pieOpt(lfn){return {responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{position:'right',labels:{font:{size:11}}},tooltip:{callbacks:{label:function(ctx){var t=ctx.dataset.data.reduce(function(a,b){return a+b;},0)||1;var p=(ctx.raw/t*100).toFixed(1);return lfn(ctx,p);}}}}};}
-                var sp2=document.getElementById('chartOutMonthSessionsPie');
-                var ap2=document.getElementById('chartOutMonthAmountPie');
-                if(sp2) _charts.outMonthSessionsPie=new Chart(sp2,{type:'doughnut',data:{labels:labels2,datasets:[{data:sessD,backgroundColor:genColors(data2.length)}]},options:pieOpt(function(ctx,p){return ctx.label+': '+ctx.raw.toLocaleString()+' ('+p+'%)';})});
-                if(ap2) _charts.outMonthAmountPie=new Chart(ap2,{type:'doughnut',data:{labels:labels2,datasets:[{data:amtD,backgroundColor:genColors(data2.length)}]},options:pieOpt(function(ctx,p){return ctx.label+': ¥'+ctx.raw.toLocaleString()+' ('+p+'%)';})});
-            } else {
-                $canS.hide();$canA.hide();$hintS.show();$hintA.show();
-            }
-        }
-    });
-}
-// 门诊本月饼图：月份切换时刷新
-function refreshOutMonthlyPies(){
-    var y=$('#deptStatsYear').val(), m=$('#outPieMonthSel').val();
-    if(!m) return;
-    // 先销毁旧图表
-    if(_charts.outMonthSessionsPie){try{_charts.outMonthSessionsPie.destroy();}catch(e){}_charts.outMonthSessionsPie=null;}
-    if(_charts.outMonthAmountPie){try{_charts.outMonthAmountPie.destroy();}catch(e){}_charts.outMonthAmountPie=null;}
-    $.get('/api/dept-stats/outpatient',{year:y,month:m}).done(function(r){
-        if(!r.success) return;
-        var data=r.data||[];
-        var _jn=['新项目A','新项目B','新项目C','测试','合计','项目A','项目B','项目C'];
-        data=data.filter(function(d){return _jn.indexOf(d.item||'')===-1;});
-        var $hs=$('#outPieSessHint'),$ha=$('#outPieAmtHint');
-        var $cs=$('#chartOutMonthSessionsPie'),$ca=$('#chartOutMonthAmountPie');
-        var hasData=data.some(function(d){return (d.sessions||0)>0||(d.amount||0)>0;});
-        if(data.length&&hasData){
-            $hs.hide();$ha.hide();$cs.show();$ca.show();
-            var lbs=data.map(function(d){return d.item;});
-            var sD=data.map(function(d){return d.sessions||0;});
-            var aD=data.map(function(d){return d.amount||0;});
-            function pO(lfn){return {responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{position:'right',labels:{font:{size:11}}},tooltip:{callbacks:{label:function(ctx){var t=ctx.dataset.data.reduce(function(a,b){return a+b;},0)||1;var p=(ctx.raw/t*100).toFixed(1);return lfn(ctx,p);}}}}};}
-            var sp=document.getElementById('chartOutMonthSessionsPie');
-            var ap=document.getElementById('chartOutMonthAmountPie');
-            if(sp) _charts.outMonthSessionsPie=new Chart(sp,{type:'doughnut',data:{labels:lbs,datasets:[{data:sD,backgroundColor:genColors(data.length)}]},options:pO(function(ctx,p){return ctx.label+': '+ctx.raw+' ('+p+'%)';})});
-            if(ap) _charts.outMonthAmountPie=new Chart(ap,{type:'doughnut',data:{labels:lbs,datasets:[{data:aD,backgroundColor:genColors(data.length)}]},options:pO(function(ctx,p){return ctx.label+': ¥'+ctx.raw.toLocaleString()+' ('+p+'%)';})});
-        } else {
-            $cs.hide();$ca.hide();$hs.show();$ha.show();
-        }
     });
 }
 
